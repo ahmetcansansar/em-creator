@@ -50,8 +50,8 @@ def baseDir():
             ret = f.read()
         ret = ret.strip()
         return ret
-    # ret = "/scratch-cbe/users/wolfgan.waltenberger/git/smodels-utils/EM_Creator/"
-    subdir = "git/smodels-utils/EM_Creator"
+    # ret = "/scratch-cbe/users/wolfgan.waltenberger/git/em-creator/"
+    subdir = "git/em-creator"
     ret = "~/%s/" % subdir
     ret = os.path.expanduser ( ret )
     if ret.count ( subdir ) == 2:

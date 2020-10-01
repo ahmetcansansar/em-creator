@@ -113,7 +113,7 @@ if __name__ == "__main__":
         help = 'overwrite old embaked file',\
         action = 'store_true' )
     argparser.add_argument ('-c', '--copy',
-        help = 'copy yourself to smodels-utils/EM_Creator',\
+        help = 'copy yourself to em-creator',\
         action = 'store_true' )
     argparser.add_argument ('-r', '--remove_offshell',
         help = 'remove offshell guys that have no __nevents__ and have mSLP!=60',\
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         action = 'store_true' )
     args = argparser.parse_args()
     if args.copy:
-        cmd = "cp ./checkEmbaked.py ../../../../../smodels-utils/EM_Creator"
+        cmd = "cp ./checkEmbaked.py ../../../../../em-creator"
         out = subprocess.getoutput ( cmd )
         if out != "":
             print ( "[checkEmbaked] %s" % out )

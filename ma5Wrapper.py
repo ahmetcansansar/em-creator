@@ -217,7 +217,7 @@ class MA5Wrapper:
         myenv = dict(os.environ)
         # home = "/scratch-cbe/users/wolfgan.waltenberger/"
         home = os.environ["HOME"]
-        home = home.replace("git/smodels-utils/EM_Creator","")
+        home = home.replace("git/em-creator","")
         pylocaldir = "%s/.local/lib/python2.7/" % home
         rootsys="/mnt/hephy/pheno/opt/root6.20-py27-u20.04/"
         import socket

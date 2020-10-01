@@ -10,7 +10,7 @@
 .. moduleauthor:: Jan Mrozek <jmrozek@protonmail.ch>
 
 ..directory structure::
-    EM_Creator --┬-CutLang---------┬-runs ~ dir with running script (CLA.sh)
+    em-creator --┬-CutLang---------┬-runs ~ dir with running script (CLA.sh)
                  |                 +-CLA  ~ dir with executable (CLA.exe)
                  |                 + ADLLHCAnalysis ~ contains adl files for analyses
                  +-cutlang_results-┬-ANA_*-┬-output-┬-efficiencies.embaked ~ after running join_embaked
