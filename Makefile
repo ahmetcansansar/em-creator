@@ -4,9 +4,9 @@ du-h:
 	du -h --max-depth=1 | tee du-h
 
 install_mg5:
-	wget http://www.hephy.at/user/wwaltenberger/dist/mg5.tar.gz
+	$(shell [ -x "mg5.tar.gz" ] || {wget http://www.hephy.at/user/wwaltenberger/dist/mg5.tar.gz; }; )
 	rm -rf mg5.old
-	mv -f mg5 mg5.old
+	$(shell [ -x "mg5" ] && { mv -f mg5 mg5.old; } )
 	tar xzvf mg5.tar.gz 
 
 install_ma5:
