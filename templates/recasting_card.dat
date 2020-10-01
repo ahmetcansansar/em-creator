@@ -1,0 +1,3 @@
+# Delphes cards must be located in the PAD(ForMA5tune) directory
+# Switches must be on or off
+# AnalysisName               PADType    Switch     DelphesCard
