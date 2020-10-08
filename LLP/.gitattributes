@@ -1,0 +1,6 @@
+data/THSCPM5_banners.tar.gz filter=lfs diff=lfs merge=lfs -text
+data/THSCPM7_banners.tar.gz filter=lfs diff=lfs merge=lfs -text
+data/THSCPM8_banners.tar.gz filter=lfs diff=lfs merge=lfs -text
+data/THSCPM1b_banners.tar.gz filter=lfs diff=lfs merge=lfs -text
+data/THSCPM3_banners.tar.gz filter=lfs diff=lfs merge=lfs -text
+data/THSCPM3b_banners.tar.gz filter=lfs diff=lfs merge=lfs -text

@@ -81,19 +81,16 @@ def longLivedProbabilityFor(particle,width,detectorLength=None):
 
     return probLongLived
 
-def getEffForEvent(event,widths=[0.0],detectorLength=None):
+def getEffForEvent(event,widths=[0.0],detectorLength=None,Leff_inner=1e-3):
     """
     Compute the efficiency for the event for a given
     list of x-values (xEffs), where x = L/ctau.
     Only uses the maximal signal region/mass reconstruction satisfying m_hscp < mrec/0.6.
 
     :param event: List with Particle objects containing efficiencies
-    :param xEffs: list of float with the effective values for L/ctau to rescale the events for.
-                  If None, will return the unrescaled efficiency (zero width).
 
     :return: numpy array with a
     """
-
 
     #Number of particles:
     npart = len(event)
@@ -121,19 +118,23 @@ def getEffForEvent(event,widths=[0.0],detectorLength=None):
     #Create array to store efficiencies for each x (width) value
     effs = np.zeros(len(widths),dtype=[('width',float)]+[(sr,float) for sr in SRs])
 
-    #Loop over x values and compute the probability of reconstructing at least one HSCP:
+    #Loop over witdh values and compute the probability of reconstructing at least one HSCP:
+    hc = 197.327*1e-18
     for i,w in enumerate(widths):
         effs['width'][i] = w
         probLLP = np.array([longLivedProbabilityFor(hscp,w,detectorLength) for hscp in event])
+        probPrompt = 1. - np.exp(-w*Leff_inner/hc)
         for sr in SRs:
-            #Compute probability for triggering at least one HSCP  (1 - probability for missing all):
-            probTriggerTotal = 1.0 - np.prod(1.0-ProbTrigger*probLLP)
-            #Compute probabitlity for reconstructing at least one HSCP  (1 - probability for missing all):
-            probTagTotal = 1.0 - np.prod(1.0-ProbOnline[sr])
-            #Total probability for triggering and reconstructing at least one HSCP:
-            probFinal = probTriggerTotal*probTagTotal
-            #Store result:
-            effs[sr][i] = probFinal
+            if npart == 1:
+                effs[sr][i] = sum(probLLP*ProbTrigger*ProbOnline[sr])
+            elif npart == 2:
+                prob12 = np.prod(probLLP)
+                prob12 *= sum(ProbTrigger)-np.prod(ProbTrigger)
+                prob12 *= sum(ProbOnline[sr])-np.prod(ProbOnline[sr])
+                prob1 = probLLP[0]*(1-probLLP[1]-probPrompt)*ProbTrigger[0]*ProbOnline[sr][0]
+                prob2 = probLLP[1]*(1-probLLP[0]-probPrompt)*ProbTrigger[1]*ProbOnline[sr][1]
+                #Total probability for triggering and reconstructing at least one HSCP:
+                effs[sr][i] = prob12 + prob1 + prob2
 
     return effs
 
@@ -202,7 +203,7 @@ def getEventsFrom(lheFile, effLabels = None):
 
     return eventList
 
-def getEffsFor(lheFile,selectHSCPs,widths,detectorLength,outFolder):
+def getEffsFor(lheFile,selectHSCPs,widths,detectorLength,outFolder,Leff_inner):
     """
     Compute the efficiencies for a list of widths
     using the events and efficiencies stored in the lheFile (for zero width).
@@ -210,6 +211,7 @@ def getEffsFor(lheFile,selectHSCPs,widths,detectorLength,outFolder):
     :param lheFile: path to the LHE file with efficiencies for zero widths
     :param widths: list of widths (in GeV) to compute the efficiency for
     :param detectorLength: fixed detector length size (in meters)
+    :param Leff_inner: fixed inner detector length size (in meters)
     :param outFolder: output folder
     :param selectHSCPs: If None will use all HSCPs in the event, otherwise should contain a list with the PDG codes of the HSCPs to be considered.
 
@@ -240,7 +242,7 @@ def getEffsFor(lheFile,selectHSCPs,widths,detectorLength,outFolder):
                 continue  #Skip events without (selected) HSCPs
 
             #Get rescaled efficiency
-            evEffs = getEffForEvent(event,widths,detectorLength)
+            evEffs = getEffForEvent(event,widths,detectorLength,Leff_inner)
             for sr in evEffs.dtype.names:
                 if sr == 'width': continue
                 effs[sr] += evEffs[sr] #Add up efficiencies
@@ -310,6 +312,7 @@ if __name__ == "__main__":
     effFolder = parser.get("options","effFolder")
     widths = np.array(parser.get("options","widths"))
     detectorLength = parser.get("options","detectorLength")
+    Leff_inner = parser.get("options","Leff_inner")
     ncpus = parser.getint("options","ncpu")
     if parser.has_option("options","selectHSCPs"):
         selectHSCPs = parser.get("options","selectHSCPs")
@@ -324,7 +327,7 @@ if __name__ == "__main__":
     children = []
     #Loop over model parameters and submit jobs
     for lheFile in lheFiles:
-        p = pool.apply_async(getEffsFor, args=(lheFile,selectHSCPs,widths,detectorLength,effFolder,))
+        p = pool.apply_async(getEffsFor, args=(lheFile,selectHSCPs,widths,detectorLength,effFolder,Leff_inner,))
         children.append(p)
 
 
