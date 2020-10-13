@@ -115,8 +115,11 @@ int run(const string & infile, int nevents, const string & cfgfile, const string
         fprintf(stdout,"M>%3i Total Efficiency: %1.3e +- %1.3e\n",Mi*100,totalEffs[Mi].first/iEvent,err);
   }
   fprintf(OutputFile,"<\\total>\n");
+  fprintf(OutputFile,"<xsec>\n");
+  fprintf(OutputFile,"Total cross-section (fb): %1.3e\n",pythia.info.sigmaGen()*1e12);
+  fprintf(OutputFile,"<\\xsec>\n");
   fclose(OutputFile);
-    
+
 
   // Done.
   return 0;
