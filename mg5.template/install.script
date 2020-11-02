@@ -1,0 +1,8 @@
+# install zlib
+install hepmc
+install lhapdf6
+install boost
+install pythia8
+#install Delphes
+#install MadAnalysis5
+#install ExRootAnalysis
