@@ -106,8 +106,8 @@ if __name__ == "__main__":
                              action="store_true" )
     argparser.add_argument ( '-p', '--pyver', help='python version [2]',
                              type=int, default=2 )
-    argparser.add_argument ( '-V', '--version', help='MG5 version [2_7_2]',
-                             type=str, default="2_7_2" )
+    argparser.add_argument ( '-V', '--version', help='MG5 version [2_8_2]',
+                             type=str, default="2_8_2" )
     args = argparser.parse_args()
     args.version = args.version.replace(".","_")
     if args.clean:
