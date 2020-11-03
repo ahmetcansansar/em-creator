@@ -6,7 +6,7 @@
 
 import subprocess, os, sys
     
-def install_plugins( pyver=2 ):
+def install_plugins( pyver=3 ):
     ## use modified installer script
     ## modifyBoostInstaller()
     print ( "installing plugins (tail -f /tmp/mg5.install to monitor) ... " )
@@ -25,9 +25,9 @@ def install_plugins( pyver=2 ):
     if os.path.exists ( "install.txt" ):
         os.unlink ( "install.txt" )
 
-def install( ver, plugins = True, pyver = 2 ):
+def install( ver, plugins = True, pyver = 3 ):
     """
-    :param ver: MG5 version (eg 2_7_2)
+    :param ver: MG5 version (eg 2_8_2)
     :param plugins: install also plugins
     :param pyver: python version, 2 or 3
     """
@@ -42,7 +42,7 @@ def install( ver, plugins = True, pyver = 2 ):
     verdot = ver.replace("_",".")
     url="https://smodels.github.io/downloads/tarballs/"
     tarball = "MG5_aMC_v%s.tar.gz" % verdot
-    if pyver == 3:
+    if pyver == 4:
         tarball = "MG5_aMC_v%s.py3.tar.gz" % verdot
     if not os.path.exists ( tarball ):
         cmd = "wget %s/%s" % ( url, tarball )
@@ -53,11 +53,11 @@ def install( ver, plugins = True, pyver = 2 ):
     cmd = "tar xzvf %s" % tarball
     subprocess.getoutput ( cmd )
     cmd = "mv MG5_aMC_v%s/* ."  % ver
-    if pyver == 3:
+    if pyver == 4:
         cmd = "mv MG5_aMC_v%s_py3/* ." % ver
     subprocess.getoutput ( cmd )
     cmd = "rmdir MG5_aMC_v%s" % ver
-    if pyver == 3:
+    if pyver == 4:
         cmd += "_py3"
         # cmd = "rmdir MG5_aMC_v%s_py3" % ver
     subprocess.getoutput ( cmd )
@@ -104,8 +104,8 @@ if __name__ == "__main__":
     argparser.add_argument ( '--plugins', help='build the plugins', action="store_true" )
     argparser.add_argument ( '--noplugins', help='dont build the plugins, only the binary', 
                              action="store_true" )
-    argparser.add_argument ( '-p', '--pyver', help='python version [2]',
-                             type=int, default=2 )
+    argparser.add_argument ( '-p', '--pyver', help='python version [3]',
+                             type=int, default=3 )
     argparser.add_argument ( '-V', '--version', help='MG5 version [2_8_2]',
                              type=str, default="2_8_2" )
     args = argparser.parse_args()

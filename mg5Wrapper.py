@@ -26,7 +26,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
-                   ignore_locks, sqrts=13, cutlang=False, ver="2_6_5" ):
+                   ignore_locks, sqrts=13, cutlang=False, ver="2_8_2" ):
         """
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
@@ -49,7 +49,7 @@ class MG5Wrapper:
         self.logfile2 = None
         self.tempf = None
         self.sqrts = sqrts
-        self.pyver = 2 ## python version
+        self.pyver = 3 ## python version
         if "py3" in ver:
             self.pyver = 3
         self.ver = ver
