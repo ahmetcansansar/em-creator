@@ -313,7 +313,7 @@ class CutLangWrapper:
         time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         logfile = os.path.join(self.tmp_dir.get(), "log_" + time + ".txt")
         self.__delete_dir(logfile)
-        mass_stripped = str(mass).replace("(","").replace(")","").replace(",","_")
+        mass_stripped = str(mass).replace("(","").replace(")","").replace(",","_").replace(" ", "" )
 
         self.__info(f"Writing output into directory {self.ana_dir.get()} .")
         self.__info(f"Masses are {mass}")

@@ -67,7 +67,7 @@ class MG5Wrapper:
                           'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
-        # self.correctPythia8CfgFile()
+        self.correctPythia8CfgFile()
         self.rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
         self.info ( "initialised" )
 
@@ -92,8 +92,8 @@ class MG5Wrapper:
         """ a simple method intended to check if we have to add SysCalc:qCutList=90
             to the pythia8 configuration """
         ## qcut: SysCalc:qCutList in mg5/Template/LO/Cards/pythia8_card_default.dat
-        self.msg ( "FIXME we shouldnt be using this!" )
-        return
+        #self.msg ( "FIXME we shouldnt be using this!" )
+        #return
         self.msg ( "now checking if pythia8 config needs correction" )
         needsCorrection = True
         cfgFile = "mg5/Template/LO/Cards/pythia8_card_default.dat"
@@ -157,7 +157,7 @@ class MG5Wrapper:
             for k,v in self.mgParams.items():
                 if k in line:
                     vold = v
-                    if "M[0]" in v:
+                    if type(v)==str and "M[0]" in v:
                         m0 = masses[0]
                         if bakeryHelpers.isAssociateProduction ( self.topo ):
                             m0 = min( masses[0], masses[1] )
@@ -629,6 +629,8 @@ def main():
                 ( len(masses[0]), nReqM, args.topo ) )
         sys.exit()
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )
+    if args.cutlang:
+        args.recast = True
     mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun, 
                       args.recast, args.ignore_locks, args.sqrts, args.cutlang )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
