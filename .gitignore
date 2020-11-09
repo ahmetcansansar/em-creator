@@ -1,2 +1,19 @@
+# build files:
+CutLang
+delphes
+
+# output files:
+cutlang_results
+
 # virtual environment:
 py-ve
+
+# python miscellanea:
+__pycache__
+
+# vim:
+*.swp
+.ropeproject
+
+
+
