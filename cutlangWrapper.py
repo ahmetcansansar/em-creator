@@ -35,15 +35,13 @@
 # FIXME: analyses or analysis in __main__ and in run and __init__?
 # TODO: Add a filter complement function
 
-
-
 # Standard library imports
 import os                      # For path
 import sys                     # For exit()
 import colorama                # For output colors (in msg, error, ...)
 import subprocess              # For Popen in exe method
 import shutil                  # For move(), FIXME: remove?
-import  re                     # For delphes card picker
+import re                     # For delphes card picker
 import multiprocessing         # Used when run as __main__
 import gzip                    # For decompression of hepmc file
 from datetime import datetime  # For timestamp of embaked files
@@ -54,12 +52,13 @@ import ROOT                # To parse CutLang output
 # local imports
 import bakeryHelpers       # For dirnames
 
+
 class CutLangWrapper:
 
-    GZIP_BLOCK = 1 << 24 # Block to decompress gzipped file, ~ 16 MB
+    GZIP_BLOCK = 1 << 24  # Block to decompress gzipped file, ~ 16 MB
 
-    def __init__ (self, topo: str, njets: int, rerun: bool, analyses: str,
-                  auto_confirm: bool = True, filterString: str = "") -> None:
+    def __init__(self, topo: str, njets: int, rerun: bool, analyses: str,
+                 auto_confirm: bool = True, filterString: str = "") -> None:
         """
         If not already present, clones and builds Delphes, CutLang and ADLLHC Analyses.
         Prepares output directories.
@@ -82,14 +81,14 @@ class CutLangWrapper:
             self.filterRegions, self.filterBins =\
                              CutLangWrapper.process_filter_string(filterString)
         else:
-            self.filterRegions, self.filterBins = set(),{}
+            self.filterRegions, self.filterBins = set(), {}
 
         # make auxiliary directories
-        self.base_dir = Directory(f"cutlang_results/{self.analyses}", make = True)
+        self.base_dir = Directory(f"cutlang_results/{self.analyses}", make=True)
         dirname = f"{self.topo}_{self.njets}jet"
-        self.ana_dir = Directory(os.path.join(self.base_dir.get(), f"ANA_{dirname}"), make = True)
-        self.out_dir = Directory(os.path.join(self.ana_dir.get(), "output"), make = True)
-        self.tmp_dir = Directory(os.path.join(self.ana_dir.get(), "temp"), make = True)
+        self.ana_dir = Directory(os.path.join(self.base_dir.get(), f"ANA_{dirname}"), make=True)
+        self.out_dir = Directory(os.path.join(self.ana_dir.get(), "output"), make=True)
+        self.tmp_dir = Directory(os.path.join(self.ana_dir.get(), "temp"), make=True)
         time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         self.initlog = os.path.join(self.tmp_dir.get(), "log_" + time + ".txt")
         self._delete_dir(self.initlog)
@@ -97,7 +96,7 @@ class CutLangWrapper:
         # Cutlang vars
         self.cutlanginstall = "./CutLang/"
         self.cutlang_executable = "./CutLang/CLA/CLA.exe"
-        self.cutlang_run_dir = "./CutLang/runs" # Directory where the CutLang will run
+        self.cutlang_run_dir = "./CutLang/runs"  # Directory where the CutLang will run
         self.cutlang_script = "./CLA.sh"
 
         # ADLLHCAnalysis vars
@@ -110,18 +109,18 @@ class CutLangWrapper:
         #      Cutlang Init
         # =====================
         # Check if Cutlang dir is present and if not, attempt to clone it from github
-        if not os.path.isdir ( self.cutlanginstall ):
-            self._info( "cutlang directory missing, download from github?")
+        if not os.path.isdir(self.cutlanginstall):
+            self._info("cutlang directory missing, download from github?")
             if self._confirmation("Download from github?"):
                 args = ['git', 'clone', 'https://github.com/unelg/CutLang']
-                self.exe(args, exit_on_fail = True, logfile = self.initlog)
+                self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
                 self._error("No CutLang dir. Exiting.")
                 sys.exit()
 
         # if there is no executable, compile it
-        if not os.path.exists (self.cutlang_executable):
-            self._info ( "cannot find cutlang installation at %s" % self.cutlanginstall )
+        if not os.path.exists(self.cutlang_executable):
+            self._info("cannot find cutlang installation at %s" % self.cutlanginstall)
             compile_path = os.path.abspath(self.cutlanginstall + "CLA/")
             # Check for existence of makefile, if not present exit
             makefile_path = os.path.join(compile_path, "Makefile")
@@ -130,7 +129,7 @@ class CutLangWrapper:
                 sys.exit()
             self._info("Compiling CutLang...")
             args = ['make']
-            self.exe(args, cwd = compile_path, exit_on_fail = True, logfile = self.initlog)
+            self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
         self._info("CutLang initialisation finished.")
 
         # ==============================
@@ -147,24 +146,24 @@ class CutLangWrapper:
             self.exe(args)
             args = ["git", "clone", "https://github.com/ADL4HEP/ADLLHCanalyses"]
             self.exe(args, cwd=os.path.dirname(self.adllhcanalyses),
-                     exit_on_fail=True, logfile = self.initlog)
+                     exit_on_fail=True, logfile=self.initlog)
         self._info("ADLLHC Analyses initialisation finished.")
 
         # ====================
         #      Delphes Init
         # ====================
         # Check if Delphes dir is present and if not, attempt to clone it from github
-        if not os.path.isdir ( self.delphesinstall ):
-            self._info( "Delphes directory missing, download from github?")
+        if not os.path.isdir(self.delphesinstall):
+            self._info("Delphes directory missing, download from github?")
             if self._confirmation("Download from github?"):
                 args = ['git', 'clone', 'https://github.com/delphes/delphes']
-                self.exe(args, exit_on_fail = True, logfile = self.initlog)
+                self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
                 self._error("No Delphes dir. Exiting.")
         # if there is no executable, compile it
         self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC")
-        if not os.path.exists (self.delphes_exe):
-            self._info ( "Cannot find delphes installation at %s" % self.delphesinstall )
+        if not os.path.exists(self.delphes_exe):
+            self._info("Cannot find delphes installation at %s" % self.delphesinstall)
             compile_path = os.path.abspath(self.delphesinstall)
             # Check for existence of makefile, if not present exit, else make
             makefile_path = os.path.join(compile_path, "Makefile")
@@ -173,12 +172,11 @@ class CutLangWrapper:
                 sys.exit()
             self._info("Compiling Delphes...")
             args = ['make']
-            self.exe(args, cwd = compile_path, exit_on_fail = True, logfile = self.initlog)
+            self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
         self._info("Delphes initialised.")
         self._info("Initialisation complete.")
 
-
-    def run(self, mass:str , hepmcfile:str, pid: int = None) -> int:
+    def run(self, mass: str, hepmcfile: str, pid: int = None) -> int:
         """ Gives efficiency values for the given hepmc file.
 
             input.hepmc --> Delphes --> output.root --┬-> CutLang --> eff.embaked
@@ -186,12 +184,11 @@ class CutLangWrapper:
             error values:
                 -1:   Cannot find hepmc file
         """
-        time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-        logfile = os.path.join(self.tmp_dir.get(), "log_" + time + ".txt")
+        logfile = os.path.join(self.tmp_dir.get(), "_".join(["log", mass, time]) + ".txt")
         self._delete_dir(logfile)
-        mass_stripped = str(mass).replace("(","").replace(")","")
-        mass_stripped = mass_stripped.replace(",","_").replace(" ", "" )
+        mass_stripped = str(mass).replace("(", "").replace(")", "")
+        mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
 
         self._info(f"Writing output into directory {self.ana_dir.get()} .")
         self._info(f"Masses are {mass}")
@@ -200,6 +197,9 @@ class CutLangWrapper:
             return
 
         # Decompress hepmcfile if necessary
+        if not os.path.isfile(hepmcfile):
+            self._error(f"cannot find hepmc file {hepmcfile}.")
+            return -0x01
         if ".gz" in hepmcfile:
             hepmcfile = self._decompress(hepmcfile, self.tmp_dir.get())
 
@@ -208,9 +208,6 @@ class CutLangWrapper:
         #        Delphes
         # ======================
         # set input/output paths
-        if not os.path.isfile(hepmcfile):
-            self._error (f"cannot find hepmc file {hepmcfile}.")
-            return -0x01
         self._msg("Found hepmcfile at", hepmcfile)
         delphes_card = self._pick_delphes_card()
         delph_out = os.path.join(self.out_dir.get(), f"delphes_out_{mass_stripped}.root")
@@ -219,13 +216,13 @@ class CutLangWrapper:
         if os.path.exists(delph_out):
             self._info(f"Removing {delph_out}.")
             args = ["rm", delph_out]
-            self.exe(args, logfile = logfile)
+            self.exe(args, logfile=logfile)
 
 
         # run delphes
         self._debug("Running delphes.")
         args = [self.delphes_exe, delphes_card, delph_out, hepmcfile]
-        self.exe(args, logfile = logfile)
+        self.exe(args, logfile=logfile)
         self._debug("Delphes finished.")
 
         # ======================
@@ -238,15 +235,15 @@ class CutLangWrapper:
         # copy cutlang to a temporary directory
         cla_temp = Directory(os.path.join(self.tmp_dir.get(), f"CLA_{mass_stripped}_{time}"), make=True)
         cmd = ["cp", "-r", self.cutlanginstall, cla_temp.get()]
-        self.exe(cmd, logfile = logfile)
+        self.exe(cmd, logfile=logfile)
         cla_run_dir = os.path.join(cla_temp.get(), self.cutlang_run_dir)
-        #cla_run_dir = self.cutlang_run_dir
+        # cla_run_dir = self.cutlang_run_dir
 
 
         # run CutLang
         cmd = [self.cutlang_script, cla_input, "DELPHES", "-i", cutlangfile]
         self._debug("Running CLA")
-        self.exe(cmd, cwd=cla_run_dir, logfile = logfile)
+        self.exe(cmd, cwd=cla_run_dir, logfile=logfile)
         self._debug("CLA finished.")
 
 
@@ -272,8 +269,8 @@ class CutLangWrapper:
             self._error("Number of events before selection is not constant in all regions:")
             self._error(f"Numbers of events: {nevents}")
             self._error(f"Using the value: {nevents[0]}")
-        if len(nevents)>0:
-            print ( "WRITING %s to %s" % ( str(mass), effi_file ) )
+        if len(nevents) > 0:
+            print("WRITING %s to %s" % (str(mass), effi_file))
             with open(effi_file, "at") as f:
                 f.write(str(mass) + ": {")
                 f.write(entries)
@@ -306,14 +303,14 @@ class CutLangWrapper:
 
         # open the ROOT file
         rootFile = ROOT.TFile(cla_out)
-        if rootFile == None:
+        if rootFile is None:
             self._error("Cannot find CutLang results at {cla_out}.")
         # temporary TH1D structure to write results in
 
-        rootTmp  = ROOT.TH1D()
-        nevents = [] # list of starting numbers of events
-        entries = "" # efficiency entries for output
-        contains_eff = False # Whether this root file yielded an efficiencies
+        rootTmp = ROOT.TH1D()
+        nevents = []  # list of starting numbers of events
+        entries = ""  # efficiency entries for output
+        contains_eff = False  # Whether this root file yielded an efficiencies
         ignorelist = {'baseline', 'presel'} & self.filterRegions
 
         self._debug("Objects found in CutLang results:")
@@ -387,11 +384,11 @@ class CutLangWrapper:
                 self._debug(f"{x.GetName()} is not a Directory File.")
                 self._debug(f"{x.GetName()} is of type {type(x)}")
             # entry ~ data point to write into efficiency map
-        if contains_eff == False:
+        if contains_eff is False:
             self._error(f"No efficiencies found in file {cla_out}.")
         return entries, nevents
 
-    def pickCutLangFile (self, a_name):
+    def pickCutLangFile(self, a_name):
         """ Returns absolute path to ADLLHC Analysis file. If not available raises error.
             :param a_name string Analysis name in standard format (see _standardise_analysis)
                                  e.g. 'CMS_SUS_012_32'
@@ -407,7 +404,7 @@ class CutLangWrapper:
 
     @classmethod
     def get_effi_name(cls, mass):
-        mass_stripped = str(mass).replace("(","").replace(")","")
+        mass_stripped = str(mass).replace("(", "").replace(")", "")
         return os.path.join(cls.out_dir.get(), cls._get_embaked_name(cls.analyses, cls.topo, mass_stripped))
 
     @staticmethod
@@ -415,7 +412,7 @@ class CutLangWrapper:
         effi_file = os.path.join(out_dir, effi_name)
         with open(effi_file, "w") as f:
             cls.info(f"Writing joint efficiencies into {effi_file}")
-            f.write("{ # EM-Baked %s.\n" % time )
+            f.write("{ # EM-Baked %s.\n" % time)
             for filename in os.listdir(out_dir):
                 if filename.endswith(".embaked"):
                     filename = os.path.join(cls.out_dir, filename)
@@ -436,9 +433,9 @@ class CutLangWrapper:
         print(str_list)
         for i in range(len(str_list[0])):
             print(f"i : {i}.")
-            j =0
+            j = 0
             is_substr = True
-            while i + j < len(str_list[0]) and is_substr == True:
+            while i + j < len(str_list[0]) and is_substr is True:
                 is_substr = CutLangWrapper._is_substring_in_list(str_list[0][i:i + j + 1], str_list[1:])
                 if is_substr:
                     j += 1
@@ -447,62 +444,54 @@ class CutLangWrapper:
                 positions.append(i)
                 lengths.append(j)
         if len(lengths) == 0:
-            return (("",0),)
+            return (("", 0),)
         else:
             maxLength = max(lengths)
             # FIXME: where does temp come from?
-            # result = list( (str_list[0][positions[k]: positions[k] + temp], maxLength)  for k,l in enumerate(lengths) if l == maxLength)
+            # result = list((str_list[0][positions[k]: positions[k] + temp], maxLength)  for k,l in enumerate(lengths) if l == maxLength)
             result = None
             return result
 
-    def exe(self, cmd, logfile = None, maxLength=100, cwd=None, exit_on_fail=False):
+    def exe(self, cmd, logfile=None, maxLength=100, cwd=None, exit_on_fail=False):
         """ execute cmd in shell
         :param maxLength: maximum length of output to be printed,
                           if == -1 then all output will be printed
         """
-        if cwd == None:
+        if cwd is None:
             directory = os.getcwd()
         else:
             directory = cwd
-        self._msg( f'exec: {directory} $$ {" ".join(cmd)}' )
+        self._msg(f'exec: {directory} $$ {" ".join(cmd)}')
         proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = proc.communicate()
         print(out.decode('utf-8'))
         print(err.decode('utf-8'))
         proc.wait()
-        if not logfile == None:
+        if logfile is not None:
             with open(logfile, "a") as log:
-                log.write( f'exec: {directory} $$ {" ".join(cmd)}' )
+                log.write(f'exec: {directory} $$ {" ".join(cmd)}')
                 log.write(out.decode('utf-8'))
                 log.write(err.decode('utf-8'))
         if not (proc.returncode == 0):
             self._error(f"Executed process: \n{' '.join(cmd)}\n\nin"
-                       f" directory:\n{directory}\n\nproduced an error\n\n"
-                       f"value {proc.returncode}.")
-            if exit_on_fail == True:
+                        f" directory:\n{directory}\n\nproduced an error\n\n"
+                        f"value {proc.returncode}.")
+            if exit_on_fail is True:
                 sys.exit()
         return proc.returncode
-        # out = out.strip()
-        # if len(out)==0:
-        #     pass
-        # elif len(out)<maxLength:
-        #     self._msg( " `- %s" % out )
-        #     outurn
-        # else:
-        #     self._msg( " `- %s" % ( out[-maxLength:] ) )
 
-    def clean ( self ):
+    def clean(self):
         """ Deletes the output directory
         """
         self._delete_dir(self.base_dir.get())
 
-    def clean_all ( self ):
+    def clean_all(self):
         """ Deletes all the directories that might have been made by CutLangWrapper
             Use with care.
         """
 
         if self._confirmation("This will delete all directories created by running CutLangWrapper.\n"
-                               "Proceed?"):
+                              "Proceed?"):
             self.clean()
             self._delete_dir("./CutLang")
             self._delete_dir("./delphes")
@@ -541,7 +530,7 @@ class CutLangWrapper:
         return result
 
     def _confirmation(self, text):
-        if self.auto_confirm == True:
+        if self.auto_confirm is True:
             return True
         else:
             self._msg("text")
@@ -565,15 +554,15 @@ class CutLangWrapper:
             in_f.close()
         return out_name
 
-    def _delete_dir ( self, f ):
-        if os.path.exists ( f ):
-            subprocess.getoutput ( "rm -rf %s" % f )
+    def _delete_dir(self, f):
+        if os.path.exists(f):
+            subprocess.getoutput("rm -rf %s" % f)
 
     def _get_bin_names(self, cutlangfile, name):
         bin_names = []
         with open(cutlangfile, "r") as f:
             lines = f.readlines()
-            indices = [i for i, elem in enumerate(lines) if (not re.search(f"^region +{name}", elem) == None)]
+            indices = [i for i, elem in enumerate(lines) if (not re.search(f"^region +{name}", elem) is None)]
             if len(indices) > 1:
                 self._error(f"Too many entries found for {name} in {cutlangfile}")
                 return []
@@ -583,32 +572,32 @@ class CutLangWrapper:
             print(f"indices : {indices}")
             lines = lines[indices[0] + 1:]
             print(lines[0])
-            while  not len(lines) == 0 and re.search("^region", lines[0]) == None:
-                if not re.search(" *bin", lines[0]) == None:
+            while not len(lines) == 0 and re.search("^region", lines[0]) is None:
+                if not re.search(" *bin", lines[0]) is None:
                     print("MATCH")
                     m = re.search(" +bin (?P<the_rest>.*)", lines[0])
                     bname = bname.split('#')[0]
                     bname = m.group("the_rest")
-                    bname = bname.replace("[","").replace("[","")
-                    # bname = bname.replace("<","lt").replace(">","mt")
-                    bname = bname.replace("and","").replace("or","")
-                    bname = bname.replace("AND","").replace("OR","")
-                    bname = bname.replace("&&","").replace("||","")
-                    bname = bname.replace("  "," ").replace(" ","_")
+                    bname = bname.replace("[", "").replace("[", "")
+                    # bname = bname.replace("<", "lt").replace(">", "mt")
+                    bname = bname.replace("and", "").replace("or", "")
+                    bname = bname.replace("AND", "").replace("OR", "")
+                    bname = bname.replace("&&", "").replace("||", "")
+                    bname = bname.replace("  ", " ").replace(" ", "_")
                     bin_names.append("_".join([name, bname]))
                 lines.pop(0)
         # return bin_names
         return []
 
     def _get_embaked_name(self, analysis, topo, mass):
-        retval = "_".join([analysis.lower().replace("-","_"), topo,"mass", mass])
+        retval = "_".join([analysis.lower().replace("-", "_"), topo, "mass", mass])
         retval = ".".join([retval, "embaked"])
         return retval
 
     def _pick_delphes_card(self):
-        if not re.search("ATLAS", self.analyses) == None:
+        if not re.search("ATLAS", self.analyses) is None:
             return os.path.abspath("./delphes/cards/delphes_card_ATLAS.tcl")
-        elif not re.search("CMS", self.analyses) == None:
+        elif not re.search("CMS", self.analyses) is None:
             return os.path.abspath("./delphes/cards/delphes_card_CMS.tcl")
         else:
             self._error(f"Could not find a suitable Delphes card for analysis {self.analyses}. Exiting.")
@@ -627,34 +616,33 @@ class CutLangWrapper:
         print("The substring: "+string+" the strings: " + str(str_list))
         result = True
         for i in range(len(str_list)):
-            if not string in str_list[i]:
+            if string not in str_list[i]:
                 result = False
                 break
         return result
 
     @staticmethod
-    def _info (*msg):
+    def _info(*msg):
         """Print yellow info message"""
-        print ( "%s[CutLangWrapper] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
-                   colorama.Fore.RESET ) )
+        print("%s[CutLangWrapper] %s%s" % (colorama.Fore.YELLOW, " ".join(msg),
+              colorama.Fore.RESET))
 
     @staticmethod
     def _debug(*msg):
         """Print green debug message."""
-        print ( "%s[CutLangWrapper] %s%s" % ( colorama.Fore.GREEN, " ".join ( msg ), \
-                   colorama.Fore.RESET ) )
+        print("%s[CutLangWrapper] %s%s" % (colorama.Fore.GREEN, " ".join(msg),
+              colorama.Fore.RESET))
 
     @staticmethod
     def _msg(*msg):
         """Print normal message"""
-        print ( "[CutLangWrapper] %s" % " ".join ( msg ) )
+        print("[CutLangWrapper] %s" % " ".join(msg))
 
     @staticmethod
     def _error(*msg):
         """Print red error message"""
         string = ' '.join(msg)
-        print ( f"{colorama.Fore.RED}[CutLangWrapper] Error:  {string} {colorama.Fore.RESET}")
-
+        print(f"{colorama.Fore.RED}[CutLangWrapper] Error:  {string} {colorama.Fore.RESET}")
 
     @staticmethod
     def process_filter_string(string):
@@ -662,7 +650,7 @@ class CutLangWrapper:
             of set and dictionary (regionList, binList).
         """
 
-        string = string.replace(" ","")
+        string = string.replace(" ", "")
         filterList = string.split(",")
 
         binList = {}
@@ -683,10 +671,10 @@ class CutLangWrapper:
 
 
 class Directory:
-    def __init__(self, dirname, make = False):
+    def __init__(self, dirname, make=False):
         self.dirname = dirname
         if not os.path.exists(self.dirname):
-            if make == True:
+            if make is True:
                 os.makedirs(self.dirname)
             else:
                 self._error(f"Directory {self.dirname} does not exits. Aborting.")
