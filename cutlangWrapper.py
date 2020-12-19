@@ -196,36 +196,12 @@ class CutLangWrapper:
         self._info(f"Writing output into directory {self.ana_dir.get()} .")
         self._info(f"Masses are {mass}")
 
+        if self._check_summary_file(mass):
+            return
+
         # Decompress hepmcfile if necessary
         if ".gz" in hepmcfile:
             hepmcfile = self._decompress(hepmcfile, self.tmp_dir.get())
-
-
-        # Check if the analysis has been done already
-        summaryfile = os.path.join(self.out_dir.get(), "CL_output_summary.dat")
-        if os.path.exists ( summaryfile ):
-            if os.stat(summaryfile).st_size>10:
-                self._msg(f"It seems like there is already a summary file {summaryfile}")
-                f=open(summaryfile, "w+")
-                lines=f.readlines()
-                anaIsIn = False
-                for line in lines:
-                    if self.analyses in line:
-                        anaIsIn = True
-                if anaIsIn and (not self.rerun):
-                    self._msg( "%s is in the summary file for %s: skip it." % ( self.analyses, str(mass) ) )
-                    return
-                if not anaIsIn:
-                    self._msg( "%s not in summary file: rerun!" % self.analyses )
-                    f.write(self.analyses + "\n")
-                f.close()
-            else:
-                with open(summaryfile, "w") as f:
-                    f.write(self.analyses + "\n")
-        else:
-            summary_dir = os.path.dirname(summaryfile)
-            with open(summaryfile, "w") as f:
-                f.write(self.analyses + "\n")
 
 
         # ======================
@@ -534,6 +510,35 @@ class CutLangWrapper:
     # =========================================================================
     # Private methods
     # =========================================================================
+
+    def _check_summary_file(self, mass):
+        """
+        Check if the analysis had already been done.
+        returns True if the analysis has been done and rerun == False
+                False in all other cases
+        """
+        # Check if the analysis has been done already
+        summaryfile = os.path.join("./", "CL_output_summary.dat")
+        result = False
+        if os.path.exists(summaryfile) and os.stat(summaryfile).st_size > 0:
+            self._msg(f"It seems like there is already a summary file {summaryfile}")
+            f = open(summaryfile, "r+")
+            lines = f.readlines()
+            anaIsIn = False
+            for line in lines:
+                if self.analyses in line:
+                  anaIsIn = True
+            if anaIsIn and (not self.rerun):
+                result = True
+                self._msg(f"{self.analyses} is in the summary file for {mass} skip it.")
+            else:
+                self._msg("%s not in summary file: rerun!" % self.analyses)
+                f.write(self.analyses + "\n")
+            f.close()
+        else:
+            with open(summaryfile, "w") as f:
+                f.write(self.analyses + "\n")
+        return result
 
     def _confirmation(self, text):
         if self.auto_confirm == True:
