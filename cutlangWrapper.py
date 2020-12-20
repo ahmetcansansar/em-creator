@@ -523,7 +523,6 @@ class CutLangWrapper:
         self._error(core_dir)
         for filename in os.listdir(core_dir):
             if filename.endswith(".so"):
-                self._error(f"file: {filename}")
                 link_name = os.path.join(where, 'analysis_core', filename)
                 origin_name = os.path.abspath(os.path.join(core_dir, filename))
                 cmd = ['ln', '-sf', origin_name, link_name]
@@ -548,11 +547,14 @@ class CutLangWrapper:
             for line in lines:
                 if self.analyses in line:
                   anaIsIn = True
-            if anaIsIn and (not self.rerun):
-                result = True
-                self._msg(f"{self.analyses} is in the summary file for {mass} skip it.")
+            if anaIsIn:
+                if not self.rerun:
+                    result = True
+                    self._msg(f"{self.analyses} is in the summary file for {mass} skip it.")
+                else:
+                    self._msg("%s is in summary file: rerun!" % self.analyses)
             else:
-                self._msg("%s not in summary file: rerun!" % self.analyses)
+                self._msg("%s not in summary file: run!" % self.analyses)
                 f.write(self.analyses + "\n")
             f.close()
         else:
