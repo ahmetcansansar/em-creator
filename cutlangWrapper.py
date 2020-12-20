@@ -41,10 +41,11 @@ import sys                     # For exit()
 import colorama                # For output colors (in msg, error, ...)
 import subprocess              # For Popen in exe method
 import shutil                  # For move(), FIXME: remove?
-import re                     # For delphes card picker
+import re                      # For delphes card picker
 import multiprocessing         # Used when run as __main__
 import gzip                    # For decompression of hepmc file
 from datetime import datetime  # For timestamp of embaked files
+from typing import List        # For type hinting
 
 # 3 party imports
 import ROOT                # To parse CutLang output
@@ -457,10 +458,17 @@ class CutLangWrapper:
             result = None
             return result
 
-    def exe(self, cmd, logfile=None, maxLength=100, cwd=None, exit_on_fail=False):
+    def exe(self, cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
+            exit_on_fail=False):
         """ execute cmd in shell
         :param maxLength: maximum length of output to be printed,
                           if == -1 then all output will be printed
+        :param cmd       List of strings that make the command
+                         e.g. ["cp", "foo", "bar"]
+        :param logfile   File where command and its output will be written
+        :param cwd       Directory where the command should be executed
+        :param exit_on_fail  Whether to invoke sys.exit() on nonzero return value
+        :return return value of the command
         """
         if cwd is None:
             directory = os.getcwd()
