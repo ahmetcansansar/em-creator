@@ -96,7 +96,7 @@ class CutLangWrapper:
         # Cutlang vars
         self.cutlanginstall = "./CutLang/"
         self.cutlang_executable = "./CutLang/CLA/CLA.exe"
-        self.cutlang_run_dir = "./CutLang/runs"  # Directory where the CutLang will run
+        self.cutlang_run_dir = "./runs"  # Directory where the CutLang will run
         self.cutlang_script = "./CLA.sh"
 
         # ADLLHCAnalysis vars
@@ -183,6 +183,9 @@ class CutLangWrapper:
                                         CutLang.edl --┘
             error values:
                 -1:   Cannot find hepmc file
+                -2:   The analysis has already been done and rerun flag is False
+                -3:   Could not copy CutLang to temporary directory
+
         """
         time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         logfile = os.path.join(self.tmp_dir.get(), "_".join(["log", mass, time]) + ".txt")
@@ -194,12 +197,12 @@ class CutLangWrapper:
         self._info(f"Masses are {mass}")
 
         if self._check_summary_file(mass):
-            return
+            return -2
 
         # Decompress hepmcfile if necessary
         if not os.path.isfile(hepmcfile):
             self._error(f"cannot find hepmc file {hepmcfile}.")
-            return -0x01
+            return -1
         if ".gz" in hepmcfile:
             hepmcfile = self._decompress(hepmcfile, self.tmp_dir.get())
 
@@ -228,17 +231,18 @@ class CutLangWrapper:
         # ======================
         #        CutLang
         # ======================
-        # Prepare input/output paths
+        # Prepare input paths
         cla_input = os.path.abspath(delph_out)
         cutlangfile = self.pickCutLangFile(self.analyses)
 
         # copy cutlang to a temporary directory
-        cla_temp = Directory(os.path.join(self.tmp_dir.get(), f"CLA_{mass_stripped}_{time}"), make=True)
-        cmd = ["cp", "-r", self.cutlanginstall, cla_temp.get()]
-        self.exe(cmd, logfile=logfile)
+        cla_temp_name = os.path.join(self.tmp_dir.get(), f"CLA_{mass_stripped}")
+        if os.path.exists(cla_temp_name):
+            self._delete_dir(cla_temp_name)
+        cla_temp = Directory(cla_temp_name, make=True)
+        if not self._copy_cla(cla_temp.get(), logfile):
+            return -3
         cla_run_dir = os.path.join(cla_temp.get(), self.cutlang_run_dir)
-        # cla_run_dir = self.cutlang_run_dir
-
 
         # run CutLang
         cmd = [self.cutlang_script, cla_input, "DELPHES", "-i", cutlangfile]
@@ -499,6 +503,32 @@ class CutLangWrapper:
     # =========================================================================
     # Private methods
     # =========================================================================
+
+    def _copy_cla(self, where, logfile=None):
+        """
+        Copy CutLang to temporary directory.
+        :param where    copy destination
+        :param logfile  file where output of all commands is written
+        """
+        partlist = ["analysis_core", "BP", "CLA", "runs"]
+        partlist = map(lambda x: os.path.join(self.cutlanginstall, x), partlist)
+        for part in partlist:
+            cmd = ['cp', '-r', part, where]
+            if self.exe(cmd, logfile=logfile) != 0:
+                return False
+        # To prevent redefinitions we have to replace all the shared libraries
+        # in the tmp directory with links to the original ones
+        core_dir = os.path.join(self.cutlanginstall, 'analysis_core')
+        self._error(core_dir)
+        for filename in os.listdir(core_dir):
+            if filename.endswith(".so"):
+                self._error(f"file: {filename}")
+                link_name = os.path.join(where, 'analysis_core', filename)
+                origin_name = os.path.abspath(os.path.join(core_dir, filename))
+                cmd = ['ln', '-sf', origin_name, link_name]
+                if self.exe(cmd, logfile=logfile) != 0:
+                    return False
+        return True
 
     def _check_summary_file(self, mass):
         """
