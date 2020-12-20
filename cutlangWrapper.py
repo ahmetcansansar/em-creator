@@ -185,8 +185,9 @@ class CutLangWrapper:
                 -1:   Cannot find hepmc file
                 -2:   The analysis has already been done and rerun flag is False
                 -3:   Could not copy CutLang to temporary directory
-
+                -4    There were no efficiencies found
         """
+
         time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         logfile = os.path.join(self.tmp_dir.get(), "_".join(["log", mass, time]) + ".txt")
         self._delete_dir(logfile)
@@ -254,34 +255,44 @@ class CutLangWrapper:
         # ====================
         #  Postprocessing
         # ====================
-        # efficiency file
-        effi_file = os.path.join(self.out_dir.get(), self._get_embaked_name(self.analyses, self.topo, mass_stripped))
+        # efficiency file name
+        effi_file = os.path.join(self.out_dir.get(),
+                                 self._get_embaked_name(self.analyses,
+                                                        self.topo,
+                                                        mass_stripped))
         self._info(f"Writing partial efficiencies into file: {effi_file}")
-        # CLA results in .root filE
-        # CLA_output = self.get_cla_out_filename(cla_run_dir,  cutlangfile)
+        # to store intermediate results
         nevents = []
         entries = ""
+        # go over all the .root files made by CLA
         for filename in os.listdir(cla_run_dir):
             if filename.startswith("histoOut-BP") and filename.endswith(".root"):
                 filename = os.path.join(cla_run_dir, filename)
-                tmp_entries, tmp_nevents = self.extract_efficiencies(filename, cutlangfile)
+                # get partial efficiencies from each file
+                tmp_entries, tmp_nevents = self.extract_efficiencies(filename,
+                                                                     cutlangfile)
                 nevents += tmp_nevents
                 entries += tmp_entries
-                shutil.move(filename, os.path.join(self.tmp_dir.get(), os.path.basename(filename)))
+                shutil.move(filename, os.path.join(self.tmp_dir.get(),
+                                                   os.path.basename(filename)))
         self._debug(f"Nevents: {nevents}")
+        # check that the number of events was the same for all regions
         if len(set(nevents)) > 1:
             self._error("Number of events before selection is not constant in all regions:")
             self._error(f"Numbers of events: {nevents}")
             self._error(f"Using the value: {nevents[0]}")
+        # write efficiencies to .embaked file
         if len(nevents) > 0:
-            print("WRITING %s to %s" % (str(mass), effi_file))
-            with open(effi_file, "at") as f:
+            self._msg(f"Writing efficiency values for masses {mass} to file:\n {effi_file}")
+            with open(effi_file, "wt") as f:
                 f.write(str(mass) + ": {")
                 f.write(entries)
                 f.write(f"'__t__':'{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}', ")
                 f.write(f"'__nevents__':{nevents[0]}")
                 f.write("}")
-        return 0
+            return 0
+        else:
+            return -4
 
     def get_cla_out_filename(self, cla_run_dir, inputname):
         """ Returns the name of CLA output file"""
@@ -309,8 +320,9 @@ class CutLangWrapper:
         rootFile = ROOT.TFile(cla_out)
         if rootFile is None:
             self._error("Cannot find CutLang results at {cla_out}.")
-        # temporary TH1D structure to write results in
+            return None
 
+        # temporary TH1D structure to write results in
         rootTmp = ROOT.TH1D()
         nevents = []  # list of starting numbers of events
         entries = ""  # efficiency entries for output
@@ -337,7 +349,8 @@ class CutLangWrapper:
                     self._info(f"Cutflow not in objects in {x.GetName()} in {cla_out}")
                     continue
 
-                x.GetObject("cutflow", rootTmp)
+                # copy cutflow object into temp root object and process it
+                rootTmp = x.cutflow
                 entry = "".join(["'", regionName, "': "])
                 s = rootTmp.GetNbinsX()
                 if rootTmp[2] == 0:
@@ -353,7 +366,7 @@ class CutLangWrapper:
                 # if the region contains bins, process them
                 if "bincounts" in keys:
                     self._info(f"Found bins in {regionName} section.")
-                    x.GetObject("bincounts", rootTmp)
+                    rootTmp = x.bincounts
                     # set the bins to be excluded from printout
                     if regionName in self.filterBins:
                         filterBinNums = self.filterBins[regionName]
@@ -361,25 +374,13 @@ class CutLangWrapper:
                         filterBinNums = []
 
                     nbins = rootTmp.GetNbinsX()
-                    binlabels = [rootTmp.GetXaxis().GetBinLabel(i) for i in range(nbins)]
-                    # shorten the bin label strings by removing common
-                    # substrings
-                    # while True:
-                    #     str_tuple = self.get_common_substring(binlabels)
-                    #     print(str_tuple)
-                    #     if str_tuple[0][1] >= 5:
-                    #         first_string = binlabels[0]
-                    #         binlabels = [s.replace(str_tuple[0][0], "") for s in binlabels]
-                    #     else:
-                    #         break
-
                     for i in range(nbins):
                         # if bin number i is filtered out, skip it
                         if i in filterBinNums:
                             continue
                         bin_name = rootTmp.GetXaxis().GetBinLabel(i)
-                        # bin_name = bin_name.replace("[","").replace("]","")
                         bin_name = "_".join([regionName, bin_name.replace(" ", "_")])
+                        bin_name = self._shorten_bin_name(bin_name)
                         entry = "".join(["'", bin_name, "': "])
                         self._debug(f"bin no {rootTmp[i]} nevents: {nevents[-1]}.")
                         entry += str(rootTmp[i]/nevents[-1]) + ', '
@@ -699,6 +700,12 @@ class CutLangWrapper:
         regionList = set(filterList) - set(removedElements)
         return regionList, binList
 
+    def _shorten_bin_name(self, name):
+        result = name.replace("[", "").replace("]", "")
+        result = result.replace("and", "").replace("__", "_")
+        result = result.replace("Size(jets)", "njets")
+        result = result.replace("Size(bjets)", "nbjets")
+        return result
 
 class Directory:
     def __init__(self, dirname, make=False):
