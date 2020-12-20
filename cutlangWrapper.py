@@ -511,7 +511,7 @@ class CutLangWrapper:
         :param where    copy destination
         :param logfile  file where output of all commands is written
         """
-        partlist = ["analysis_core", "BP", "CLA", "runs"]
+        partlist = ["analysis_core", "BP", "CLA", "runs", "scripts"]
         partlist = map(lambda x: os.path.join(self.cutlanginstall, x), partlist)
         for part in partlist:
             cmd = ['cp', '-r', part, where]
