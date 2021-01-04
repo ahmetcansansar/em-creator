@@ -1,0 +1,7 @@
+install zlib
+install fastjet
+# install fastjet-contrib
+install delphes
+install PAD
+# install delphesMA5tune
+# install PADForMA5tune

@@ -1,0 +1,4 @@
+install delphesMA5tune
+install PADForMA5tune
+install delphes
+install PAD
