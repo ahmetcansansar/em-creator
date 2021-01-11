@@ -129,7 +129,13 @@ class CutLangWrapper:
                 self._error("No executable and no Makefile. Bailin' it.")
                 sys.exit()
             self._info("Compiling CutLang...")
-            args = ['make']
+            ncpus = 4
+            try:
+                from smodels.tools.runtime import nCPUs
+                ncpus = nCPUs()
+            except ImportError:
+                pass
+            args = [ 'make', '-j', str(ncpus) ]
             self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
         self._info("CutLang initialisation finished.")
 
@@ -190,7 +196,8 @@ class CutLangWrapper:
         """
 
         time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-        logfile = os.path.join(self.tmp_dir.get(), "_".join(["log", mass, time]) + ".txt")
+        smass=str(mass)
+        logfile = os.path.join(self.tmp_dir.get(), "_".join(["log", smass, time]) + ".txt")
         self._delete_dir(logfile)
         mass_stripped = str(mass).replace("(", "").replace(")", "")
         mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
@@ -739,7 +746,7 @@ if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description='cutlang runner.')
     argparser.add_argument('-a', '--analyses', help='analyses, comma separated [cms_sus_16_033]',
                            type=str, default="cms_sus_16_033")
-    argparser.add_argument('-d', '--hepmcfile', help='hepmcfile to be used as input for Delphes',
+    argparser.add_argument('-d', '--hepmcfile', help='hepmcfile to be used as input for Delphes [input.hepmc]',
                            type=str, default="input.hepmc")
     argparser.add_argument('-j', '--njets', help='number of ISR jets [1]',
                            type=int, default=1)

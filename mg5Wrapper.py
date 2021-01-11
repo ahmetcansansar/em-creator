@@ -271,6 +271,7 @@ class MG5Wrapper:
         locked = self.lock ( masses )
         if locked:
             self.info ( "%s[%s] is locked. Skip it" % ( masses, self.topo ) )
+            self.info ( f"If you wish to remove it:\nrm {self.lockfile(masses)}" )
             return
         self.process = "%s_%djet" % ( self.topo, self.njets )
         if self.hasHEPMC ( masses ):
@@ -334,8 +335,9 @@ class MG5Wrapper:
             spid = " in job #%d" % pid
         self.announce ( "starting cutlang on %s[%s] at %s%s" % ( str(masses), self.topo, time.asctime(), spid ) )
         from cutlangWrapper import CutLangWrapper
-        cl = CutLangWrapper ( self.topo, self.njets, self.rerun, analyses, 
-                               auto_confirm = True )
+        rerun = self.rerun
+        # rerun = True
+        cl = CutLangWrapper ( self.topo, self.njets, rerun, analyses, auto_confirm = True )
         #                   self.sqrts )
         self.debug ( "now call cutlangWrapper" )
         hepmcfile = self.hepmcFileName ( masses )
