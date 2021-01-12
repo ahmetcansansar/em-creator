@@ -13,9 +13,10 @@ from datetime import datetime
 import bakeryHelpers
 
 class emCreator:
-    def __init__ ( self, analyses, topo, njets, keep, sqrts ):
+    def __init__ ( self, analyses, topo, njets, keep, sqrts, cutlang ):
         """ the efficiency map creator.
         :param keep: if true, keep all files
+        :param cutlang: is it a cutlang result
         """
         self.basedir = bakeryHelpers.baseDir()
         self.resultsdir = ( self.basedir + "/results/" ).replace("//","/")
@@ -24,6 +25,7 @@ class emCreator:
         self.njets = njets
         self.keep = keep
         self.sqrts = sqrts
+        self.cutlang = cutlang
 
     def info ( self, *msg ):
         print ( "%s[emCreator] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
@@ -85,8 +87,29 @@ class emCreator:
         # ma5/ANA_T6WW_1jet.400_375_350/Output/
         return -1
 
+    def cutlangExtract ( self, masses ):
+        """ extract the efficiencies from MA5 """
+        topo = self.topo
+        print ( "trying to extract for", masses )
+        summaryfile = "./CL_output_summary.dat"
+        timestamp = os.stat ( summaryfile ).st_mtime
+        effs = {}
+        smass = "_".join(map(str,masses))
+        fdir = f"cutlang_results/{self.analyses}/ANA_{self.topo}_{self.njets}jet/output/"
+        emglob = glob.glob ( f"{fdir}/*{smass}.embaked" )
+        if len(emglob)==1:
+            with open ( emglob[0], "rt" ) as f:
+                txt=f.read()
+                p = txt.find(": ")
+                D = eval( txt[p+2:] )
+                f.close()
+                effs[self.analyses]=D
+        return effs,timestamp
+
     def extract ( self, masses ):
         """ extract the efficiencies from MA5 """
+        if self.cutlang:
+            return self.cutlangExtract ( masses )
         topo = self.topo
         njets = self.njets
         process = "%s_%djet" % ( topo, njets )
@@ -166,15 +189,17 @@ def countRunningMA5 ( topo, njets ):
     files = glob.glob ( "ma5_%s_%djet.*" % ( topo, njets) )
     return len(files)
 
-def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts ):
+def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang ):
     """
     :param keep: keep the cruft files
+    :param cutlang: is it a cutlang result?
     """
+    print ( "run for", analyses )
     if masses == "all":
-        masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts )
+        masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang )
     else:
         masses = bakeryHelpers.parseMasses ( masses )
-    creator = emCreator( analyses, topo, njets, keep, sqrts )
+    creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )
     effs,tstamps={},{}
     if verbose:
         print ( "[emCreator] topo %s: %d mass points considered" % ( topo, len(masses) ) )
@@ -224,7 +249,8 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts ):
                 v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
             else:
                 v["__t__"]="?"
-            v["__nevents__"]=creator.getNEvents ( k )
+            if not cutlang:
+                v["__nevents__"]=creator.getNEvents ( k )
             f.write ( "%s: %s, \n" % ( k,v ) )
         f.write ( "}\n" )
         f.close()
@@ -287,10 +313,10 @@ def run ( args ):
     if args.topo == "all":
         for topo in getAllTopos():
             runForTopo ( topo, args.njets, args.masses, args.analyses, args.verbose,
-                         args.copy, args.keep, args.sqrts )
+                         args.copy, args.keep, args.sqrts, args.cutlang )
     else:
         runForTopo ( args.topo, args.njets, args.masses, args.analyses, args.verbose,
-                     args.copy, args.keep, args.sqrts )
+                     args.copy, args.keep, args.sqrts, args.cutlang )
 
 def main():
     import argparse
