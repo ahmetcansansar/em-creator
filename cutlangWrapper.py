@@ -68,13 +68,16 @@ class CutLangWrapper:
                         (see https://smodels.github.io/docs/SmsDictionary )
         :param njets:   Number of jets
         :param rerun:   True for rerunning the analyses already done
-        :param analyses Analysis to be done
+        :param analyses Analysis to be done FIXME need to implement in plural!!
                         (see https://smodels.github.io/docs/ListOfAnalyses )
         :param auto_confirm Proceed with downloads without prompting
         """
         # General vars
         self.njets = njets
         self.topo = topo
+        if "," in analyses:
+            self.error ( "multiple analyses supplied. cannot yet handle this!" )
+            sys.exit(-1)
         self.analyses = self._standardise_analysis(analyses)
         self.rerun = rerun
         self.auto_confirm = auto_confirm
@@ -99,6 +102,7 @@ class CutLangWrapper:
         self.cutlang_executable = "./CutLang/CLA/CLA.exe"
         self.cutlang_run_dir = "./runs"  # Directory where the CutLang will run
         self.cutlang_script = "./CLA.sh"
+        self.summaryfile = os.path.join("./", "CL_output_summary.dat")
 
         # ADLLHCAnalysis vars
         self.adllhcanalyses = "./CutLang/ADLLHCanalyses"
@@ -264,6 +268,7 @@ class CutLangWrapper:
         #  Postprocessing
         # ====================
         # efficiency file name
+        self._add_output_summary ( mass )
         effi_file = os.path.join(self.out_dir.get(),
                                  self._get_embaked_name(self.analyses,
                                                         self.topo,
@@ -545,36 +550,53 @@ class CutLangWrapper:
                     return False
         return True
 
+    def _read_output_summary ( self ):
+        """ read the output summary """
+        f = open(self.summaryfile, "r+")
+        Dict=eval(f.read())
+        f.close()
+        return Dict
+
+    def _add_output_summary ( self, mass ):
+        """ append to the output summary """
+        Dict={}
+        if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
+            f = open(self.summaryfile, "r+")
+            Dict=eval(f.read())
+            f.close()
+        if self.analyses in Dict and mass in Dict[self.analyses]:
+            return Dict ## nothing needs to be done
+        if not self.analyses in Dict:
+            Dict[self.analyses]=[]
+        Dict[self.analyses].append ( mass )
+        f = open(self.summaryfile, "w")
+        f.write ( str(Dict)+"\n" )
+        f.close()
+        return Dict
+
     def _check_summary_file(self, mass):
         """
         Check if the analysis had already been done.
-        returns True if the analysis has been done and rerun == False
+        returns True if the analysis has been run for that mass tuple and rerun == False
                 False in all other cases
         """
+        if self.rerun:
+            self._msg( f"was asked to rerun, not checking CL_output_summary.dat" )
+            return False
         # Check if the analysis has been done already
-        summaryfile = os.path.join("./", "CL_output_summary.dat")
         result = False
-        if os.path.exists(summaryfile) and os.stat(summaryfile).st_size > 0:
-            self._msg(f"It seems like there is already a summary file {summaryfile}")
-            f = open(summaryfile, "r+")
-            lines = f.readlines()
-            anaIsIn = False
-            for line in lines:
-                if self.analyses in line:
-                  anaIsIn = True
-            if anaIsIn:
-                if not self.rerun:
+        if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
+            self._msg(f"It seems like there is already a summary file {self.summaryfile}")
+            Dict = self._read_output_summary()
+            for ana,masses in Dict.items():
+                if ana != self.analyses:
+                    continue
+                self._msg(f"{self.analyses} is in the summary file. Now check for mass")
+                if mass in masses:
+                    self._msg(f"found mass {mass}. Dont run!")
                     result = True
-                    self._msg(f"{self.analyses} is in the summary file for {mass} skip it.")
-                else:
-                    self._msg("%s is in summary file: rerun!" % self.analyses)
-            else:
-                self._msg("%s not in summary file: run!" % self.analyses)
-                f.write(self.analyses + "\n")
-            f.close()
         else:
-            with open(summaryfile, "w") as f:
-                f.write(self.analyses + "\n")
+            self._add_output_summary ( mass )
         return result
 
     def _confirmation(self, text):
