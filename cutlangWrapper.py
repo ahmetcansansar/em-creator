@@ -438,38 +438,6 @@ class CutLangWrapper:
                         f.write(g.read() + ",\n")
             f.write("}")
 
-    @staticmethod
-    def get_common_substring(str_list):
-        """gets the largest common substring present in all strings in str_list
-           returns a tuple consisting of tuples of position of the substring in the first string
-           and its length e.g. ((0,3) (4,3)) for str_list = ("aaabccc", "cccbaaa")
-           WARNING: this method is O(N^2)
-           WARNING: BROKEN!
-        """
-        positions = []
-        lengths = []
-        print(str_list)
-        for i in range(len(str_list[0])):
-            print(f"i : {i}.")
-            j = 0
-            is_substr = True
-            while i + j < len(str_list[0]) and is_substr is True:
-                is_substr = CutLangWrapper._is_substring_in_list(str_list[0][i:i + j + 1], str_list[1:])
-                if is_substr:
-                    j += 1
-                print(f"i: {i}, j : {j}")
-            if j > 0:
-                positions.append(i)
-                lengths.append(j)
-        if len(lengths) == 0:
-            return (("", 0),)
-        else:
-            maxLength = max(lengths)
-            # FIXME: where does temp come from?
-            # result = list((str_list[0][positions[k]: positions[k] + temp], maxLength)  for k,l in enumerate(lengths) if l == maxLength)
-            result = None
-            return result
-
     def exe(self, cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
             exit_on_fail=False):
         """ execute cmd in shell
@@ -628,37 +596,6 @@ class CutLangWrapper:
         if os.path.exists(f):
             subprocess.getoutput("rm -rf %s" % f)
 
-    def _get_bin_names(self, cutlangfile, name):
-        bin_names = []
-        with open(cutlangfile, "r") as f:
-            lines = f.readlines()
-            indices = [i for i, elem in enumerate(lines) if (not re.search(f"^region +{name}", elem) is None)]
-            if len(indices) > 1:
-                self._error(f"Too many entries found for {name} in {cutlangfile}")
-                return []
-            if len(indices) < 1:
-                self._error(f"{name} not found in {cutlangfile}")
-                return []
-            print(f"indices : {indices}")
-            lines = lines[indices[0] + 1:]
-            print(lines[0])
-            while not len(lines) == 0 and re.search("^region", lines[0]) is None:
-                if not re.search(" *bin", lines[0]) is None:
-                    print("MATCH")
-                    m = re.search(" +bin (?P<the_rest>.*)", lines[0])
-                    bname = bname.split('#')[0]
-                    bname = m.group("the_rest")
-                    bname = bname.replace("[", "").replace("[", "")
-                    # bname = bname.replace("<", "lt").replace(">", "mt")
-                    bname = bname.replace("and", "").replace("or", "")
-                    bname = bname.replace("AND", "").replace("OR", "")
-                    bname = bname.replace("&&", "").replace("||", "")
-                    bname = bname.replace("  ", " ").replace(" ", "_")
-                    bin_names.append("_".join([name, bname]))
-                lines.pop(0)
-        # return bin_names
-        return []
-
     def _get_embaked_name(self, analysis, topo, mass):
         retval = "_".join([analysis.lower().replace("-", "_"), topo, "mass", mass])
         retval = ".".join([retval, "embaked"])
@@ -679,17 +616,6 @@ class CutLangWrapper:
         analysis = analysis.upper()
         analysis = analysis.replace("SUSY", "SUS")
         return analysis
-
-    @staticmethod
-    def _is_substring_in_list(string, str_list):
-        """ Checks if the string is a substring of all the strings in str_list"""
-        print("The substring: "+string+" the strings: " + str(str_list))
-        result = True
-        for i in range(len(str_list)):
-            if string not in str_list[i]:
-                result = False
-                break
-        return result
 
     @staticmethod
     def _info(*msg):
