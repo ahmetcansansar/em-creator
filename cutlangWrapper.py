@@ -172,7 +172,7 @@ class CutLangWrapper:
             else:
                 self._error("No Delphes dir. Exiting.")
         # if there is no executable, compile it
-        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC")
+        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC3")
         if not os.path.exists(self.delphes_exe):
             self._info("Cannot find delphes installation at %s" % self.delphesinstall)
             compile_path = os.path.abspath(self.delphesinstall)
@@ -250,6 +250,7 @@ class CutLangWrapper:
 
         # copy cutlang to a temporary directory
         cla_temp_name = os.path.join(self.tmp_dir.get(), f"CLA_{mass_stripped}")
+        # to prevent errors from copy during reruns delete and remake
         if os.path.exists(cla_temp_name):
             self._delete_dir(cla_temp_name)
         cla_temp = Directory(cla_temp_name, make=True)
