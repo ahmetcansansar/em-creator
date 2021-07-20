@@ -15,6 +15,6 @@ echo "pip3 install -r requirements.txt"
 # -v /path/on/host/to/exp.hepmc:/tmp/exp.hepmc
 if [ -e /src/em-creator/docker/test.hepmc ]
 then 
-  ../cutlangWrapper.py -d /src/em-creator/docker/test.hepmc -m "(300, 100)" --rerun -a CMS-SUS-16-037
+  ../cutlangWrapper.py -d /src/em-creator/docker/test.hepmc -m "(2300, 200)" --rerun -a CMS-SUS-19-006
 fi
 
