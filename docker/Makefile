@@ -6,5 +6,5 @@ build:
 run:
 	sudo docker run -it --entrypoint /bin/bash -v `cd ..; pwd`:/src/em-creator em-creator
 
-run_bash:
-	sudo docker run --interactive --tty em-creator
+save:
+	sudo docker save -o em-creator.tar.gz em-creator
