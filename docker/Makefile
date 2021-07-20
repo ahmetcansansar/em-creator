@@ -8,3 +8,6 @@ run:
 
 save:
 	sudo docker save -o em-creator.tar.gz em-creator
+
+load:
+	sudo docker load -i em-creator.tar.gz
