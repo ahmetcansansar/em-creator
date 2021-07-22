@@ -172,7 +172,7 @@ class CutLangWrapper:
             else:
                 self._error("No Delphes dir. Exiting.")
         # if there is no executable, compile it
-        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC3")
+        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC2")
         if not os.path.exists(self.delphes_exe):
             self._info("Cannot find delphes installation at %s" % self.delphesinstall)
             compile_path = os.path.abspath(self.delphesinstall)
