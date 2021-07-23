@@ -443,6 +443,9 @@ class MG5Wrapper:
         self.info ( "run mg5 for %s[%s]: %s" % ( masses, self.topo, self.tempf ) )
         self.logfile = tempfile.mktemp ()
         os.mkdir ( Dir )
+        if self.keep:
+            os.mkdir ( "keep/" )
+            shutil.copy ( self.tempf, "keep/" + Dir + "mg5proc" )
         shutil.move ( self.tempf, Dir + "/mg5proc" )
         cmd = "python%d %s %s/mg5proc 2>&1 | tee %s" % \
               ( self.pyver, self.executable, Dir, self.logfile )
