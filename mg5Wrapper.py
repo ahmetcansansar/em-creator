@@ -561,7 +561,7 @@ def main():
     argparser.add_argument ( '-l', '--list_analyses', help='print a list of MA5 analyses, then quit',
                              action="store_true" )
     anadef = "atlas_susy_2016_07"
-    anadef = "cms_sus_16_033"
+    anadef = "cms_sus_19_006"
     argparser.add_argument ( '--analyses', help='analyses, comma separated [%s]' % anadef,
                              type=str, default=anadef )
     argparser.add_argument ( '--maxgap2', help='maximum mass gap between second and third, to force offshell [None]',
