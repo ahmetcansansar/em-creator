@@ -90,13 +90,14 @@ class emCreator:
     def cutlangExtract ( self, masses ):
         """ extract the efficiencies from MA5 """
         topo = self.topo
-        print ( "trying to extract for", masses )
+        print ( "trying to extract cutlang for", masses, end=", " )
         summaryfile = "./CL_output_summary.dat"
         timestamp = os.stat ( summaryfile ).st_mtime
         effs = {}
         smass = "_".join(map(str,masses))
         fdir = f"cutlang_results/{self.analyses}/ANA_{self.topo}_{self.njets}jet/output/"
-        emglob = glob.glob ( f"{fdir}/*{smass}.embaked" )
+        toglob = f"{fdir}/*{smass}.embaked"
+        emglob = glob.glob ( toglob )
         if len(emglob)==1:
             with open ( emglob[0], "rt" ) as f:
                 txt=f.read()
@@ -104,6 +105,9 @@ class emCreator:
                 D = eval( txt[p+2:] )
                 f.close()
                 effs[self.analyses]=D
+            print ( "found!" )
+        if len(emglob)==0:
+            print ( f"could not find {toglob}" )
         return effs,timestamp
 
     def extract ( self, masses ):
@@ -333,8 +337,10 @@ def main():
                              action="store_true" )
     argparser.add_argument ( '-k', '--keep', help='keep all cruft files',
                              action="store_true" )
+    argparser.add_argument ( '-l', '--cutlang', help='are these cutlang results?',
+                             action="store_true" )
     defaultana = "atlas_susy_2016_07"
-    defaultana = "cms_sus_16_033"
+    defaultana = "cms_sus_19_006"
     argparser.add_argument ( '-a', '--analyses',
             help='analyses, comma separated [%s]' % defaultana,
                              type=str, default=defaultana )
@@ -342,6 +348,8 @@ def main():
     argparser.add_argument ( '-m', '--masses', help='mass ranges, comma separated list of tuples. One tuple gives the range for one mass parameter, as (m_first,m_last,delta_m). m_last and delta_m may be ommitted. "all" means, try to find out yourself [%s]' % mdefault,
                              type=str, default=mdefault )
     args = argparser.parse_args()
+    if args.cutlang:
+        args.analyses = args.analyses.replace("_","-").upper()
     run ( args )
 
 
