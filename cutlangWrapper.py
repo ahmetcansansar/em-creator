@@ -189,6 +189,10 @@ class CutLangWrapper:
         self._info("Delphes initialised.")
         self._info("Initialisation complete.")
 
+    def error ( self, *msg ):
+        print ( "%s[cutlangWrapper] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
+                   colorama.Fore.RESET ) )
+
     def run(self, mass: str, hepmcfile: str, pid: int = None) -> int:
         """ Gives efficiency values for the given hepmc file.
 
