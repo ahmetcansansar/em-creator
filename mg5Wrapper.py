@@ -11,6 +11,7 @@
 import os, sys, colorama, subprocess, shutil, tempfile, time, socket, random
 import multiprocessing, signal, glob, io
 import bakeryHelpers
+from em_utils import rmLocksOlderThan
 
 __locks__ = set()
 
@@ -72,7 +73,7 @@ class MG5Wrapper:
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
         self.correctPythia8CfgFile()
-        self.rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
+        rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
         self.info ( "initialised" )
 
     def determineMG5Version ( self ):
@@ -363,20 +364,6 @@ class MG5Wrapper:
             return
         if os.path.exists ( f ):
             subprocess.getoutput ( "rm -rf %s" % f )
-
-    def rmLocksOlderThan ( self, hours=8 ):
-        """ remove all locks older than <hours> """
-        files = glob.glob ( ".lock*" )
-        t = time.time()
-        for f in files:
-            try:
-                ts = os.stat(f).st_mtime
-                dt = ( t - ts ) / 60. / 60.
-                if dt > hours:
-                    self.msg ( "removing old lock %s [%d hrs old]" % ( f, int(dt) ) )
-                    subprocess.getoutput ( "rm -f %s" % f )
-            except:
-                pass
 
     def exe ( self, cmd, masses="" ):
         sm = ""
