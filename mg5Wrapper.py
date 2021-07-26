@@ -58,6 +58,9 @@ class MG5Wrapper:
         self.executable = os.path.join(self.mg5install, "bin/mg5_aMC")
         if not os.path.exists ( self.executable ):
             self.info ( "cannot find mg5 installation at %s" % self.mg5install )
+            if not os.path.exists ( "mg5/" ):
+                self.info ( "cannot even find directory. copy from template!" )
+                self.exe ( "cp -r mg5.template mg5" )
             self.exe ( "mg5/make.py" )
         self.determineMG5Version()
         self.templateDir = os.path.join(self.basedir, "templates/")
@@ -93,7 +96,7 @@ class MG5Wrapper:
             to the pythia8 configuration """
         ## qcut: SysCalc:qCutList in mg5/Template/LO/Cards/pythia8_card_default.dat
         #self.msg ( "FIXME we shouldnt be using this!" )
-        #return
+        return
         self.msg ( "now checking if pythia8 config needs correction" )
         needsCorrection = True
         cfgFile = "mg5/Template/LO/Cards/pythia8_card_default.dat"
@@ -444,7 +447,7 @@ class MG5Wrapper:
         self.logfile = tempfile.mktemp ()
         os.mkdir ( Dir )
         if self.keep:
-            os.mkdir ( "keep/" )
+            self.mkdir ( "keep/" )
             shutil.copy ( self.tempf, "keep/" + Dir + "mg5proc" )
         shutil.move ( self.tempf, Dir + "/mg5proc" )
         cmd = "python%d %s %s/mg5proc 2>&1 | tee %s" % \

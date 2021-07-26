@@ -1,9 +1,11 @@
 #!/bin/sh
 
-wget https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.3.0.tar.gz -O LHAPDF-6.3.0.tar.gz
+VER="6.3.0"
+
+wget https://lhapdf.hepforge.org/downloads/?f=LHAPDF-${VER}.tar.gz -O LHAPDF-${VER}.tar.gz
 # ^ or use a web browser to download, which will get the filename correct
-tar xf LHAPDF-6.3.0.tar.gz
-cd LHAPDF-6.3.0
+tar xf LHAPDF-${VER}.tar.gz
+cd LHAPDF-${VER}
 ./configure --prefix=~/.local/
 make
 make install
