@@ -90,13 +90,13 @@ class emCreator:
     def cutlangExtract ( self, masses ):
         """ extract the efficiencies from MA5 """
         topo = self.topo
-        print ( "trying to extract cutlang for", masses, end=", " )
+        print ( "[emCreator] trying to extract cutlang for", masses, end=", " )
         summaryfile = "./CL_output_summary.dat"
         timestamp = os.stat ( summaryfile ).st_mtime
         effs = {}
         smass = "_".join(map(str,masses))
         fdir = f"cutlang_results/{self.analyses}/ANA_{self.topo}_{self.njets}jet/output/"
-        toglob = f"{fdir}/*{smass}.embaked"
+        toglob = f"{fdir}/*_{smass}.embaked"
         emglob = glob.glob ( toglob )
         if len(emglob)==1:
             with open ( emglob[0], "rt" ) as f:
@@ -108,6 +108,8 @@ class emCreator:
             print ( "found!" )
         if len(emglob)==0:
             print ( f"could not find {toglob}" )
+        if len(emglob)>1:
+            print( f"found several files for {toglob}" )
         return effs,timestamp
 
     def extract ( self, masses ):
@@ -314,6 +316,8 @@ def getAllToposOld ( ):
     return ret
 
 def run ( args ):
+    if args.cutlang:
+        args.analyses = args.analyses.replace("_","-").upper()
     if args.topo == "all":
         for topo in getAllTopos():
             runForTopo ( topo, args.njets, args.masses, args.analyses, args.verbose,
@@ -348,8 +352,6 @@ def main():
     argparser.add_argument ( '-m', '--masses', help='mass ranges, comma separated list of tuples. One tuple gives the range for one mass parameter, as (m_first,m_last,delta_m). m_last and delta_m may be ommitted. "all" means, try to find out yourself [%s]' % mdefault,
                              type=str, default=mdefault )
     args = argparser.parse_args()
-    if args.cutlang:
-        args.analyses = args.analyses.replace("_","-").upper()
     run ( args )
 
 
