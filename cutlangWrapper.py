@@ -117,7 +117,8 @@ class CutLangWrapper:
         if not os.path.isdir(self.cutlanginstall):
             self._info("cutlang directory missing, download from github?")
             if self._confirmation("Download from github?"):
-                args = ['git', 'clone', 'https://github.com/unelg/CutLang']
+                args = ['git', 'clone', '-b', 'v.2.9.0', 'https://github.com/unelg/CutLang']
+                # args = ['git', 'clone', 'https://github.com/unelg/CutLang']
                 self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
                 self._error("No CutLang dir. Exiting.")
@@ -167,7 +168,8 @@ class CutLangWrapper:
         if not os.path.isdir(self.delphesinstall):
             self._info("Delphes directory missing, download from github?")
             if self._confirmation("Download from github?"):
-                args = ['git', 'clone', 'https://github.com/delphes/delphes']
+                args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
+                #args = ['git', 'clone', 'https://github.com/delphes/delphes']
                 self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
                 self._error("No Delphes dir. Exiting.")
@@ -693,8 +695,8 @@ class Directory:
 if __name__ == "__main__":
     import argparse
     argparser = argparse.ArgumentParser(description='cutlang runner.')
-    argparser.add_argument('-a', '--analyses', help='analyses, comma separated [cms_sus_16_033]',
-                           type=str, default="cms_sus_16_033")
+    argparser.add_argument('-a', '--analyses', help='analyses, comma separated [cms_sus_19_006]',
+                           type=str, default="cms_sus_19_006")
     argparser.add_argument('-d', '--hepmcfile', help='hepmcfile to be used as input for Delphes [input.hepmc]',
                            type=str, default="input.hepmc")
     argparser.add_argument('-j', '--njets', help='number of ISR jets [1]',
