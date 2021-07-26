@@ -67,7 +67,8 @@ class MG5Wrapper:
         ebeam = str(int(self.sqrts*1000/2))
         self.mgParams = { 'EBEAM': ebeam, # Single Beam Energy expressed in GeV
                           'NEVENTS': str(nevents), 'MAXJETFLAVOR': '5',
-                          'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
+                          'PDFLABEL': "'lhapdf'", 'XQCUT': '20', 'QCUT': '10',
+            #              'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
         self.correctPythia8CfgFile()
@@ -431,7 +432,10 @@ class MG5Wrapper:
         f.close()
         self.tempf = tempfile.mktemp(prefix="mg5proc",dir=self.tempdir )
         f=open(self.tempf,"w")
-        f.write ( "import model_v4 mssm\n" )
+        if self.topo in [  "T1" ]:
+            f.write ( "import model MSSM_SLHA2\n" )
+        else:
+            f.write ( "import model_v4 mssm\n" )
         for line in lines:
             f.write ( line )
         for i in [ 1, 2, 3 ]:
