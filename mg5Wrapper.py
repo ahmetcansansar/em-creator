@@ -421,9 +421,14 @@ class MG5Wrapper:
         f.close()
         self.tempf = tempfile.mktemp(prefix="mg5proc",dir=self.tempdir )
         f=open(self.tempf,"w")
-        if self.topo in [  "T1", "T1tttt", "T1ttttoff", "T2tt", "T2ttoff" ]:
+        if self.topo in [  "T1", "T1tttt", "T1ttttoff", "T2", "T2tt", "T2ttoff", "T2bb", \
+                           "T1bbbb", "T5WW", "T5WWoff", "T5ZZ", "TGQ", "T3GQ", \
+                           "T5GQ" ]:
             f.write ( "import model MSSM_SLHA2\n" )
+        elif self.topo in [ "T2" ]:
+            f.write ( "import model_v4 mssm\n" )
         else:
+            self.info ( f"do we need to port {self.topo} to slha2?" )
             f.write ( "import model_v4 mssm\n" )
         for line in lines:
             f.write ( line )
