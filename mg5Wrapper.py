@@ -68,8 +68,8 @@ class MG5Wrapper:
         ebeam = str(int(self.sqrts*1000/2))
         self.mgParams = { 'EBEAM': ebeam, # Single Beam Energy expressed in GeV
                           'NEVENTS': str(nevents), 'MAXJETFLAVOR': '5',
-                          'PDFLABEL': "'lhapdf'", 'XQCUT': '20', 'QCUT': '10',
-            #              'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
+            #              'PDFLABEL': "'lhapdf'", 'XQCUT': '20', 'QCUT': '10',
+                          'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
         self.correctPythia8CfgFile()
@@ -347,13 +347,11 @@ class MG5Wrapper:
         self.debug ( "now call cutlangWrapper" )
         hepmcfile = self.hepmcFileName ( masses )
         ret = cl.run ( masses, hepmcfile, pid )
-        msg = "finished MG5+Cutlang"
-        """
+        msg = "finished MG5+Cutlang: "
         if ret > 0:
-            msg = "nothing needed to be done"
+            msg += "nothing needed to be done"
         if ret < 0:
-            msg = "error encountered"
-        """
+            msg += "error encountered"
         self.announce ( "%s for %s[%s] at %s%s" % ( msg, str(masses), self.topo, time.asctime(), spid ) )
 
     def unlink ( self, f ):

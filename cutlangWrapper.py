@@ -44,6 +44,8 @@ import shutil                  # For move(), FIXME: remove?
 import re                      # For delphes card picker
 import multiprocessing         # Used when run as __main__
 import gzip                    # For decompression of hepmc file
+import time                    # Used for waiting after blocking io error
+import random                  # Used to randomize waiting time after blocking io error
 from datetime import datetime  # For timestamp of embaked files
 from typing import List        # For type hinting
 
@@ -308,7 +310,10 @@ class CutLangWrapper:
                 f.write(str(mass) + ": {")
                 f.write(entries)
                 f.write(f"'__t__':'{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}', ")
-                f.write(f"'__nevents__':{nevents[0]}")
+                nev = nevents[0]
+                if nev == int(nev):
+                    nev = int(nev)
+                f.write(f"'__nevents__':{nev}")
                 f.write("}")
             return 0
         else:
@@ -462,23 +467,32 @@ class CutLangWrapper:
         else:
             directory = cwd
         self._msg(f'exec: {directory} $$ {" ".join(cmd)}')
-        proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        print(out.decode('utf-8'))
-        print(err.decode('utf-8'))
-        proc.wait()
-        if logfile is not None:
-            with open(logfile, "a") as log:
-                log.write(f'exec: {directory} $$ {" ".join(cmd)}')
-                log.write(out.decode('utf-8'))
-                log.write(err.decode('utf-8'))
-        if not (proc.returncode == 0):
-            self._error(f"Executed process: \n{' '.join(cmd)}\n\nin"
-                        f" directory:\n{directory}\n\nproduced an error\n\n"
-                        f"value {proc.returncode}.")
-            if exit_on_fail is True:
-                sys.exit()
-        return proc.returncode
+        ctr=0
+        while ctr < 5:
+            try:
+                proc = subprocess.Popen( cmd, cwd=cwd, stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE )
+                out, err = proc.communicate()
+                print(out.decode('utf-8'))
+                print(err.decode('utf-8'))
+                proc.wait()
+                if logfile is not None:
+                    with open(logfile, "a") as log:
+                        log.write(f'exec: {directory} $$ {" ".join(cmd)}')
+                        log.write(out.decode('utf-8'))
+                        log.write(err.decode('utf-8'))
+                if not (proc.returncode == 0):
+                    self._error(f"Executed process: \n{' '.join(cmd)}\n\nin"
+                                f" directory:\n{directory}\n\nproduced an error\n\n"
+                                f"value {proc.returncode}.")
+                    if exit_on_fail is True:
+                        sys.exit()
+                return proc.returncode
+            except BlockingIOError as e:
+                self._error( "ran into blocking io error. wait a bit then try again." )
+                time.sleep ( random.uniform(1,10)+ctr*30 )
+                ctr += 1
+            sys.exit()
 
     def clean(self):
         """ Deletes the output directory
@@ -570,6 +584,8 @@ class CutLangWrapper:
                 if mass in masses:
                     self._msg(f"found mass {mass}. Dont run!")
                     result = True
+                else:
+                    self._msg(f"did not find mass {mass}. Run!")
         else:
             self._add_output_summary ( mass )
         return result
@@ -645,7 +661,7 @@ class CutLangWrapper:
     def _error(*msg):
         """Print red error message"""
         string = ' '.join(msg)
-        print(f"{colorama.Fore.RED}[CutLangWrapper] Error:  {string} {colorama.Fore.RESET}")
+        print(f"{colorama.Fore.RED}[CutLangWrapper] Error: {string} {colorama.Fore.RESET}")
 
     @staticmethod
     def process_filter_string(string):
