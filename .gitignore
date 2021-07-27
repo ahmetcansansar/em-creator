@@ -15,5 +15,11 @@ __pycache__
 *.swp
 .ropeproject
 
+# locks
+.lock*
 
-
+# (temporary) results
+T*_*jet.*/
+embaked/
+baking.log
+mg5results/

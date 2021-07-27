@@ -9,6 +9,6 @@ def run():
     lines = f.readlines()
     f.close()
     print ( lines[-1] )
-    subprocess.getoutput ( lines[-1] )
+    # subprocess.getoutput ( lines[-1] )
 
 run()
