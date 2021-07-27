@@ -202,7 +202,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     """
     print ( "run for", analyses )
     if masses == "all":
-        masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang )
+        masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
     else:
         masses = bakeryHelpers.parseMasses ( masses )
     creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )

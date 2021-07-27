@@ -195,6 +195,19 @@ class CutLangWrapper:
         print ( "%s[cutlangWrapper] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
                    colorama.Fore.RESET ) )
 
+    def getMassesFromHEPMCFile ( self, hepmcfile: str ) -> str:
+        """ try to obtain the masses from the hepmc file name """
+        ret = hepmcfile.replace(".hepmc.gz","").replace(".hepmc","")
+        if ret.endswith(".13"):
+            ret = ret[:-3]
+        if ret.endswith(".8"):
+            ret = ret[:-2]
+        p1 = ret.find("_")
+        ret = ret[ p1+1: ]
+        ret = ret.replace("_",",")
+        ret = "(" + ret + ")"
+        return ret
+
     def run(self, mass: str, hepmcfile: str, pid: int = None) -> int:
         """ Gives efficiency values for the given hepmc file.
 
@@ -205,7 +218,13 @@ class CutLangWrapper:
                 -2:   The analysis has already been done and rerun flag is False
                 -3:   Could not copy CutLang to temporary directory
                 -4    There were no efficiencies found
+        :param mass: string that describes the mass vector, e.g. "(1000,100)". 
+                     If "Masses not specified", then try to extract masses from
+                     hepmcfile name. FIXME what now, mass range or tuple of masses?
         """
+        if mass == "Masses not specified":
+            # try to extract mass from hepmc file name
+            mass = self.getMassesFromHEPMCFile ( hepmcfile )
 
         time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         smass=str(mass)

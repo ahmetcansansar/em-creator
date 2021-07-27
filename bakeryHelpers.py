@@ -228,14 +228,19 @@ def nJobs ( nproc, npoints ):
         ret = npoints
     return ret
 
-def getListOfCutlangMasses( topo, sqrts=13 ):
+def getListOfCutlangMasses( topo, sqrts=13, ana=None ):
     """ get a list of the masses of an cutlang scan.
     :param topo: e.g. T1
     :param sqrts: sqrt(s) in tev
     """
     import glob
     ret=[]
-    files = glob.glob( f"cutlang_results/*/ANA_{topo}*/output/*embaked" )
+    sana = "*"
+    if ana != None:
+        sana = ana.replace("_","-").upper()
+        sana += "*"
+    pattern = f"cutlang_results/{sana}/ANA_{topo}*/output/*embaked"
+    files = glob.glob( pattern )
     for f in files:
         fname = f.replace(".embaked","")
         p = f.rfind("mass_")
@@ -246,13 +251,14 @@ def getListOfCutlangMasses( topo, sqrts=13 ):
             ret.append ( tokens )
     return ret
 
-def getListOfMasses(topo, postMA5=False, sqrts=13, cutlang=False ):
+def getListOfMasses(topo, postMA5=False, sqrts=13, cutlang=False, ana=None ):
     """ get a list of the masses of an mg5 scan. to be used for e.g. ma5.
     :param postMA5: query the ma5 output, not mg5 output.
     :param cutlang: query the cutlang output, not the mg5 output
+    :param ana: analysis, if None, then all analyses
     """
     if cutlang:
-        return getListOfCutlangMasses ( topo, sqrts )
+        return getListOfCutlangMasses ( topo, sqrts, ana )
     import glob
     ret=[]
     # fname = "%s_%djet.*" % ( topo, njets )
