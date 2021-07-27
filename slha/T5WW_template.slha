@@ -609,10 +609,3 @@ DECAY  2000013   0.000000e+00
 #
 #      PDG        Width
 DECAY  2000015   0.000000e+00
-
-
-
-
-XSECTION  1.30E+04  2212 2212 2 1000021 1000021 # reference cross section [pb]
-  0  2  0  0  0  0    0.0118 AddRefXSecsv1.0
-
