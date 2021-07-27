@@ -593,7 +593,10 @@ class CutLangWrapper:
             emass = eval(mass)
         except TypeError as e:
             pass
-        Dict[anatopo].add ( emass )
+        if type(Dict[anatopo])==list:
+            Dict[anatopo].append ( emass )
+        else:
+            Dict[anatopo].add ( emass )
         f = open(self.summaryfile, "w")
         f.write ( str(Dict)+"\n" )
         f.close()

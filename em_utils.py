@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """ collection of snippets needed in various places """
 
 import glob, time, subprocess, os
@@ -15,3 +17,6 @@ def rmLocksOlderThan ( hours=8 ):
                 subprocess.getoutput ( "rm -f %s" % f )
         except:
             pass
+
+if __name__ == "__main__":
+    rmLocksOlderThan( 8 )
