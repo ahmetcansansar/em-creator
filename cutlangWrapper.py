@@ -585,9 +585,15 @@ class CutLangWrapper:
             f.close()
         if self.analyses in Dict and mass in Dict[self.analyses]:
             return Dict ## nothing needs to be done
-        if not self.analyses in Dict:
-            Dict[self.analyses]=[]
-        Dict[self.analyses].append ( mass )
+        anatopo = f"{self.analyses}:{self.topo}"
+        if not anatopo in Dict:
+            Dict[anatopo]=set()
+        emass = mass
+        try:
+            emass = eval(mass)
+        except TypeError as e:
+            pass
+        Dict[anatopo].add ( emass )
         f = open(self.summaryfile, "w")
         f.write ( str(Dict)+"\n" )
         f.close()
@@ -602,16 +608,22 @@ class CutLangWrapper:
         if self.rerun:
             self._msg( f"was asked to rerun, not checking CL_output_summary.dat" )
             return False
+        emass = mass
+        try:
+            emass = eval(mass)
+        except TypeError as e:
+            pass
         # Check if the analysis has been done already
         result = False
+        anatopo = f"{self.analyses}:{self.topo}"
         if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
             self._msg(f"It seems like there is already a summary file {self.summaryfile}")
             Dict = self._read_output_summary()
-            for ana,masses in Dict.items():
-                if ana != self.analyses:
+            for anat,masses in Dict.items():
+                if anat != anatopo:
                     continue
-                self._msg(f"{self.analyses} is in the summary file. Now check for mass")
-                if mass in masses:
+                self._msg(f"{anatopo} is in the summary file. Now check for mass")
+                if emass in masses:
                     self._msg(f"found mass {mass}. Dont run!")
                     result = True
                 else:
