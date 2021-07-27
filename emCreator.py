@@ -42,9 +42,19 @@ class emCreator:
                    colorama.Fore.RESET ) )
         sys.exit()
 
+    def getCutlangStatistics ( self, ana ):
+        """ obtain nobs, nb, etc from the ADL file
+        :param ana: analysis id, e.g. atlas_susy_2016_07
+        FIXME not yet implemented
+        """
+        self.error ( "getCutlangStatistics not yet implemented!" )
+        return {}
+
     def getStatistics ( self, ana = "atlas_susy_2016_07" ):
         ### obtain nobs, nb, etc from the PAD info files, e.g.
         ### ma5/tools/PAD/Build/SampleAnalyzer/User/Analyzer/atlas_susy_2016_07.info
+        if self.cutlang:
+            return self.getCutlangStatistics ( ana )
         import xml.etree.ElementTree as ET
         Dir = "ma5.template/tools/PAD/Build/SampleAnalyzer/User/Analyzer/"
         filename = "%s/%s.info" % ( Dir, ana )

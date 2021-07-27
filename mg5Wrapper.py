@@ -342,17 +342,20 @@ class MG5Wrapper:
         from cutlangWrapper import CutLangWrapper
         rerun = self.rerun
         # rerun = True
-        cl = CutLangWrapper ( self.topo, self.njets, rerun, analyses, auto_confirm = True )
-        #                   self.sqrts )
-        self.debug ( "now call cutlangWrapper" )
-        hepmcfile = self.hepmcFileName ( masses )
-        ret = cl.run ( masses, hepmcfile, pid )
-        msg = "finished MG5+Cutlang: "
-        if ret > 0:
-            msg += "nothing needed to be done"
-        if ret < 0:
-            msg += "error encountered"
-        self.announce ( "%s for %s[%s] at %s%s" % ( msg, str(masses), self.topo, time.asctime(), spid ) )
+        analist = analyses.split(",")
+        for ana in analist:
+            ana = ana.strip()
+            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana, auto_confirm = True )
+            #                   self.sqrts )
+            self.debug ( f"now call cutlangWrapper for {ana}" )
+            hepmcfile = self.hepmcFileName ( masses )
+            ret = cl.run ( masses, hepmcfile, pid )
+            msg = "finished MG5+Cutlang: "
+            if ret > 0:
+                msg += "nothing needed to be done"
+            if ret < 0:
+                msg += "error encountered"
+            self.announce ( "%s for %s[%s] at %s%s" % ( msg, str(masses), self.topo, time.asctime(), spid ) )
 
     def unlink ( self, f ):
         """ remove a file, if keep is not true """
