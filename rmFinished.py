@@ -4,8 +4,7 @@
 
 import glob, subprocess, os, sys
 
-def run():
-    ana = "CMS-SUS-19-006"
+def run( ana ):
     fembaked = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/output/*embaked" )
     fdelphes = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/output/delphes_out_*root" )
     fhepmc = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/temp/T*.hepmc" )
@@ -34,4 +33,8 @@ def run():
             pass
             # print ( "keeping hepmc", f )
 
-run()
+if __name__ == "__main__":
+    ana = "CMS-SUS-19-006"
+    run( ana )
+    ana = "CMS-SUS-19-005"
+    run( ana )
