@@ -36,11 +36,11 @@
 # TODO: Add a filter complement function
 
 # Standard library imports
-import os                      # For path
+import os                      # For path, unlink
 import sys                     # For exit()
 import colorama                # For output colors (in msg, error, ...)
 import subprocess              # For Popen in exe method
-import shutil                  # For move(), FIXME: remove?
+import shutil                  # For move(), rmtree(), FIXME remove?
 import re                      # For delphes card picker
 import multiprocessing         # Used when run as __main__
 import gzip                    # For decompression of hepmc file
@@ -61,7 +61,8 @@ class CutLangWrapper:
     GZIP_BLOCK = 1 << 24  # Block to decompress gzipped file, ~ 16 MB
 
     def __init__(self, topo: str, njets: int, rerun: bool, analyses: str,
-                 auto_confirm: bool = True, filterString: str = "") -> None:
+                 auto_confirm: bool = True, filterString: str = "",
+                 keep: bool = False ) -> None:
         """
         If not already present, clones and builds Delphes, CutLang and ADLLHC Analyses.
         Prepares output directories.
@@ -70,12 +71,14 @@ class CutLangWrapper:
                         (see https://smodels.github.io/docs/SmsDictionary )
         :param njets:   Number of jets
         :param rerun:   True for rerunning the analyses already done
-        :param analyses Analysis to be done FIXME need to implement in plural!!
+        :param analyses: Analysis to be done FIXME need to implement in plural!!
                         (see https://smodels.github.io/docs/ListOfAnalyses )
-        :param auto_confirm Proceed with downloads without prompting
+        :param auto_confirm: Proceed with downloads without prompting
+        :param keep: keep temporary files for debugging?
         """
         # General vars
         self.njets = njets
+        self.keep = False ## keep temporary files?
         self.topo = topo
         if "," in analyses:
             self.error ( "multiple analyses supplied. cannot yet handle this!" )
@@ -97,6 +100,7 @@ class CutLangWrapper:
         self.tmp_dir = Directory(os.path.join(self.ana_dir.get(), "temp"), make=True)
         time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         self.initlog = os.path.join(self.tmp_dir.get(), "log_" + time + ".txt")
+        self.tempFiles = [] ## way to keep track of tempFiles
         self._delete_dir(self.initlog)
 
         # Cutlang vars
@@ -282,6 +286,7 @@ class CutLangWrapper:
             self._delete_dir(cla_temp_name)
         cla_temp = Directory(cla_temp_name, make=True)
         if not self._copy_cla(cla_temp.get(), logfile):
+            self.removeTempFiles()
             return -3
         cla_run_dir = os.path.join(cla_temp.get(), self.cutlang_run_dir)
 
@@ -291,6 +296,8 @@ class CutLangWrapper:
         self.exe(cmd, cwd=cla_run_dir, logfile=logfile)
         self._debug("CLA finished.")
 
+        ## now that we ran cutlang, mark the delphes root file as to-be-deleted
+        self.tempFiles.append ( delph_out )
 
         # ====================
         #  Postprocessing
@@ -334,8 +341,12 @@ class CutLangWrapper:
                     nev = int(nev)
                 f.write(f"'__nevents__':{nev}")
                 f.write("}")
+            ## now that we have an embaked file, mark also the CLA dir as removable
+            self.tempFiles.append ( f"{cla_temp_name}" )
+            self.removeTempFiles()
             return 0
         else:
+            self.removeTempFiles()
             return -4
 
     def get_cla_out_filename(self, cla_run_dir, inputname):
@@ -632,7 +643,22 @@ class CutLangWrapper:
                     break
                 f_out.write(s)
             in_f.close()
+        ## the _decompressed files should be removed immediately after
+        self.tempFiles.append ( out_name )
         return out_name
+
+    def removeTempFiles ( self ):
+        """ remove all temp files that we know of """
+        if self.keep:
+            return
+        for t in self.tempFiles:
+            if not os.path.exists ( t ):
+                continue
+            if os.path.isdir ( t ):
+                shutil.rmtree ( t )
+            else:
+                os.unlink ( t )
+        self.tempFiles = []
 
     def _delete_dir(self, f):
         if os.path.exists(f):

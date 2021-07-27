@@ -100,7 +100,6 @@ class emCreator:
     def cutlangExtract ( self, masses ):
         """ extract the efficiencies from MA5 """
         topo = self.topo
-        print ( "[emCreator] trying to extract cutlang for", masses, end=", " )
         summaryfile = "./CL_output_summary.dat"
         timestamp = os.stat ( summaryfile ).st_mtime
         effs = {}
@@ -115,10 +114,12 @@ class emCreator:
                 D = eval( txt[p+2:] )
                 f.close()
                 effs[self.analyses]=D
-            print ( "found!" )
+            # print ( "found!" )
         if len(emglob)==0:
+            print ( "[emCreator] trying to extract cutlang for", masses, end=", " )
             print ( f"could not find {toglob}" )
         if len(emglob)>1:
+            print ( "[emCreator] trying to extract cutlang for", masses, end=", " )
             print( f"found several files for {toglob}" )
         return effs,timestamp
 

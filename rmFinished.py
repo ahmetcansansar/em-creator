@@ -8,6 +8,7 @@ def run( ana ):
     fembaked = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/output/*embaked" )
     fdelphes = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/output/delphes_out_*root" )
     fhepmc = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/temp/T*.hepmc" )
+    fCLA = glob.glob ( f"cutlang_results/{ana}/ANA_T1_1jet/temp/CLA*" )
     embaked = []
     for f in fembaked:
         p1 = f.find("mass_" )
@@ -17,7 +18,7 @@ def run( ana ):
         p1 = f.find("out_" )
         t = f[p1+4:-5]
         if t in embaked:
-            print ( "removing delphes", t )
+            print ( "removing delphes", f )
             cmd = f"rm {f}"
             subprocess.getoutput ( cmd )
     for f in fhepmc:
@@ -32,6 +33,18 @@ def run( ana ):
         else:
             pass
             # print ( "keeping hepmc", f )
+    for f in fCLA:
+        p1 = f.find("CLA_" )
+        t = f[p1+4:]
+        #p1 = t.find("_" )
+        #t = t[p1+1:]
+        if t in embaked:
+            print ( "removing CLA", f )
+            cmd = f"rm -r {f}"
+            subprocess.getoutput ( cmd )
+        else:
+            pass
+            # print ( "keeping CLA", f )
 
 if __name__ == "__main__":
     ana = "CMS-SUS-19-006"

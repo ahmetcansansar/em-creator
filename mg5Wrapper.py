@@ -345,7 +345,8 @@ class MG5Wrapper:
         analist = analyses.split(",")
         for ana in analist:
             ana = ana.strip()
-            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana, auto_confirm = True )
+            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana, auto_confirm = True,
+                                  keep = self.keep )
             #                   self.sqrts )
             self.debug ( f"now call cutlangWrapper for {ana}" )
             hepmcfile = self.hepmcFileName ( masses )
