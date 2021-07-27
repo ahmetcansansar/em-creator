@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+""" remove all Tx_1jet_yyy_zzz folders that are older than n days """
+
 import glob, os, time, pickle, subprocess, argparse
 
 def daysFromNow ( timestamp ):
