@@ -250,6 +250,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     else:
         nrma5 = countRunningMA5 ( topo, njets )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
+    ntot = 0
     for ana,values in effs.items():
         if len(values.keys()) == 0:
             continue
@@ -261,6 +262,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         fname = "embaked/%s.%s.embaked" % (ana, topo )
         print ( "%s[emCreator] baking %s: %d points.%s" % \
                 ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
+        ntot += len(values)
         SRs = set()
         for k,v in values.items():
             for sr in v.keys():
@@ -314,6 +316,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             f.write ( "%s\n" % stats )
             f.close()
             print ( "[emCreator] wrote stats to %s" % statsfile )
+    return ntot
 
 def getAllCutlangTopos():
     """ get all topos that we find in cutlang """
@@ -345,16 +348,18 @@ def getAllTopos ( cutlang ):
 def run ( args ):
     if args.cutlang:
         args.analyses = args.analyses.replace("_","-").upper()
+    ntot = 0
     if args.topo == "all":
         topos = getAllTopos ( args.cutlang )
         for topo in topos:
             for ana in args.analyses.split(","):
-                runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
+                ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
                              args.copy, args.keep, args.sqrts, args.cutlang )
     else:
         for ana in args.analyses.split(","):
-            runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
+            ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                          args.copy, args.keep, args.sqrts, args.cutlang )
+    print ( f"[emCreator] I found a total of {ntot} points." )
 
 def main():
     import argparse
