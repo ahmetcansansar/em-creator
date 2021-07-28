@@ -11,6 +11,8 @@
 import os, sys, colorama, subprocess, shutil, time, glob
 from datetime import datetime
 import bakeryHelpers
+        
+hasWarned = { "cutlangstats": False }
 
 class emCreator:
     def __init__ ( self, analyses, topo, njets, keep, sqrts, cutlang ):
@@ -46,7 +48,9 @@ class emCreator:
         :param ana: analysis id, e.g. atlas_susy_2016_07
         FIXME not yet implemented
         """
-        self.error ( "getCutlangStatistics not yet implemented!" )
+        if hasWarned["cutlangstats"] == False:
+            self.error ( "getCutlangStatistics not yet implemented!" )
+            hasWarned["cutlangstats"]=True
         return {}
 
     def getStatistics ( self, ana = "atlas_susy_2016_07" ):
@@ -196,8 +200,13 @@ def countMG5 ( topo, njets ):
     return len(files)
 
 def countRunningMG5 ( topo, njets ):
-    """ count the number of mg5 directories """
+    """ count the number of ma5 directories """
     files = glob.glob ( "%s_*jet*" % ( topo ) )
+    return len(files)
+
+def countRunningCutlang ( topo, njets ):
+    """ count the number of cutlang directories """
+    files = glob.glob ( f"cutlang_results/*/ANA_{topo}_*jet/temp/{topo}_*.hepmc" )
     return len(files)
 
 def countRunningMA5 ( topo, njets ):
@@ -210,7 +219,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     :param keep: keep the cruft files
     :param cutlang: is it a cutlang result?
     """
-    print ( f"[emCreator] get {analyses}:{topo}" )
+    # print ( f"[emCreator] get {analyses}:{topo}" )
     if masses == "all":
         masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
     else:
@@ -231,12 +240,16 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     if seffs == "":
         seffs = "no analysis"
     print ( )
-    print ( "[emCreator] For %s%s%s I have efficiencies for: %s" % \
-             ( colorama.Fore.RED, topo, colorama.Fore.RESET, seffs ) )
+    print ( "[emCreator] For %s%s:%s%s I have efficiencies." % \
+             ( colorama.Fore.RED, seffs, topo, colorama.Fore.RESET ) )
     nrmg5 = countRunningMG5 ( topo, njets )
     nmg5 = countMG5 ( topo, njets )
-    nrma5 = countRunningMA5 ( topo, njets )
-    print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
+    if cutlang:
+        nrma5 = countRunningCutlang ( topo, njets )
+        print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running cutlang jobs." % ( nmg5, nrmg5, nrma5 ) )
+    else:
+        nrma5 = countRunningMA5 ( topo, njets )
+        print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
     for ana,values in effs.items():
         if len(values.keys()) == 0:
             continue
@@ -335,11 +348,13 @@ def run ( args ):
     if args.topo == "all":
         topos = getAllTopos ( args.cutlang )
         for topo in topos:
-            runForTopo ( topo, args.njets, args.masses, args.analyses, args.verbose,
-                         args.copy, args.keep, args.sqrts, args.cutlang )
+            for ana in args.analyses.split(","):
+                runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
+                             args.copy, args.keep, args.sqrts, args.cutlang )
     else:
-        runForTopo ( args.topo, args.njets, args.masses, args.analyses, args.verbose,
-                     args.copy, args.keep, args.sqrts, args.cutlang )
+        for ana in args.analyses.split(","):
+            runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
+                         args.copy, args.keep, args.sqrts, args.cutlang )
 
 def main():
     import argparse
@@ -359,7 +374,7 @@ def main():
     argparser.add_argument ( '-l', '--cutlang', help='are these cutlang results?',
                              action="store_true" )
     defaultana = "atlas_susy_2016_07"
-    defaultana = "cms_sus_19_006"
+    defaultana = "cms_sus_19_005,cms_sus_19_006"
     argparser.add_argument ( '-a', '--analyses',
             help='analyses, comma separated [%s]' % defaultana,
                              type=str, default=defaultana )
