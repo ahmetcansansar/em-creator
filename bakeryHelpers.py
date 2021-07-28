@@ -233,13 +233,13 @@ def getListOfCutlangMasses( topo, sqrts=13, ana=None ):
     :param topo: e.g. T1
     :param sqrts: sqrt(s) in tev
     """
-    import glob
+
     ret=[]
     sana = "*"
     if ana != None:
         sana = ana.replace("_","-").upper()
         sana += "*"
-    pattern = f"cutlang_results/{sana}/ANA_{topo}*/output/*embaked"
+    pattern = f"cutlang_results/{sana}/ANA_{topo}_*/output/*embaked"
     files = glob.glob( pattern )
     for f in files:
         fname = f.replace(".embaked","")
@@ -367,6 +367,20 @@ def cleanAll():
         subprocess.getoutput ( "rm -rf %s" % f )
         cleaned.append ( f )
     print ( "Cleaned %d temporary files" % len(cleaned) )
+
+def rmLocksOlderThan ( hours=8 ):
+    """ remove all locks older than <hours> """
+    files = glob.glob ( ".lock*" )
+    t = time.time()
+    for f in files:
+        try:
+            ts = os.stat(f).st_mtime
+            dt = ( t - ts ) / 60. / 60.
+            if dt > hours:
+                self.msg ( "removing old lock %s [%d hrs old]" % ( f, int(dt) ) )
+                subprocess.getoutput ( "rm -f %s" % f )
+        except:
+            pass
 
 
 if __name__ == "__main__":

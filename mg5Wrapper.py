@@ -11,7 +11,7 @@
 import os, sys, colorama, subprocess, shutil, tempfile, time, socket, random
 import multiprocessing, signal, glob, io
 import bakeryHelpers
-from em_utils import rmLocksOlderThan
+from bakeryHelpers import rmLocksOlderThan
 
 __locks__ = set()
 

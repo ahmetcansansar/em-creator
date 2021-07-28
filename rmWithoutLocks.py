@@ -3,7 +3,7 @@
 """ remove all Tx_1jet.yyy_zzz folders that come without a lockfile """
 
 import os, glob, subprocess
-from em_utils import rmLocksOlderThan
+from bakeryHelpers import rmLocksOlderThan
 
 def rm():
     rmLocksOlderThan ( 8. )
