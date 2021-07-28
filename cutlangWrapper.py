@@ -303,7 +303,6 @@ class CutLangWrapper:
         #  Postprocessing
         # ====================
         # efficiency file name
-        self._add_output_summary ( mass )
         effi_file = os.path.join(self.out_dir.get(),
                                  self._get_embaked_name(self.analyses,
                                                         self.topo,
@@ -330,6 +329,7 @@ class CutLangWrapper:
             self._error(f"Numbers of events: {nevents}")
             self._error(f"Using the value: {nevents[0]}")
         # write efficiencies to .embaked file
+        self._add_output_summary ( mass )
         if len(nevents) > 0:
             self._msg(f"Writing efficiency values for masses {mass} to file:\n {effi_file}")
             with open(effi_file, "wt") as f:
