@@ -40,7 +40,6 @@ class emCreator:
     def error ( self, *msg ):
         print ( "%s[emCreator] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
                    colorama.Fore.RESET ) )
-        sys.exit()
 
     def getCutlangStatistics ( self, ana ):
         """ obtain nobs, nb, etc from the ADL file
@@ -211,7 +210,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     :param keep: keep the cruft files
     :param cutlang: is it a cutlang result?
     """
-    print ( "run for", analyses )
+    print ( f"[emCreator] get {analyses}:{topo}" )
     if masses == "all":
         masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
     else:
@@ -303,7 +302,22 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             f.close()
             print ( "[emCreator] wrote stats to %s" % statsfile )
 
-def getAllTopos ( ):
+def getAllCutlangTopos():
+    """ get all topos that we find in cutlang """
+    dirname="cutlang_results/"
+    files = glob.glob ( f"{dirname}/*/ANA_*jet" )
+    ret = set()
+    for f in files:
+        t = f.replace ( dirname, "" ).replace("ANA_","")
+        p1 = t.find("/")
+        p2 = t.rfind("_")
+        t = t[p1+1:p2]
+        ret.add(t)
+    return ret
+
+def getAllTopos ( cutlang ):
+    if cutlang:
+        return getAllCutlangTopos ()
     import glob
     dirname="results/"
     files = glob.glob ( "%s/T*.dat" % dirname )
@@ -315,22 +329,12 @@ def getAllTopos ( ):
     ret.sort()
     return ret
 
-def getAllToposOld ( ):
-    import glob
-    files = glob.glob ( "T*jet.*" )
-    ret = set()
-    for f in files:
-        tokens = f.split("_")
-        ret.add( tokens[0] )
-    ret = list(ret)
-    ret.sort()
-    return ret
-
 def run ( args ):
     if args.cutlang:
         args.analyses = args.analyses.replace("_","-").upper()
     if args.topo == "all":
-        for topo in getAllTopos():
+        topos = getAllTopos ( args.cutlang )
+        for topo in topos:
             runForTopo ( topo, args.njets, args.masses, args.analyses, args.verbose,
                          args.copy, args.keep, args.sqrts, args.cutlang )
     else:
