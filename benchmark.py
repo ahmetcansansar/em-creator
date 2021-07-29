@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import subprocess
+
 def add ( topo, masses ):
     f=open("run.sh","at")
     common = './mg5Wrapper.py -n 100000 --cutlang -p 10 -a -k --analyses "cms_sus_19_006"'
@@ -8,9 +10,18 @@ def add ( topo, masses ):
     smasses = "_".join ( map ( str, masses ) )
     dest = 'lxplus.cern.ch:/eos/project-s/smodels/www/ADL/'
     source = f'mg5results/{topo}_{smasses}.13.hepmc.gz'
-    source += f' cutlang_results/CMS-SUS-19-006/ANA_{topo}_1jet/output/dlphes_out_{smasses}.root'
-    line = f'scp {source} {dest}\n\n'
+    line = f'scp {source} {dest}\n'
     f.write ( line )
+    line = f'rm -rf {source}\n'
+    f.write ( line )
+    source = f'cutlang_results/CMS-SUS-19-006/ANA_{topo}_1jet/output/delphes_out_{smasses}.root'
+    dest = f'lxplus.cern.ch:/eos/project-s/smodels/www/ADL/delphes_{topo}_{smasses}.root'
+    line = f'scp {source} {dest}\n'
+    f.write ( line )
+    line = f'rm -rf {source}\n'
+    f.write ( line )
+
+    f.write ( "\n" )
     f.close()
 
 def newShFile ():
@@ -32,6 +43,7 @@ def run():
     for topo, massvecs in points.items():
         for masses in massvecs:
             add ( topo, masses )
+    subprocess.getoutput ( "chmod 755 run.sh" )
 
 
 if __name__ == "__main__":
