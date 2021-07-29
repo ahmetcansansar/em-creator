@@ -4,14 +4,14 @@
 
 import subprocess, glob, os
 
-def rm():
-    base = "mg5/"
+def rmMG5Cruft( base="mg5/" ):
     dirs = [ "HEPTools/boost/boost_1_74_0", "HEPTools/boost/include/" ]
     dirs.append ( "HEPTools/pythia8/include/" )
     dirs.append ( "HEPTools/lhapdf6_py3/include/" )
     dirs.append ( "HEPTools/hepmc/include/" )
     dirs.append ( "HEPTools/zlib/include/" )
     dirs.append ( "MG5_aMC_v3.1.1.tar.gz" )
+    dirs.append ( "MadSpin/src/" )
     dirs.append ( "tests/" )
 
     for d in dirs:
@@ -21,5 +21,5 @@ def rm():
         print ( cmd )
         subprocess.getoutput ( cmd )
 
-
-rm()
+if __name__ == "__main__":
+    rmMG5Cruft( "mg5/" )

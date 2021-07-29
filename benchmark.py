@@ -6,7 +6,8 @@ def add ( topo, masses ):
     destdir = 'lxplus.cern.ch:/eos/project-s/smodels/www/ADL/'
     destdir = 'saphire:/media/storage/adl/'
     f=open("run.sh","at")
-    common = './mg5Wrapper.py -n 100000 --cutlang -p 10 -a -k --analyses "cms_sus_19_006"'
+    nproc=5
+    common = f'./mg5Wrapper.py -n 100000 --cutlang -p {nproc} -a -k --analyses "cms_sus_19_006"'
     line = f'{common} -m "{masses}" -t {topo}\n'
     f.write ( line )
     smasses = "_".join ( map ( str, masses ) )
