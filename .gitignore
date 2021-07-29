@@ -23,3 +23,14 @@ T*_*jet.*/
 embaked/
 baking.log
 mg5results/
+
+.mg5/
+CL_output_summary.dat
+ME5_debug
+MG5_debug
+logs/
+mg5.good/
+mg5.v2/
+mg5/
+py.py
+stats.pcl
