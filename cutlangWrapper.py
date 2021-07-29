@@ -609,7 +609,7 @@ class CutLangWrapper:
         while os.path.exists ( self.summaryfile+".lock" ) and ctr < 5:
             ctr += 1
             time.sleep ( .1 * ctr )
-        g = open(self.summaryfile+".lock")
+        g = open(self.summaryfile+".lock","wt")
         g.write ( time.asctime()+"\n" )
         g.close()
 

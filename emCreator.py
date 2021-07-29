@@ -360,6 +360,16 @@ def run ( args ):
             ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                          args.copy, args.keep, args.sqrts, args.cutlang )
     print ( f"[emCreator] I found a total of {ntot} points." )
+    if os.path.exists ( ".last.summary" ):
+        f=open(".last.summary","rt")
+        line = f.read()
+        f.close()
+        line = line.strip()
+        print ( f"[emCreator] last status was {line}" )
+    if args.topo == "all" and "," in args.analyses:
+        f=open(".last.summary","wt")
+        f.write ( f"{time.asctime()}: {ntot} t={args.topo}, a={args.analyses}\n" )
+        f.close()
 
 def main():
     import argparse

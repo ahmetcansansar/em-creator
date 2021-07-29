@@ -82,6 +82,13 @@ def createStats():
             sdirs[ms]=f
         except Exception as e:
             pass
+    files = glob.glob(".lock*" )
+    for f in files:
+        try:
+            ms = os.stat ( f ).st_mtime
+            sdirs[ms]=f
+        except Exception as e:
+            pass
     return sdirs
 
 def loadPickle():
@@ -97,7 +104,7 @@ def rmOlderThan( sdirs, hours, dry_run ):
     """
     keys = list(sdirs.keys())
     keys.sort()
-    for k in keys[:20]:
+    for k in keys: # [:20]:
         try:
             h = hoursFromNow(k)
             if h > hours:
