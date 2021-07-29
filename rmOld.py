@@ -4,6 +4,24 @@
 
 import glob, os, time, pickle, subprocess, argparse
 
+def rmOldTempFiles( hours=8 ):
+    """ remove temp files older than so and so many hours """
+    files = glob.glob ( "temp/*" )
+    files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/*hepmc" )
+    files += glob.glob ( "cutlang_results/*/ANA_*_*jet/output/delphes_out*root" )
+    t = time.time()
+    for f in files:
+        try:
+            ts = os.stat(f).st_mtime
+            dt = ( t - ts ) / 60. / 60.
+            if dt > hours:
+                cmd = "rm -f %s" % f
+                subprocess.getoutput ( cmd )
+                print ( cmd )
+        except Exception as e:
+            pass
+
+
 def daysFromNow ( timestamp ):
     """ compute how many days in the past from now """
     t0=time.time()
@@ -50,6 +68,20 @@ def createStats():
             sdirs[ms]=f
         except Exception as e:
             pass
+    files = glob.glob("../smodels-utils/clip/_B*sh" )
+    for f in files:
+        try:
+            ms = os.stat ( f ).st_mtime
+            sdirs[ms]=f
+        except Exception as e:
+            pass
+    files = glob.glob("/users/wolfgan.waltenberger/B*.sh" )
+    for f in files:
+        try:
+            ms = os.stat ( f ).st_mtime
+            sdirs[ms]=f
+        except Exception as e:
+            pass
     return sdirs
 
 def loadPickle():
@@ -86,16 +118,18 @@ def main():
     argparser = argparse.ArgumentParser(description='remove old directories.')
     argparser.add_argument ( '-t', '--hours', help='number of hours the dir has to be old [24]',
                              type=int, default=24 )
-    argparser.add_argument ( '-f', '--force_rebuild', help='force rebuilding pickle file',
-                             action="store_true" )
+    #argparser.add_argument ( '-f', '--force_rebuild', help='force rebuilding pickle file',
+    #                         action="store_true" )
     argparser.add_argument ( '-d', '--dry_run', help='dry_run, dont remove',
                              action="store_true" )
     args = argparser.parse_args()
-    if os.path.exists ( "stats.pcl" ) and not args.force_rebuild:
-        sdirs = loadPickle()
-    else:
-        sdirs = createStats()
-        savePickle ( sdirs )
+    force_rebuild = True
+    #if os.path.exists ( "stats.pcl" ) and not force_rebuild:
+    #    sdirs = loadPickle()
+    #else:
+    sdirs = createStats()
+    savePickle ( sdirs )
     rmOlderThan ( sdirs, args.hours, args.dry_run )
+    rmOldTempFiles ( args.hours )
 
 main()

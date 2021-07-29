@@ -572,35 +572,50 @@ class CutLangWrapper:
     def _read_output_summary ( self ):
         """ read the output summary """
         f = open(self.summaryfile, "r+")
-        Dict=eval(f.read())
+        txt = f.read()
         f.close()
+        Dict=eval( txt )
         return Dict
 
     def _add_output_summary ( self, mass ):
         """ append to the output summary """
-        Dict={}
-        if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
-            f = open(self.summaryfile, "r+")
-            Dict=eval(f.read())
-            f.close()
-        if self.analyses in Dict and mass in Dict[self.analyses]:
-            return Dict ## nothing needs to be done
-        anatopo = f"{self.analyses}:{self.topo}"
-        if not anatopo in Dict:
-            Dict[anatopo]=set()
         emass = mass
         try:
             emass = eval(mass)
         except TypeError as e:
             pass
-        if type(Dict[anatopo])==list:
-            Dict[anatopo].append ( emass )
-        else:
-            Dict[anatopo].add ( emass )
+        anatopo = f"{self.analyses}:{self.topo}"
+        Dict={}
+        if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
+            f = open(self.summaryfile, "r+")
+            txt = f.read()
+            f.close()
+            Dict=eval( txt )
+        if self.analyses in Dict and mass in Dict[self.analyses]:
+            return Dict ## nothing needs to be done
+        if not anatopo in Dict:
+            Dict[anatopo]=set()
+        Dict[anatopo].add ( emass )
+        # we have a lot of processes running at the same time ....
+        self.lockSummaryFile()
         f = open(self.summaryfile, "w")
         f.write ( str(Dict)+"\n" )
         f.close()
+        self.unlockSummaryFile()
         return Dict
+
+    def lockSummaryFile ( self ):
+        ctr = 0
+        while os.path.exists ( self.summaryfile+".lock" ) and ctr < 5:
+            ctr += 1
+            time.sleep ( .1 * ctr )
+        g = open(self.summaryfile+".lock")
+        g.write ( time.asctime()+"\n" )
+        g.close()
+
+    def unlockSummaryFile ( self ):
+        if os.path.exists( self.summaryfile+".lock"):
+            os.unlink ( self.summaryfile+".lock" )
 
     def _check_summary_file(self, mass):
         """
