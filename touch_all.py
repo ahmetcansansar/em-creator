@@ -22,6 +22,8 @@ def main():
     touch ( "delphes/" )
     touch ( "embaked/" )
     touch ( "mg5/" )
+    touch ( "mg5.v2/" )
+    touch ( "mg5.good/" )
 #    touch ( "cutlang_results/" )
 
 main()

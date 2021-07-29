@@ -7,10 +7,10 @@ import glob, os, time, pickle, subprocess, argparse
 def daysFromNow ( timestamp ):
     """ compute how many days in the past from now """
     t0=time.time()
-    return ( t0 - timestamp ) / 60. / 60. / 24.
+    return hoursFromNow ( timestamp ) / 24.
 
 def hoursFromNow ( timestamp ):
-    """ compute how many days in the past from now """
+    """ compute how many hours in the past from now """
     t0=time.time()
     return ( t0 - timestamp ) / 60. / 60.
 
@@ -38,14 +38,18 @@ def createStats():
     for f in files:
         if "TODO" in f:
             continue
-        ms = os.stat ( f ).st_mtime
-        sdirs[ms]=f
-    """
-    files = glob.glob("ma5/ANA_T*")
+        try:
+            ms = os.stat ( f ).st_mtime
+            sdirs[ms]=f
+        except Exception as e:
+            pass
+    files = glob.glob("mg5results/T*hepmc.gz")
     for f in files:
-        ms = os.stat ( f ).st_mtime
-        sdirs[ms]=f
-    """
+        try:
+            ms = os.stat ( f ).st_mtime
+            sdirs[ms]=f
+        except Exception as e:
+            pass
     return sdirs
 
 def loadPickle():
@@ -55,30 +59,33 @@ def loadPickle():
     f.close()
     return sdirs
 
-def rmOlderThan( sdirs, days, dry_run ):
-    """ remove all older than <days> days 
+def rmOlderThan( sdirs, hours, dry_run ):
+    """ remove all older than <hours> hours
     :dry_run: just pretend, if true
     """
     keys = list(sdirs.keys())
     keys.sort()
     for k in keys[:20]:
-        d = daysFromNow(k)
-        if d > days:
-            print ( "removing %s: %.1f days old." % ( sdirs[k], d ) )
-            cmd = "rm -rf %s" % sdirs[k]
-            o = "dry_run"
-            if not dry_run:
-                o = subprocess.getoutput ( cmd )
-            print ( "   %s: %s" % ( cmd, o ) )
-            cmd = "rm -rf ma5/ANA_%s" % sdirs[k] 
-            if not dry_run:
-                o = subprocess.getoutput ( cmd )
-            print ( "   %s: %s" % ( cmd, o ) )
+        try:
+            h = hoursFromNow(k)
+            if h > hours:
+                # print ( "removing %s: %.1f hours old." % ( sdirs[k], h ) )
+                cmd = "rm -rf %s" % sdirs[k]
+                o = "dry_run"
+                if not dry_run:
+                    o = subprocess.getoutput ( cmd )
+                print ( "%s: %s" % ( cmd, o ) )
+                #cmd = "rm -rf ma5/ANA_%s" % sdirs[k] 
+                #if not dry_run:
+                #    o = subprocess.getoutput ( cmd )
+                #print ( "   %s: %s" % ( cmd, o ) )
+        except Exception as e:
+            pass
 
 def main():
     argparser = argparse.ArgumentParser(description='remove old directories.')
-    argparser.add_argument ( '-t', '--days', help='number of days the dir has to be old [1]',
-                             type=int, default=1 )
+    argparser.add_argument ( '-t', '--hours', help='number of hours the dir has to be old [24]',
+                             type=int, default=24 )
     argparser.add_argument ( '-f', '--force_rebuild', help='force rebuilding pickle file',
                              action="store_true" )
     argparser.add_argument ( '-d', '--dry_run', help='dry_run, dont remove',
@@ -89,8 +96,6 @@ def main():
     else:
         sdirs = createStats()
         savePickle ( sdirs )
-    pprint ( sdirs )
-    dry_run = True
-    rmOlderThan ( sdirs, args.days, args.dry_run )
+    rmOlderThan ( sdirs, args.hours, args.dry_run )
 
 main()
