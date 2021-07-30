@@ -9,7 +9,7 @@ def add ( topo, masses ):
     f=open("run.sh","at")
     nproc=5
     # nevents=50
-    nevents=10000
+    nevents=100000
     common = f'./mg5Wrapper.py -n {nevents} --cutlang -p {nproc} -a -k --analyses "cms_sus_19_006"'
     line = f'{common} -m "{masses}" -t {topo}\n'
     f.write ( line )
