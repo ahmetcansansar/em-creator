@@ -78,7 +78,7 @@ class CutLangWrapper:
         """
         # General vars
         self.njets = njets
-        self.keep = False ## keep temporary files?
+        self.keep = keep ## keep temporary files?
         self.topo = topo
         if "," in analysis:
             self.error ( "multiple analyses supplied. should be handle by mg5Wrapper!" )

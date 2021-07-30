@@ -26,6 +26,7 @@ mg5results/
 
 .mg5/
 CL_output_summary.dat
+summary_T*.dat
 ME5_debug
 MG5_debug
 logs/
