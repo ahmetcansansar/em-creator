@@ -60,7 +60,7 @@ class CutLangWrapper:
 
     GZIP_BLOCK = 1 << 24  # Block to decompress gzipped file, ~ 16 MB
 
-    def __init__(self, topo: str, njets: int, rerun: bool, analyses: str,
+    def __init__(self, topo: str, njets: int, rerun: bool, analysis: str,
                  auto_confirm: bool = True, filterString: str = "",
                  keep: bool = False ) -> None:
         """
@@ -71,7 +71,7 @@ class CutLangWrapper:
                         (see https://smodels.github.io/docs/SmsDictionary )
         :param njets:   Number of jets
         :param rerun:   True for rerunning the analyses already done
-        :param analyses: Analysis to be done FIXME need to implement in plural!!
+        :param analysis: Analysis to be done 
                         (see https://smodels.github.io/docs/ListOfAnalyses )
         :param auto_confirm: Proceed with downloads without prompting
         :param keep: keep temporary files for debugging?
@@ -80,10 +80,10 @@ class CutLangWrapper:
         self.njets = njets
         self.keep = False ## keep temporary files?
         self.topo = topo
-        if "," in analyses:
-            self.error ( "multiple analyses supplied. cannot yet handle this!" )
+        if "," in analysis:
+            self.error ( "multiple analyses supplied. should be handle by mg5Wrapper!" )
             sys.exit(-1)
-        self.analyses = self._standardise_analysis(analyses)
+        self.analysis = self._standardise_analysis(analysis)
         self.rerun = rerun
         self.auto_confirm = auto_confirm
         if len(filterString) > 0:
@@ -93,7 +93,7 @@ class CutLangWrapper:
             self.filterRegions, self.filterBins = set(), {}
 
         # make auxiliary directories
-        self.base_dir = Directory(f"cutlang_results/{self.analyses}", make=True)
+        self.base_dir = Directory(f"cutlang_results/{self.analysis}", make=True)
         dirname = f"{self.topo}_{self.njets}jet"
         self.ana_dir = Directory(os.path.join(self.base_dir.get(), f"ANA_{dirname}"), make=True)
         self.out_dir = Directory(os.path.join(self.ana_dir.get(), "output"), make=True)
@@ -108,7 +108,7 @@ class CutLangWrapper:
         self.cutlang_executable = "./CutLang/CLA/CLA.exe"
         self.cutlang_run_dir = "./runs"  # Directory where the CutLang will run
         self.cutlang_script = "./CLA.sh"
-        self.summaryfile = os.path.join("./", "CL_output_summary.dat")
+        self.summaryfile = os.path.join("./", f"summary_{topo}_{self.analysis}.dat")
 
         # ADLLHCAnalysis vars
         self.adllhcanalyses = "./CutLang/ADLLHCanalyses"
@@ -277,7 +277,7 @@ class CutLangWrapper:
         # ======================
         # Prepare input paths
         cla_input = os.path.abspath(delph_out)
-        cutlangfile = self.pickCutLangFile(self.analyses)
+        cutlangfile = self.pickCutLangFile(self.analysis)
 
         # copy cutlang to a temporary directory
         cla_temp_name = os.path.join(self.tmp_dir.get(), f"CLA_{mass_stripped}")
@@ -304,7 +304,7 @@ class CutLangWrapper:
         # ====================
         # efficiency file name
         effi_file = os.path.join(self.out_dir.get(),
-                                 self._get_embaked_name(self.analyses,
+                                 self._get_embaked_name(self.analysis,
                                                         self.topo,
                                                         mass_stripped))
         self._info(f"Writing partial efficiencies into file: {effi_file}")
@@ -574,8 +574,8 @@ class CutLangWrapper:
         f = open(self.summaryfile, "r+")
         txt = f.read()
         f.close()
-        Dict=eval( txt )
-        return Dict
+        mymasses=eval( txt )
+        return mymasses
 
     def _add_output_summary ( self, mass ):
         """ append to the output summary """
@@ -584,25 +584,22 @@ class CutLangWrapper:
             emass = eval(mass)
         except TypeError as e:
             pass
-        anatopo = f"{self.analyses}:{self.topo}"
-        Dict={}
+        mymasses = set()
         if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
             f = open(self.summaryfile, "r+")
             txt = f.read()
             f.close()
-            Dict=eval( txt )
-        if self.analyses in Dict and mass in Dict[self.analyses]:
-            return Dict ## nothing needs to be done
-        if not anatopo in Dict:
-            Dict[anatopo]=set()
-        Dict[anatopo].add ( emass )
+            mymasses = eval ( txt )
+        if mass in mymasses:
+            return mymasses ## nothing needs to be done
+        mymasses.add ( emass )
         # we have a lot of processes running at the same time ....
         self.lockSummaryFile()
         f = open(self.summaryfile, "w")
-        f.write ( str(Dict)+"\n" )
+        f.write ( str(mymasses)+"\n" )
         f.close()
         self.unlockSummaryFile()
-        return Dict
+        return mymasses
 
     def lockSummaryFile ( self ):
         ctr = 0
@@ -633,19 +630,14 @@ class CutLangWrapper:
             pass
         # Check if the analysis has been done already
         result = False
-        anatopo = f"{self.analyses}:{self.topo}"
         if os.path.exists(self.summaryfile) and os.stat(self.summaryfile).st_size > 0:
             self._msg(f"It seems like there is already a summary file {self.summaryfile}")
-            Dict = self._read_output_summary()
-            for anat,masses in Dict.items():
-                if anat != anatopo:
-                    continue
-                self._msg(f"{anatopo} is in the summary file. Now check for mass")
-                if emass in masses:
-                    self._msg(f"found mass {mass}. Dont run!")
-                    result = True
-                else:
-                    self._msg(f"did not find mass {mass}. Run!")
+            mymasses = self._read_output_summary()
+            if emass in mymasses:
+                self._msg(f"found mass {mass}. Dont run!")
+                result = True
+            else:
+                self._msg(f"did not find mass {mass}. Run!")
         else:
             self._add_output_summary ( mass )
         return result
@@ -700,12 +692,12 @@ class CutLangWrapper:
         return retval
 
     def _pick_delphes_card(self):
-        if not re.search("ATLAS", self.analyses) is None:
+        if not re.search("ATLAS", self.analysis) is None:
             return os.path.abspath("./delphes/cards/delphes_card_ATLAS.tcl")
-        elif not re.search("CMS", self.analyses) is None:
+        elif not re.search("CMS", self.analysis) is None:
             return os.path.abspath("./delphes/cards/delphes_card_CMS.tcl")
         else:
-            self._error(f"Could not find a suitable Delphes card for analysis {self.analyses}. Exiting.")
+            self._error(f"Could not find a suitable Delphes card for analysis {self.analysis}. Exiting.")
             sys.exit()
 
     def _standardise_analysis(self, analysis):
