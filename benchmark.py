@@ -8,26 +8,29 @@ def add ( topo, masses ):
     destdir = "/mnt/hephy/pheno/ww/adl"
     f=open("run.sh","at")
     nproc=5
-    common = f'./mg5Wrapper.py -n 100000 --cutlang -p {nproc} -a -k --analyses "cms_sus_19_006"'
+    # nevents=20
+    nevents=10000
+    common = f'./mg5Wrapper.py -n {nevents} --cutlang -p {nproc} -a -k --analyses "cms_sus_19_006"'
     line = f'{common} -m "{masses}" -t {topo}\n'
     f.write ( line )
     smasses = "_".join ( map ( str, masses ) )
-    line = f'rm -rf {topo}_1jet.{smasses}\n'
-    f.write ( line )
-    line = f'rm -rf cutlang_results/CMS-SUS-19-006/ANA_{topo}_1jet/temp/{topo}.{smasses}.13.hepmc\n'
-    f.write ( line )
     dest = destdir
     source = f'mg5results/{topo}_{smasses}.13.hepmc.gz'
     line = f'scp {source} {dest}\n'
-    f.write ( line )
-    line = f'rm -rf {source}\n'
     f.write ( line )
     source = f'cutlang_results/CMS-SUS-19-006/ANA_{topo}_1jet/output/delphes_out_{smasses}.root'
     dest = f'{destdir}/delphes_{topo}_{smasses}.root'
     line = f'scp {source} {dest}\n'
     f.write ( line )
-    line = f'rm -rf {source}\n'
-    f.write ( line )
+    if True:
+        line = f'rm -rf {topo}_1jet.{smasses}\n'
+        f.write ( line )
+        line = f'rm -rf cutlang_results/CMS-SUS-19-006/ANA_{topo}_1jet/temp/{topo}.{smasses}.13.hepmc\n'
+        f.write ( line )
+        line = f'rm -rf {source}\n'
+        f.write ( line )
+        line = f'rm -rf {source}\n'
+        f.write ( line )
 
     f.write ( "\n" )
     f.close()
@@ -48,6 +51,7 @@ def run():
                "T2":     [ [1400,200], [1000,800] ] 
     }
     # points = { "T2tt": [ [950,100],  [600,400] ] }
+    # points = { "T1tttt": [ [1900,200] ] }
     for topo, massvecs in points.items():
         for masses in massvecs:
             add ( topo, masses )
