@@ -588,6 +588,9 @@ def main():
         ## also for these we set to 1. because usually this is also used for offshell
         print ( "[mg5Wrapper] for topo %s we set mingap1 to 1." % args.topo )
         args.mingap1 = 1. # 170.
+    if args.topo in [ "T1ttttoff", "T2ttoff" ] and args.maxgap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
+        print ( "[mg5Wrapper] for topo %s we set maxgap1 to 180." % args.topo )
+        args.maxgap1 = 180.
     if args.list_analyses:
         bakeryHelpers.listAnalyses( args.cutlang )
         sys.exit()
@@ -632,8 +635,11 @@ def main():
     import random
     random.shuffle ( masses )
     nm = len(masses)
+    if nm == 0:
+        print ( "[mg5Wrapper] no masses found within the constraints" )
+        sys.exit()
     if nReqM != len(masses[0]):
-        print ( "Error: you gave %d masses, but %d are required for %s." % \
+        print ( "[mg5Wrapper] you gave %d masses, but %d are required for %s." % \
                 ( len(masses[0]), nReqM, args.topo ) )
         sys.exit()
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )

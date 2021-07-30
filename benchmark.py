@@ -3,8 +3,9 @@
 import subprocess
 
 def add ( topo, masses ):
-    destdir = 'lxplus.cern.ch:/eos/project-s/smodels/www/ADL/'
-    destdir = 'saphire:/media/storage/adl/'
+    # destdir = 'lxplus.cern.ch:/eos/project-s/smodels/www/ADL/'
+    # destdir = 'saphire:/media/storage/adl/'
+    destdir = "/mnt/hephy/pheno/ww/adl"
     f=open("run.sh","at")
     nproc=5
     common = f'./mg5Wrapper.py -n 100000 --cutlang -p {nproc} -a -k --analyses "cms_sus_19_006"'

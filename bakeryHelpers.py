@@ -130,6 +130,9 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
         lists.append ( tuple(tmp) )
     # mesh = numpy.meshgrid ( *lists )
     ret = []
+    if len(lists[1]) == 0:
+        print ( "[bakeryHelpers] no daughter masses found. you sure you specified a meaningful mass array?" )
+        sys.exit(-1)
     if lists[1][0]=="half":
         for x  in lists[0]:
             for z in lists[2]:
