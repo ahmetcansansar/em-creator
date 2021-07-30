@@ -8,7 +8,7 @@ def add ( topo, masses ):
     destdir = "/mnt/hephy/pheno/ww/adl"
     f=open("run.sh","at")
     nproc=5
-    # nevents=20
+    # nevents=50
     nevents=10000
     common = f'./mg5Wrapper.py -n {nevents} --cutlang -p {nproc} -a -k --analyses "cms_sus_19_006"'
     line = f'{common} -m "{masses}" -t {topo}\n'
@@ -26,8 +26,6 @@ def add ( topo, masses ):
         line = f'rm -rf {topo}_1jet.{smasses}\n'
         f.write ( line )
         line = f'rm -rf cutlang_results/CMS-SUS-19-006/ANA_{topo}_1jet/temp/{topo}.{smasses}.13.hepmc\n'
-        f.write ( line )
-        line = f'rm -rf {source}\n'
         f.write ( line )
         line = f'rm -rf {source}\n'
         f.write ( line )
