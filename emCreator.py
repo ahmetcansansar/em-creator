@@ -103,7 +103,8 @@ class emCreator:
     def cutlangExtract ( self, masses ):
         """ extract the efficiencies from MA5 """
         topo = self.topo
-        summaryfile = "./CL_output_summary.dat"
+        #summaryfile = "./CL_output_summary.dat"
+        summaryfile = f"summary_{self.topo}_{self.analyses}.dat"
         timestamp = os.stat ( summaryfile ).st_mtime
         effs = {}
         smass = "_".join(map(str,masses))
