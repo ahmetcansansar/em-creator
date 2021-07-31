@@ -21,3 +21,8 @@ To bake, run ./bake.py
 
 
 * EOS storage is available at lxplus.cern.ch:/eos/project/s/smodels/www/ADL/
+
+### Example usage:
+
+* ./bake.py -n 10000 -a -m "[(250,2201,50),(10,2001,25)]" --analyses "cms_sus_19_005,cms_sus_19_006" -t T2ttoff -p 5 -b --cutlang
+* slurm.py -p 10 -a "cms_sus_19_005,cms_sus_19_006" -T T2ttoff -R /scratch-cbe/users/wolfgan.waltenberger/git/em-creator -t 8 -l -b "@n 10000 @a" -m "[(250,2201,50),(10,2001,25)]"
