@@ -20,7 +20,7 @@ def install_plugins():
         f=open("install.txt","w")
         f.write(line)
         f.close()
-        cmd = "python2 bin/ma5 -s -f install.txt 2>&1 | tee /tmp/ma5.install"
+        cmd = "python3 bin/ma5 -s -f install.txt 2>&1 | tee /tmp/ma5.install"
         a = subprocess.getoutput ( cmd )
         print ( a )
     os.unlink ( "install.txt" )
