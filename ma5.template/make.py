@@ -6,7 +6,7 @@
 
 import subprocess, os, sys
     
-ver="1.8.44"
+ver="1.8.patch1"
 
 def install_plugins():
     print ( "[make.py] installing plugins (tail -f /tmp/ma5.install to monitor) ... " )
