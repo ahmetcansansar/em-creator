@@ -78,7 +78,7 @@ class MA5Wrapper:
         anas = set(self.analyses.split(","))
         versions = { "atlas_susy_2016_07": "1.2",
                      "atlas_susy_2013_02": "1.1",
-                     "cms_sus_19_006": "1.8",
+                     "cms_sus_19_006": "1.2",
                      "cms_sus_16_033": "1.2" }
         self.info ( "adding %s to recast card %s" % ( self.analyses, filename ) )
         for i in anas:
@@ -90,7 +90,7 @@ class MA5Wrapper:
         self.debug ( "wrote recasting card %s in %s" % ( filename, os.getcwd() ) )
 
     def unlink ( self, f ):
-        if os.path.exists ( f ):
+        if os.path.exists ( f ) and not self.keep:
             subprocess.getoutput ( "rm -rf %s" % f )
 
     def writeCommandFile ( self, hepmcfile, process, masses ):
@@ -209,8 +209,10 @@ class MA5Wrapper:
         if errFree: ## only move if we have both
             shutil.move ( origdatfile, destdatfile )
             shutil.move ( origsaffile, destsaffile )
-            self.exe ( "rm -rf %s" % hepmcfile )
-        self.exe ( "rm -rf %s" % tempdir )
+            if not self.keep:
+                self.exe ( "rm -rf %s" % hepmcfile )
+        if not self.keep:
+            self.exe ( "rm -rf %s" % tempdir )
         os.chdir ( self.basedir )
         return 0
 
