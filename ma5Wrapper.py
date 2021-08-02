@@ -74,12 +74,17 @@ class MA5Wrapper:
         recastcard = { "atlas_susy_2016_07": "delphes_card_atlas_exot_2015_03" }
         recastcard["atlas_susy_2013_02"] = "delphesma5tune_card_atlas_dileptonsusy"
         recastcard["cms_sus_16_033"] = "delphes_card_cms_sus_16_033"
+        recastcard["cms_sus_19_006"] = "delphes_card_cms_sus_19_006"
         anas = set(self.analyses.split(","))
         versions = { "atlas_susy_2016_07": "1.2",
                      "atlas_susy_2013_02": "1.1",
+                     "cms_sus_19_006": "1.8",
                      "cms_sus_16_033": "1.2" }
         self.info ( "adding %s to recast card %s" % ( self.analyses, filename ) )
         for i in anas:
+            if not i in versions or not i in recastcard:
+                self.error ( f"{i} is not defined!" )
+                sys.exit()
             f.write ( "%s         v%s        on    %s.tcl\n" % ( i, versions[i], recastcard[i] ) )
         f.close()
         self.debug ( "wrote recasting card %s in %s" % ( filename, os.getcwd() ) )
@@ -178,7 +183,7 @@ class MA5Wrapper:
 
         # then run MadAnalysis
         os.chdir ( tempdir )
-        cmd = "python2 %s -R -s ./ma5cmd 2>&1 | tee %s" % (self.executable, \
+        cmd = "python3 %s -R -s ./ma5cmd 2>&1 | tee %s" % (self.executable, \
                 self.teefile )
         self.exe ( cmd, maxLength=None )
         # self.unlink ( self.recastfile )
@@ -218,11 +223,11 @@ class MA5Wrapper:
         # home = "/scratch-cbe/users/wolfgan.waltenberger/"
         home = os.environ["HOME"]
         home = home.replace("git/em-creator","")
-        pylocaldir = "%s/.local/lib/python2.7/" % home
-        rootsys="/mnt/hephy/pheno/opt/root6.20-py27-u20.04/"
+        pylocaldir = "%s/.local/lib/python3.9/" % home
+        rootsys="/mnt/hephy/pheno/opt/root6.24-py39-u21.04/"
         import socket
         if socket.gethostname() in [ "two", "wnouc" ]:
-            rootsys="/opt/root6.20-py27-u20.04/"
+            rootsys="/opt/root/"
         myenv["ROOTSYS"]=rootsys
         myenv["PATH"]=".:%s/bin:/usr/bin:/bin:/usr/local/bin" % rootsys
         myenv["LD_LIBRARY_PATH"]="%s/lib:/.singularity.d/libs" % rootsys
