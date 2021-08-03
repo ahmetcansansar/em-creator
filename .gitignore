@@ -20,6 +20,7 @@ __pycache__
 
 # (temporary) results
 T*_*jet.*/
+ma5_T*_*jet.*/
 embaked/
 baking.log
 mg5results/
