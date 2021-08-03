@@ -26,7 +26,7 @@ class MA5Wrapper:
         self.keep = keep
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
-        self.ma5results = "%s/results/" % self.basedir
+        self.ma5results = "%s/ma5results/" % self.basedir
         if not os.path.exists ( self.ma5results ):
             subprocess.getoutput ( "mkdir %s" % self.ma5results )
         self.ma5install = "%s/ma5/" % self.basedir

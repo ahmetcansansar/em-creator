@@ -354,7 +354,7 @@ def getAllTopos ( cutlang ):
     if cutlang:
         return getAllCutlangTopos ()
     import glob
-    dirname="results/"
+    dirname="ma5results/"
     files = glob.glob ( "%s/T*.dat" % dirname )
     ret = set()
     for f in files:
