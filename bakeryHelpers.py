@@ -268,7 +268,7 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, cutlang=False, ana=None ):
     dirname = "mg5results/"
     extension = "%d.hepmc.gz" % sqrts
     if postMA5:
-        dirname = "results/"
+        dirname = "ma5results/"
         extension = "dat"
         fname="%s/%s_*.%s" % ( dirname, topo, extension )
         files = glob.glob( fname )

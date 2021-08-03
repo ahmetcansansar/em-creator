@@ -21,7 +21,7 @@ class emCreator:
         :param cutlang: is it a cutlang result
         """
         self.basedir = bakeryHelpers.baseDir()
-        self.resultsdir = ( self.basedir + "/results/" ).replace("//","/")
+        self.resultsdir = ( self.basedir + "/ma5results/" ).replace("//","/")
         self.analyses = analyses
         self.topo = topo
         self.njets = njets
