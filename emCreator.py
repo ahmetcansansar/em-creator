@@ -105,6 +105,8 @@ class emCreator:
         topo = self.topo
         #summaryfile = "./CL_output_summary.dat"
         summaryfile = f"summary_{self.topo}_{self.analyses}.dat"
+        if not os.path.exists ( summaryfile ):
+            return {}, 0.
         timestamp = os.stat ( summaryfile ).st_mtime
         effs = {}
         smass = "_".join(map(str,masses))
@@ -217,6 +219,7 @@ def countRunningMA5 ( topo, njets ):
 
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang ):
     """
+    :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
     :param keep: keep the cruft files
     :param cutlang: is it a cutlang result?
     """
@@ -227,6 +230,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     if masses == []:
         return 0
     creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )
+    ana_smodels = analyses.upper().replace("_","-")
     effs,tstamps={},{}
     if verbose:
         print ( "[emCreator] topo %s: %d mass points considered" % ( topo, len(masses) ) )
@@ -241,16 +245,26 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     seffs = ", ".join(list(effs.keys()))
     if seffs == "":
         seffs = "no analysis"
-    print ( )
-    print ( "[emCreator] For %s%s:%s%s I have efficiencies." % \
-             ( colorama.Fore.RED, seffs, topo, colorama.Fore.RESET ) )
+    seffs_smodels = seffs.upper().replace("_","-")
     nrmg5 = countRunningMG5 ( topo, njets )
     nmg5 = countMG5 ( topo, njets )
     if cutlang:
         nrma5 = countRunningCutlang ( topo, njets )
+        if nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
+            return 0
+        print ( )
+        if seffs_smodels != "NO ANALYSIS":
+            print ( "[emCreator] For %s%s:%s%s I have efficiencies." % \
+                 ( colorama.Fore.RED, seffs_smodels, topo, colorama.Fore.RESET ) )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running cutlang jobs." % ( nmg5, nrmg5, nrma5 ) )
     else:
         nrma5 = countRunningMA5 ( topo, njets )
+        if nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
+            return 0
+        print ( )
+        if seffs_smodels != "NO ANALYSIS":
+           print ( "[emCreator] For %s%s:%s%s I have efficiencies." % \
+                 ( colorama.Fore.RED, seffs_smodels, topo, colorama.Fore.RESET ) )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
     ntot = 0
     for ana,values in effs.items():
@@ -261,7 +275,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             ts = tstamps[ana]
         if not os.path.exists( "embaked/" ):
             os.makedirs ( "embaked" )
-        fname = "embaked/%s.%s.embaked" % (ana, topo )
+        fname = "embaked/%s.%s.embaked" % (ana_smodels, topo )
         print ( "%s[emCreator] baking %s: %d points.%s" % \
                 ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
         ntot += len(values)
