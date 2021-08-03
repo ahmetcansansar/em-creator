@@ -284,8 +284,11 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             for sr in v.keys():
                 SRs.add(sr)
         f=open(fname,"w")
-        f.write ( "# EM-Baked %s. %d points, %d signal regions.\n" % \
-                   ( time.asctime(), len(values.keys()), len(SRs) ) )
+        ma5orcutlang = "MA5"
+        if cutlang:
+            ma5orcutlang = "ADL"
+        f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
+                   ( time.asctime(), len(values.keys()), len(SRs), ma5orcutlang ) )
         # f.write ( "%s\n" % values )
         f.write ( "{" )
         for k,v in values.items():
