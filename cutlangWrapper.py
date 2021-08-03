@@ -177,6 +177,8 @@ class CutLangWrapper:
                 args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
                 #args = ['git', 'clone', 'https://github.com/delphes/delphes']
                 self.exe(args, exit_on_fail=True, logfile=self.initlog)
+                args = [ 'cp', 'templates/delphes_card_CMS.tcl', 'delphes/cards/' ]
+                self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
                 self._error("No Delphes dir. Exiting.")
         # if there is no executable, compile it
