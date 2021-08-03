@@ -220,11 +220,12 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     :param keep: keep the cruft files
     :param cutlang: is it a cutlang result?
     """
-    # print ( f"[emCreator] get {analyses}:{topo}" )
     if masses == "all":
         masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
     else:
         masses = bakeryHelpers.parseMasses ( masses )
+    if masses == []:
+        return 0
     creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )
     effs,tstamps={},{}
     if verbose:

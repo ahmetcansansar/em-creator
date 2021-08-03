@@ -270,6 +270,21 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, cutlang=False, ana=None ):
     if postMA5:
         dirname = "results/"
         extension = "dat"
+        fname="%s/%s_*.%s" % ( dirname, topo, extension )
+        files = glob.glob( fname )
+        for f in files:
+            with open ( f ) as handle:
+                txt= handle.read()
+                if not ana in txt:
+                    continue
+            f = f.replace( dirname, "" )
+            f = f.replace( topo+"_", "" )
+            f = f.replace( "."+extension, "" )
+            p1 = f.find(".")
+            f = f[:p1]
+            masses = tuple(map(int,map(float,f.split("_"))))
+            ret.append ( masses )
+        return ret
     fname="%s/%s_*.%s" % ( dirname, topo, extension )
     files = glob.glob( fname )
     for f in files:

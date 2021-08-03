@@ -14,7 +14,7 @@ import bakeryHelpers
 
 class MA5Wrapper:
     def __init__ ( self, topo, njets, rerun, analyses, keep=False, 
-                   sqrts=13, ver="1.8.44" ):
+                   sqrts=13, ver="1.9.beta" ):
         """
         :param ver: version of ma5
         """
