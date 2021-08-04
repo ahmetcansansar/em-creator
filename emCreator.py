@@ -275,7 +275,10 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             ts = tstamps[ana]
         if not os.path.exists( "embaked/" ):
             os.makedirs ( "embaked" )
-        fname = "embaked/%s.%s.embaked" % (ana_smodels, topo )
+        ma5orcutlang = "MA5"
+        if cutlang:
+            ma5orcutlang = "ADL"
+        fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, ma5orcutlang )
         print ( "%s[emCreator] baking %s: %d points.%s" % \
                 ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
         ntot += len(values)
@@ -284,9 +287,6 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             for sr in v.keys():
                 SRs.add(sr)
         f=open(fname,"w")
-        ma5orcutlang = "MA5"
-        if cutlang:
-            ma5orcutlang = "ADL"
         f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
                    ( time.asctime(), len(values.keys()), len(SRs), ma5orcutlang ) )
         # f.write ( "%s\n" % values )

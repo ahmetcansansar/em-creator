@@ -8,6 +8,7 @@ def rmOldTempFiles( hours=8 ):
     """ remove temp files older than so and so many hours """
     files = glob.glob ( "temp/*" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/*hepmc" )
+    files += glob.glob ( "ma5_T*_*jet.*/" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/CLA*" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/output/delphes_out*root" )
     t = time.time()

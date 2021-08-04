@@ -107,6 +107,7 @@ class MA5Wrapper:
         #filename = self.recastfile.replace(self.ma5install,"./")
         #f.write('set main.recast.card_path = %s\n' % filename )
         f.write('set main.recast.card_path = ./recast\n' )
+        f.write('set main.recast.global_likelihoods = off\n' )
         f.write('import '+hepmcfile+'\n')
         f.write('submit ANA_%s\n' % bakeryHelpers.dirName( process, masses )  )
         f.close()
