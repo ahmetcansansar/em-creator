@@ -38,7 +38,7 @@ def pprint( sdirs ):
     """ print oldest dirs """
     keys = list(sdirs.keys())
     keys.sort()
-    for k in keys[:20]:
+    for k in keys: # [:20]:
         #d = daysFromNow(k)
         #print ( "%25s: %.1f days old" % ( sdirs[k], d ) )
         h = hoursFromNow(k)
