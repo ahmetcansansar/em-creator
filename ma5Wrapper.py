@@ -75,16 +75,22 @@ class MA5Wrapper:
         recastcard["atlas_susy_2013_02"] = "delphesma5tune_card_atlas_dileptonsusy"
         recastcard["cms_sus_16_033"] = "delphes_card_cms_sus_16_033"
         recastcard["cms_sus_19_006"] = "delphes_card_cms_sus_19_006"
+        recastcard["cms_sus_16_048"] = "delphes_card_cms_sus_16_048"
         anas = set(self.analyses.split(","))
         versions = { "atlas_susy_2016_07": "1.2",
                      "atlas_susy_2013_02": "1.1",
                      "cms_sus_19_006": "1.2",
+                     "cms_sus_16_048": "1.2",
                      "cms_sus_16_033": "1.2" }
         self.info ( "adding %s to recast card %s" % ( self.analyses, filename ) )
         for i in anas:
             if not i in versions or not i in recastcard:
-                self.error ( f"{i} is not defined!" )
-                sys.exit()
+                self.error ( f"{i} is not defined! Add at ma5Wrapper.py:{sys._getframe(0).f_lineno-4}" )
+                # we could also try to guess
+                versions[i]="1.2"
+                recastcard[i]=f"delphes_card_{i}"
+                self.error ( "for now we will guess" )
+                # sys.exit()
             f.write ( "%s         v%s        on    %s.tcl\n" % ( i, versions[i], recastcard[i] ) )
         f.close()
         self.debug ( "wrote recasting card %s in %s" % ( filename, os.getcwd() ) )
