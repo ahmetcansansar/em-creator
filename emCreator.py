@@ -309,12 +309,14 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         if "atlas" in ana.lower():
             experiment = "ATLAS"
         sana = bakeryHelpers.ma5AnaNameToSModelSName ( ana )
-        Dirname = "../../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
+        Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
         stats = creator.getStatistics ( ana )
         # print ( "[emCreator] obtained statistics for", ana, "in", fname )
 
         if copy and not os.path.exists (Dirname):
-            print ( "[emCreator] asked to copy but %s does not exist" % Dirname )
+            Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
+            if not os.path.exists ( Dirname ):
+                print ( "[emCreator] asked to copy but %s does not exist" % Dirname )
         if copy and os.path.exists (Dirname):
             dest = "%s/%s.embaked" % ( Dirname, topo )
             prevN = 0
