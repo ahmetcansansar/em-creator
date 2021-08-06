@@ -770,8 +770,8 @@ class Directory:
         if not os.path.exists(self.dirname):
             if make is True:
                 if not os.path.exists ( "cutlang_results" ):
-                    os.makedir ( "cutlang_results" )
-                os.makedirs(self.dirname)
+                    os.makedirs ( "cutlang_results", exist_ok=True )
+                os.makedirs(self.dirname,exist_ok=True)
             else:
                 self._error(f"Directory {self.dirname} does not exits. Aborting.")
                 sys.exit()
