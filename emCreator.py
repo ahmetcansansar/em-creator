@@ -104,7 +104,7 @@ class emCreator:
         """ extract the efficiencies from MA5 """
         topo = self.topo
         #summaryfile = "./CL_output_summary.dat"
-        summaryfile = f"summary_{self.topo}_{self.analyses}.dat"
+        summaryfile = f"clsum_{self.topo}_{self.analyses}.dat"
         if not os.path.exists ( summaryfile ):
             return {}, 0.
         timestamp = os.stat ( summaryfile ).st_mtime
