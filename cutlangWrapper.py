@@ -123,7 +123,10 @@ class CutLangWrapper:
         if not os.path.isdir(self.cutlanginstall):
             self._info("cutlang directory missing, download from github?")
             if self._confirmation("Download from github?"):
-                args = ['git', 'clone', '-b', 'v.2.9.10', 'https://github.com/unelg/CutLang']
+                args = ['git', 'clone', 'https://github.com/unelg/CutLang']
+                #v = 'v.2.9.0'
+                #v = 'v2.9.10'
+                #args = ['git', 'clone', '-b', v, 'https://github.com/unelg/CutLang']
                 # args = ['git', 'clone', 'https://github.com/unelg/CutLang']
                 self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
@@ -313,9 +316,11 @@ class CutLangWrapper:
         # to store intermediate results
         nevents = []
         entries = ""
+        filecount = 0
         # go over all the .root files made by CLA
         for filename in os.listdir(cla_run_dir):
-            if filename.startswith("histoOut-BP") and filename.endswith(".root"):
+            if filename.startswith("histoOut") and filename.endswith(".root"):
+                filecount += 1
                 filename = os.path.join(cla_run_dir, filename)
                 # get partial efficiencies from each file
                 tmp_entries, tmp_nevents = self.extract_efficiencies(filename,
@@ -324,11 +329,11 @@ class CutLangWrapper:
                 entries += tmp_entries
                 shutil.move(filename, os.path.join(self.tmp_dir.get(),
                                                    os.path.basename(filename)))
-        self._debug(f"Nevents: {nevents}")
+        self._debug(f"Nevents: {nevents[:3]}")
         # check that the number of events was the same for all regions
         if len(set(nevents)) > 1:
             self._error("Number of events before selection is not constant in all regions:")
-            self._error(f"Numbers of events: {nevents}")
+            self._error(f"Numbers of events: {set(nevents)}")
             self._error(f"Using the value: {nevents[0]}")
         if len(nevents) > 0:
             # write efficiencies to .embaked file
@@ -348,6 +353,8 @@ class CutLangWrapper:
             self.removeTempFiles()
             return 0
         else:
+            self.error(f"Did not find any events: {nevents}. Filecount {filecount}. Entries: '{entries}'. CLAdir {cla_run_dir}")
+            # self.error(f"directory reads {os.listdir(cla_run_dir)}" )
             self.removeTempFiles()
             return -4
 
@@ -561,7 +568,7 @@ class CutLangWrapper:
         # To prevent redefinitions we have to replace all the shared libraries
         # in the tmp directory with links to the original ones
         core_dir = os.path.join(self.cutlanginstall, 'analysis_core')
-        self._error(core_dir)
+        self._msg( f"Linking {core_dir}" )
         for filename in os.listdir(core_dir):
             if filename.endswith(".so"):
                 link_name = os.path.join(where, 'analysis_core', filename)
