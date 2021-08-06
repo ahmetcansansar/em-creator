@@ -123,7 +123,7 @@ class CutLangWrapper:
         if not os.path.isdir(self.cutlanginstall):
             self._info("cutlang directory missing, download from github?")
             if self._confirmation("Download from github?"):
-                args = ['git', 'clone', '-b', 'v.2.9.0', 'https://github.com/unelg/CutLang']
+                args = ['git', 'clone', '-b', 'v.2.9.10', 'https://github.com/unelg/CutLang']
                 # args = ['git', 'clone', 'https://github.com/unelg/CutLang']
                 self.exe(args, exit_on_fail=True, logfile=self.initlog)
             else:
