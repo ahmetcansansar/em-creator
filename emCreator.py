@@ -364,7 +364,44 @@ def getAllTopos ( cutlang ):
     ret.sort()
     return ret
 
+def getCutlangListOfAnalyses():
+    Dir = "cutlang_results/"
+    dirs = glob.glob ( f"{Dir}*" )
+    tokens = set()
+    for d in dirs:
+        if not "CMS" in d and not "ATLAS" in d:
+            continue
+        tokens.add ( d.replace ( Dir, "" ) )
+    ret=",".join(tokens)
+    # ret = "cms_sus_19_005,cms_sus_19_006"
+    return ret
+
+def getMA5ListOfAnalyses():
+    """ compile list of MA5 analyses """
+    ret = "cms_sus_16_048"
+    files = glob.glob("ma5results/T*.dat" )
+    tokens = set()
+    for f in files:
+        with open ( f, "rt" ) as handle:
+            lines = handle.readlines()
+            for l in lines:
+                if not "cms" in l and not "atlas" in l:
+                    continue
+                tmp = l.split( " " )
+                for t in tmp:
+                    if "cms_" in t or "atlas_" in t:
+                        tokens.add ( t )
+    ret = ",".join ( tokens )
+    return ret
+
 def run ( args ):
+    if args.analyses in [ "None", None, "none", "" ]:
+        ## retrieve list of analyses
+        if args.cutlang:
+            args.analyses = getCutlangListOfAnalyses()
+        else:
+            args.analyses = getMA5ListOfAnalyses()
+            
     if args.cutlang:
         args.analyses = args.analyses.replace("_","-").upper()
     ntot = 0
@@ -410,8 +447,8 @@ def main():
     defaultana = "atlas_susy_2016_07"
     defaultana = "cms_sus_19_005,cms_sus_19_006"
     argparser.add_argument ( '-a', '--analyses',
-            help='analyses, comma separated [%s]' % defaultana,
-                             type=str, default=defaultana )
+            help='analyses, comma separated. If None, find out yourself [None]',
+                             type=str, default=None )
     mdefault = "all"
     argparser.add_argument ( '-m', '--masses', help='mass ranges, comma separated list of tuples. One tuple gives the range for one mass parameter, as (m_first,m_last,delta_m). m_last and delta_m may be ommitted. "all" means, try to find out yourself [%s]' % mdefault,
                              type=str, default=mdefault )
