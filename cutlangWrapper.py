@@ -602,6 +602,9 @@ class CutLangWrapper:
         if mass in mymasses:
             return mymasses ## nothing needs to be done
         mymasses.add ( emass )
+        mymasses = list(mymasses)
+        mymasses.sort()
+        mymasses = set(mymasses)
         # we have a lot of processes running at the same time ....
         self.lockSummaryFile()
         f = open(self.summaryfile, "w")
