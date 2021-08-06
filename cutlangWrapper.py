@@ -108,7 +108,7 @@ class CutLangWrapper:
         self.cutlang_executable = "./CutLang/CLA/CLA.exe"
         self.cutlang_run_dir = "./runs"  # Directory where the CutLang will run
         self.cutlang_script = "./CLA.sh"
-        self.summaryfile = os.path.join("./", f"summary_{topo}_{self.analysis}.dat")
+        self.summaryfile = os.path.join("./", f"clsum_{topo}_{self.analysis}.dat")
 
         # ADLLHCAnalysis vars
         self.adllhcanalyses = "./CutLang/ADLLHCanalyses"
@@ -330,9 +330,9 @@ class CutLangWrapper:
             self._error("Number of events before selection is not constant in all regions:")
             self._error(f"Numbers of events: {nevents}")
             self._error(f"Using the value: {nevents[0]}")
-        # write efficiencies to .embaked file
-        self._add_output_summary ( mass )
         if len(nevents) > 0:
+            # write efficiencies to .embaked file
+            self._add_output_summary ( mass )
             self._msg(f"Writing efficiency values for masses {mass} to file:\n {effi_file}")
             with open(effi_file, "wt") as f:
                 f.write(str(mass) + ": {")
@@ -640,8 +640,8 @@ class CutLangWrapper:
                 result = True
             else:
                 self._msg(f"did not find mass {mass}. Run!")
-        else:
-            self._add_output_summary ( mass )
+        #else:
+        #    self._add_output_summary ( mass )
         return result
 
     def _confirmation(self, text):

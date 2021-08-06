@@ -636,7 +636,7 @@ def main():
     random.shuffle ( masses )
     nm = len(masses)
     if nm == 0:
-        print ( "[mg5Wrapper] no masses found within the constraints" )
+        print ( f"[mg5Wrapper] no masses found within the constraints: gap1-2 [{args.mingap1},{args.maxgap1}], gap1-3 [{args.mingap13},{args.maxgap13}] gap2-3 [{args.mingap2},{args.maxgap2}] " )
         sys.exit()
     if nReqM != len(masses[0]):
         print ( "[mg5Wrapper] you gave %d masses, but %d are required for %s." % \
