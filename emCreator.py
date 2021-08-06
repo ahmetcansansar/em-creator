@@ -420,15 +420,15 @@ def run ( args ):
         for ana in analyses.split(","):
             ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                          args.copy, args.keep, args.sqrts, args.cutlang )
-    print ( f"[emCreator] I found a total of {ntot} points." )
+    print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
         lines = f.readlines()
         f.close()
-        print ( f"[emCreator] last status was {lines[0]}" )
+        print ( f"[emCreator]    last status was {lines[0].strip()}." )
     if args.topo == "all": #  and "," in args.analyses:
         f=open(".last.summary","wt")
-        f.write ( f"{time.asctime()}: {ntot}\n" )
+        f.write ( f"{ntot} points at {time.asctime()}\n" )
         f.write ( f"t={args.topo}, a={analyses}\n" )
         f.close()
 
