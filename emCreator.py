@@ -397,24 +397,27 @@ def getMA5ListOfAnalyses():
     return ret
 
 def run ( args ):
-    if args.analyses in [ "None", None, "none", "" ]:
+    analyses = args.analyses
+    if analyses in [ "None", None, "none", "" ]:
         ## retrieve list of analyses
         if args.cutlang:
-            args.analyses = getCutlangListOfAnalyses()
+            analyses = getCutlangListOfAnalyses()
         else:
-            args.analyses = getMA5ListOfAnalyses()
+            analyses = getMA5ListOfAnalyses()
             
     if args.cutlang:
-        args.analyses = args.analyses.replace("_","-").upper()
+        analyses = analyses.replace("_","-").upper()
     ntot = 0
     if args.topo == "all":
         topos = getAllTopos ( args.cutlang )
+        topos = list(topos)
+        topos.sort()
         for topo in topos:
-            for ana in args.analyses.split(","):
+            for ana in analyses.split(","):
                 ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
                              args.copy, args.keep, args.sqrts, args.cutlang )
     else:
-        for ana in args.analyses.split(","):
+        for ana in analyses.split(","):
             ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                          args.copy, args.keep, args.sqrts, args.cutlang )
     print ( f"[emCreator] I found a total of {ntot} points." )
@@ -423,10 +426,10 @@ def run ( args ):
         lines = f.readlines()
         f.close()
         print ( f"[emCreator] last status was {lines[0]}" )
-    if args.topo == "all" and "," in args.analyses:
+    if args.topo == "all": #  and "," in args.analyses:
         f=open(".last.summary","wt")
         f.write ( f"{time.asctime()}: {ntot}\n" )
-        f.write ( f"t={args.topo}, a={args.analyses}\n" )
+        f.write ( f"t={args.topo}, a={analyses}\n" )
         f.close()
 
 def main():
