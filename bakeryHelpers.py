@@ -152,7 +152,7 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
     ret = filterForGap ( ret, mingap13, True, [0,2] )
     ret = filterForGap ( ret, maxgap1, False, [0,1] )
     ret = filterForGap ( ret, maxgap2, False, [1,2] )
-    ret = filterForGap ( ret, maxgap13, True, [0,2] )
+    ret = filterForGap ( ret, maxgap13, False, [0,2] )
     return ret
 
 def filterForGap ( masses, gap, isMin=True, indices=[0,1] ):
