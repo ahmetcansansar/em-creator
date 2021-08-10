@@ -71,7 +71,7 @@ class CutLangWrapper:
                         (see https://smodels.github.io/docs/SmsDictionary )
         :param njets:   Number of jets
         :param rerun:   True for rerunning the analyses already done
-        :param analysis: Analysis to be done 
+        :param analysis: Analysis to be done
                         (see https://smodels.github.io/docs/ListOfAnalyses )
         :param auto_confirm: Proceed with downloads without prompting
         :param keep: keep temporary files for debugging?
@@ -81,7 +81,7 @@ class CutLangWrapper:
         self.keep = keep ## keep temporary files?
         self.topo = topo
         if "," in analysis:
-            self.error ( "multiple analyses supplied. should be handle by mg5Wrapper!" )
+            self._error ( "Multiple analyses supplied. This should be handled by mg5Wrapper!" )
             sys.exit(-1)
         self.analysis = self._standardise_analysis(analysis)
         self.rerun = rerun
@@ -142,6 +142,11 @@ class CutLangWrapper:
             if not os.path.isfile(makefile_path):
                 self._error("No executable and no Makefile. Bailin' it.")
                 sys.exit()
+            # disable warnings for compilation to declutter output
+            compile_path = os.path.abspath(self.cutlanginstall + "CLA/")
+            args = ['sed', '-i', 's/ -Wall//g', os.path.join(compile_path + "Makefile")]
+            self.exe(args)
+
             self._info("Compiling CutLang...")
             ncpus = 4
             try:
@@ -200,10 +205,6 @@ class CutLangWrapper:
         self._info("Delphes initialised.")
         self._info("Initialisation complete.")
 
-    def error ( self, *msg ):
-        print ( "%s[cutlangWrapper] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
-                   colorama.Fore.RESET ) )
-
     def getMassesFromHEPMCFile ( self, hepmcfile: str ) -> str:
         """ try to obtain the masses from the hepmc file name """
         ret = hepmcfile.replace(".hepmc.gz","").replace(".hepmc","")
@@ -227,7 +228,7 @@ class CutLangWrapper:
                 -2:   The analysis has already been done and rerun flag is False
                 -3:   Could not copy CutLang to temporary directory
                 -4    There were no efficiencies found
-        :param mass: string that describes the mass vector, e.g. "(1000,100)". 
+        :param mass: string that describes the mass vector, e.g. "(1000,100)".
                      If "Masses not specified", then try to extract masses from
                      hepmcfile name. FIXME what now, mass range or tuple of masses?
         """
