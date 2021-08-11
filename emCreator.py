@@ -217,6 +217,18 @@ def countRunningMA5 ( topo, njets ):
     files = glob.glob ( "ma5_%s_%djet.*" % ( topo, njets) )
     return len(files)
 
+def writeStatsFile ( statsfile : str, stats : dict ):
+    """ write stats to statsfile """
+    f = open ( statsfile, "w" )
+    f.write ( "# created {time.asctime()}\n" )
+    f.write ( "{" )
+    for SR,stat in stats.items():
+        f.write ( "'%s': %s,\n" % ( SR, stat ) )
+    #    f.write ( "%s\n" % stats )
+    f.write ( "}\n" )
+    f.close()
+    print ( "[emCreator] wrote stats to %s" % statsfile )
+
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang ):
     """
     :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
@@ -333,10 +345,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             cmd = "cp %s %s" % ( fname, dest )
             subprocess.getoutput ( cmd )
             statsfile = "%s/statsEM.py" % (Dirname )
-            f = open ( statsfile, "w" )
-            f.write ( "%s\n" % stats )
-            f.close()
-            print ( "[emCreator] wrote stats to %s" % statsfile )
+            writeStatsFile ( statsfile, stats )
     return ntot
 
 def getAllCutlangTopos():
