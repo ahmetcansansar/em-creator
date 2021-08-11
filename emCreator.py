@@ -220,7 +220,7 @@ def countRunningMA5 ( topo, njets ):
 def writeStatsFile ( statsfile : str, stats : dict ):
     """ write stats to statsfile """
     f = open ( statsfile, "w" )
-    f.write ( "# created {time.asctime()}\n" )
+    f.write ( f"# created {time.asctime()}\n" )
     f.write ( "{" )
     for SR,stat in stats.items():
         f.write ( "'%s': %s,\n" % ( SR, stat ) )
