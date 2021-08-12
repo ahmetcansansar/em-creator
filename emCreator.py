@@ -229,11 +229,13 @@ def writeStatsFile ( statsfile : str, stats : dict ):
     f.close()
     print ( "[emCreator] wrote stats to %s" % statsfile )
 
-def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang ):
+def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang, 
+                 create_stats ):
     """
     :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
     :param keep: keep the cruft files
     :param cutlang: is it a cutlang result?
+    :param create_stats: create also stats file
     """
     if masses == "all":
         masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
@@ -322,13 +324,20 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             experiment = "ATLAS"
         sana = bakeryHelpers.ma5AnaNameToSModelSName ( ana )
         Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
+        if not cutlang:
+            Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
         stats = creator.getStatistics ( ana )
         # print ( "[emCreator] obtained statistics for", ana, "in", fname )
 
         if copy and not os.path.exists (Dirname):
             Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
+            if cutlang:
+                Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
             if not os.path.exists ( Dirname ):
                 print ( "[emCreator] asked to copy but %s does not exist" % Dirname )
+        if create_stats:
+            statsfile = "./statsEM.py"
+            writeStatsFile ( statsfile, stats )
         if copy and os.path.exists (Dirname):
             dest = "%s/%s.embaked" % ( Dirname, topo )
             prevN = 0
@@ -344,8 +353,10 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             print ( "[emCreator] copying embaked to %s" % dest )
             cmd = "cp %s %s" % ( fname, dest )
             subprocess.getoutput ( cmd )
-            statsfile = "%s/statsEM.py" % (Dirname )
-            writeStatsFile ( statsfile, stats )
+            if create_stats:
+                cmd = "cp statsEM.py %s" % ( Dirname )
+                o = subprocess.getoutput ( cmd )
+                print ( f"[emCreator] {cmd} {o}" )
     return ntot
 
 def getAllCutlangTopos():
@@ -424,11 +435,11 @@ def run ( args ):
         for topo in topos:
             for ana in analyses.split(","):
                 ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
-                             args.copy, args.keep, args.sqrts, args.cutlang )
+                             args.copy, args.keep, args.sqrts, args.cutlang, args.stats )
     else:
         for ana in analyses.split(","):
             ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
-                         args.copy, args.keep, args.sqrts, args.cutlang )
+                         args.copy, args.keep, args.sqrts, args.cutlang, args.stats )
     print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
@@ -452,7 +463,9 @@ def main():
                              type=str, default="all" )
     argparser.add_argument ( '-v', '--verbose', help='be verbose',
                              action="store_true" )
-    argparser.add_argument ( '-c', '--copy', help='copy embaked file to smodels-database',
+    argparser.add_argument ( '-S', '--stats', help='create stats files',
+                             action="store_true" )
+    argparser.add_argument ( '-c', '--copy', help='copy embaked (and stats if -s) file to smodels-database',
                              action="store_true" )
     argparser.add_argument ( '-k', '--keep', help='keep all cruft files',
                              action="store_true" )
