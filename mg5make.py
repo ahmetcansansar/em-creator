@@ -88,13 +88,16 @@ def modifyBoostInstaller():
 def trim():
     """ trim the install down to what is needed """
     files = list ( glob.glob ( "MG5_aMC*" ) )
-    files += [ "tests" ]
+    files += [ "tests", "MadSpin/src/", "doc.tgz" ]
     files += glob.glob ( "HEPTools/*/include/*" )
+    files += glob.glob ( "*/*/src/" )
     for f in files:
         if not os.path.exists ( f ):
             continue
-        print ( f"rm {f}" )
-        shutil.rmtree ( f )
+        if os.path.isdir ( f ):
+            shutil.rmtree ( f )
+        else:
+            os.unlink ( f )
 
 def clean():
     print ( "cleaning up ... " )
