@@ -163,6 +163,9 @@ def filterForGap ( masses, gap, isMin=True, indices=[0,1] ):
     """
     if gap == None:
         return masses
+    if len(masses)==0:
+        print ( f"[bakeryHelpers] empty mass list, check your constraints on the masses!" )
+        sys.exit(-1)
     if len(masses[0])<=max(indices): ## not enough masses
         return masses
     ret = []

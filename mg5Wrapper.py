@@ -421,7 +421,10 @@ class MG5Wrapper:
         f.close()
         self.tempf = tempfile.mktemp(prefix="mg5proc",dir=self.tempdir )
         f=open(self.tempf,"w")
-        f.write ( "import model MSSM_SLHA2\n" )
+        if "Hig" in self.topo:
+            f.write ( "import model idm\n" )
+        else:
+            f.write ( "import model MSSM_SLHA2\n" )
         if False:
             # for SLHA1
             self.info ( f"do we need to port {self.topo} to slha2?" )
@@ -673,7 +676,7 @@ def main():
         analyses = args.analyses
         args = SimpleNamespace ( masses="all", topo=args.topo, njets=args.njets, \
                 analyses = analyses, copy=args.copy, keep=args.keep, sqrts=args.sqrts, 
-                verbose=False, cutlang=args.cutlang )
+                verbose=False, cutlang=args.cutlang, stats=True )
         emCreator.run ( args )
     with open("baking.log","a") as f:
         cmd = ""
