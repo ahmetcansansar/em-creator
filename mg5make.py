@@ -90,7 +90,10 @@ def trim():
     files = list ( glob.glob ( "MG5_aMC*" ) )
     files += [ "tests", "MadSpin/src/", "doc.tgz" ]
     files += glob.glob ( "HEPTools/*/include/*" )
-    files += glob.glob ( "*/*/src/" )
+    files += glob.glob ( "**/src/", recursive=True )
+    files += glob.glob ( "**/*.F", recursive=True )
+    files += glob.glob ( "**/*.f", recursive=True )
+    files += glob.glob ( "**/examples/", recursive=True )
     for f in files:
         if not os.path.exists ( f ):
             continue
