@@ -59,10 +59,10 @@ class emCreator:
         if self.cutlang:
             return self.getCutlangStatistics ( ana )
         import xml.etree.ElementTree as ET
-        Dir = "ma5.template/tools/PAD/Build/SampleAnalyzer/User/Analyzer/"
+        Dir = "ma5/tools/PAD/Build/SampleAnalyzer/User/Analyzer/"
         filename = "%s/%s.info" % ( Dir, ana )
         if not os.path.exists ( filename ):
-            Dir = "ma5.template/tools/PADForMA5tune/Build/SampleAnalyzer/User/Analyzer/"
+            Dir = "ma5/tools/PADForMA5tune/Build/SampleAnalyzer/User/Analyzer/"
             filename = "%s/%s.info" % ( Dir, ana )
         if not os.path.exists ( filename ):
             self.error ( "could not find statistics file for %s" % ana )
