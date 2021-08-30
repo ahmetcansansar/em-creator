@@ -244,6 +244,9 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         masses = bakeryHelpers.parseMasses ( masses )
     if masses == []:
         return 0
+    adl_ma5 = "MA5"
+    if cutlang:
+        adl_ma5 = "ADL"
     creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )
     ana_smodels = analyses.upper().replace("_","-")
     effs,tstamps={},{}
@@ -265,21 +268,21 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     nmg5 = countMG5 ( topo, njets )
     if cutlang:
         nrma5 = countRunningCutlang ( topo, njets )
-        if nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
+        if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
             return 0
         print ( )
         if seffs_smodels != "NO ANALYSIS":
-            print ( "[emCreator] For %s%s:%s%s I have efficiencies." % \
-                 ( colorama.Fore.RED, seffs_smodels, topo, colorama.Fore.RESET ) )
+            print ( "[emCreator] For %s%s:%s:%s%s I have efficiencies." % \
+                 ( colorama.Fore.RED, seffs_smodels, topo, adl_ma5, colorama.Fore.RESET ) )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running cutlang jobs." % ( nmg5, nrmg5, nrma5 ) )
     else:
         nrma5 = countRunningMA5 ( topo, njets )
-        if nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
+        if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
             return 0
         print ( )
         if seffs_smodels != "NO ANALYSIS":
-           print ( "[emCreator] For %s%s:%s%s I have efficiencies." % \
-                 ( colorama.Fore.RED, seffs_smodels, topo, colorama.Fore.RESET ) )
+           print ( "[emCreator] For %s%s:%s:%s%s I have efficiencies." % \
+                 ( colorama.Fore.RED, seffs_smodels, topo, adl_ma5, colorama.Fore.RESET ) )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
     ntot = 0
     for ana,values in effs.items():
@@ -419,28 +422,35 @@ def getMA5ListOfAnalyses():
 
 def run ( args ):
     analyses = args.analyses
-    if analyses in [ "None", None, "none", "" ]:
-        ## retrieve list of analyses
-        if args.cutlang:
-            analyses = getCutlangListOfAnalyses()
-        else:
-            analyses = getMA5ListOfAnalyses()
-            
+    #cutlang = args.cutlang
+    cutlangs = [ False, True ]
     if args.cutlang:
-        analyses = analyses.replace("_","-").upper()
+        cutlangs = [ True ]
+    if args.ma5:
+        cutlangs = [ False ]
     ntot = 0
-    if args.topo == "all":
-        topos = getAllTopos ( args.cutlang )
-        topos = list(topos)
-        topos.sort()
-        for topo in topos:
+    for cutlang in cutlangs:
+        if analyses in [ "None", None, "none", "" ]:
+            ## retrieve list of analyses
+            if cutlang:
+                analyses = getCutlangListOfAnalyses()
+            else:
+                analyses = getMA5ListOfAnalyses()
+                
+        if cutlang:
+           analyses = analyses.replace("_","-").upper()
+        if args.topo == "all":
+            topos = getAllTopos ( cutlang )
+            topos = list(topos)
+            topos.sort()
+            for topo in topos:
+                for ana in analyses.split(","):
+                    ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
+                                 args.copy, args.keep, args.sqrts, cutlang, args.stats )
+        else:
             for ana in analyses.split(","):
-                ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
-                             args.copy, args.keep, args.sqrts, args.cutlang, args.stats )
-    else:
-        for ana in analyses.split(","):
-            ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
-                         args.copy, args.keep, args.sqrts, args.cutlang, args.stats )
+                ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
+                             args.copy, args.keep, args.sqrts, cutlang, args.stats )
     print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
@@ -470,7 +480,9 @@ def main():
                              action="store_true" )
     argparser.add_argument ( '-k', '--keep', help='keep all cruft files',
                              action="store_true" )
-    argparser.add_argument ( '-l', '--cutlang', help='are these cutlang results?',
+    argparser.add_argument ( '-l', '--cutlang', help='cutlang only results',
+                             action="store_true" )
+    argparser.add_argument ( '-5', '--ma5', help='ma5 only results',
                              action="store_true" )
     defaultana = "atlas_susy_2016_07"
     defaultana = "cms_sus_19_005,cms_sus_19_006"

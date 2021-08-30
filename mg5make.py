@@ -92,7 +92,7 @@ def trim():
     files += glob.glob ( "HEPTools/*/include/*" )
     files += glob.glob ( "**/src/", recursive=True )
     files += glob.glob ( "**/*.F", recursive=True )
-    files += glob.glob ( "**/*.f", recursive=True )
+    # files += glob.glob ( "**/*.f", recursive=True )
     files += glob.glob ( "**/examples/", recursive=True )
     for f in files:
         if not os.path.exists ( f ):
