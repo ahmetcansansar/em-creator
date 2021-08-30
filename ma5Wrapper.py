@@ -35,7 +35,10 @@ class MA5Wrapper:
         self.ver = ver
         if not os.path.isdir ( self.ma5install ):
             self.error ( "ma5 install is missing??" )
-            sys.exit()
+            if os.path.exists ( "%s/ma5.template/" % self.basedir ):
+                self.exe ( "cp -r %s/ma5.template/ %s" % ( self.basedir, self.ma5install ) ) 
+            elif os.path.exists ( "/mnt/hephy/pheno/ww/ma5" ):
+                self.exe ( "cp -r /mnt/hephy/pheno/ww/ma5 ." )
         self.executable = "bin/ma5"
         if not os.path.exists ( self.ma5install + self.executable ):
             self.info ( "cannot find ma5 installation at %s" % self.ma5install )

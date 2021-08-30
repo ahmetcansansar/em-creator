@@ -61,8 +61,11 @@ class MG5Wrapper:
             self.info ( "cannot find mg5 installation at %s" % self.mg5install )
             if not os.path.exists ( "mg5/" ):
                 self.info ( "cannot even find directory. copy from template!" )
-                self.exe ( "cp -r mg5.template mg5" )
-            self.exe ( "mg5/make.py" )
+                if os.path.exists ( "mg5.template/" ):
+                    self.exe ( "cp -r mg5.template mg5" )
+                elif os.path.exists ( "/mnt/hephy/pheno/ww/git/mg5" ):
+                    self.exe ( "cp -r /mnt/hephy/pheno/ww/git/mg5 ." )
+            # self.exe ( "mg5/make.py" )
         self.determineMG5Version()
         self.templateDir = os.path.join(self.basedir, "templates/")
         ebeam = str(int(self.sqrts*1000/2))
