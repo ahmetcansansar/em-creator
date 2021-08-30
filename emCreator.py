@@ -223,6 +223,7 @@ def writeStatsFile ( statsfile : str, stats : dict ):
     f.write ( f"# created {time.asctime()}\n" )
     f.write ( "{" )
     for SR,stat in stats.items():
+        stat["comment"]="FIXME implement"
         f.write ( "'%s': %s,\n" % ( SR, stat ) )
     #    f.write ( "%s\n" % stats )
     f.write ( "}\n" )
