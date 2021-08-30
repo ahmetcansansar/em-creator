@@ -76,11 +76,13 @@ class MA5Wrapper:
         recastcard["cms_sus_16_033"] = "delphes_card_cms_sus_16_033"
         recastcard["cms_sus_19_006"] = "delphes_card_cms_sus_19_006"
         recastcard["cms_sus_16_048"] = "delphes_card_cms_sus_16_048"
+        recastcard["cms_sus_16_039"] = "delphes_card_cms_sus_16_039"
         anas = set(self.analyses.split(","))
         versions = { "atlas_susy_2016_07": "1.2",
                      "atlas_susy_2013_02": "1.1",
                      "cms_sus_19_006": "1.2",
                      "cms_sus_16_048": "1.2",
+                     "cms_sus_16_039": "1.2",
                      "cms_sus_16_033": "1.2" }
         self.info ( "adding %s to recast card %s" % ( self.analyses, filename ) )
         for i in anas:
