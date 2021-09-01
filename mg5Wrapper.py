@@ -580,6 +580,8 @@ def main():
                              type=float, default=None )
     argparser.add_argument ( '-r', '--rerun', help='force rerun, even if there is a summary file already',
                              action="store_true" )
+    argparser.add_argument ( '--dry_run', help='dry run, just print out the mass points',
+                             action="store_true" )
     argparser.add_argument ( '--ignore_locks', help='ignore any locks. for debugging only.',
                              action="store_true" )
     #mdefault = "(2000,1000,10),(2000,1000,10)"
@@ -638,6 +640,9 @@ def main():
                                          mingap1=args.mingap1, maxgap1=args.maxgap1,
                                          mingap2=args.mingap2, maxgap2=args.maxgap2,
                                          mingap13=args.mingap13, maxgap13=args.maxgap13 )
+    if args.dry_run:
+        print ( f"[mg5Wrapper] masses: {masses}" )
+        sys.exit()
     import random
     random.shuffle ( masses )
     nm = len(masses)
