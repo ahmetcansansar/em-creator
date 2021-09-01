@@ -13,6 +13,7 @@ def rmOldTempFiles( hours=8 ):
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/CLA*" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/output/delphes_out*root" )
     t = time.time()
+    random.shuffle ( files )
     for f in files:
         try:
             ts = os.stat(f).st_mtime
@@ -106,7 +107,8 @@ def rmOlderThan( sdirs, hours, dry_run ):
     :dry_run: just pretend, if true
     """
     keys = list(sdirs.keys())
-    keys.sort()
+    random.shuffle ( keys )
+    # keys.sort()
     for k in keys: # [:20]:
         try:
             h = hoursFromNow(k)
