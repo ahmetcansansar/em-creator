@@ -40,6 +40,9 @@ def isAssociateProduction ( topo ):
     """
     if topo in [ "TGQ", "T3GQ", "T5GQ" ]:
         return True
+    if topo in [ "TChiWZ", "TChiWZoff", "THigWZ", "THigWZoff", "TChiWH", "TChiWHoff", \
+                 "THigWH", "THigWHoff" ]:
+        return True
     return False
 
 def baseDir():
@@ -405,4 +408,5 @@ def rmLocksOlderThan ( hours=8 ):
 
 
 if __name__ == "__main__":
+    print ( isAssociateProduction ( "TChiWZ" ) )
     print ( parseMasses ( "[(350,691,50),(0,2351,50)]", mingap1 = 1., maxgap1 = 360. ) )
