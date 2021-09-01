@@ -1,0 +1,6 @@
+set automatic_html_opening False
+launch THigWZoff_1jet.1500_1500_1450
+shower=Pythia8
+detector=OFF
+0
+0
