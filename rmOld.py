@@ -4,7 +4,7 @@
 
 import glob, os, time, pickle, subprocess, argparse, random
 
-def rmOldTempFiles( hours=8 ):
+def rmOldTempFiles( hours=8, dry_run = False ):
     """ remove temp files older than so and so many hours """
     files = glob.glob ( "temp/*" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/*hepmc" )
@@ -14,17 +14,21 @@ def rmOldTempFiles( hours=8 ):
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/output/delphes_out*root" )
     t = time.time()
     random.shuffle ( files )
+    ct = 0
     for f in files:
         try:
             ts = os.stat(f).st_mtime
             dt = ( t - ts ) / 60. / 60.
             if dt > hours:
                 cmd = "rm -rf %s" % f
-                subprocess.getoutput ( cmd )
-                print ( cmd )
+                if not dry_run:
+                    ct += 1
+                    subprocess.getoutput ( cmd )
+                if ct % 10 == 0:
+                    print ( cmd )
         except Exception as e:
             pass
-
+    return ct
 
 def daysFromNow ( timestamp ):
     """ compute how many days in the past from now """
@@ -109,6 +113,7 @@ def rmOlderThan( sdirs, hours, dry_run ):
     keys = list(sdirs.keys())
     random.shuffle ( keys )
     # keys.sort()
+    ct = 0
     for k in keys: # [:20]:
         try:
             h = hoursFromNow(k)
@@ -117,6 +122,7 @@ def rmOlderThan( sdirs, hours, dry_run ):
                 cmd = "rm -rf %s" % sdirs[k]
                 o = "dry_run"
                 if not dry_run:
+                    ct += 1
                     o = subprocess.getoutput ( cmd )
                 print ( "%s: %s" % ( cmd, o ) )
                 #cmd = "rm -rf ma5/ANA_%s" % sdirs[k] 
@@ -125,6 +131,7 @@ def rmOlderThan( sdirs, hours, dry_run ):
                 #print ( "   %s: %s" % ( cmd, o ) )
         except Exception as e:
             pass
+    return ct
 
 def main():
     argparser = argparse.ArgumentParser(description='remove old directories.')
@@ -141,7 +148,8 @@ def main():
     #else:
     sdirs = createStats()
     savePickle ( sdirs )
-    rmOlderThan ( sdirs, args.hours, args.dry_run )
-    rmOldTempFiles ( args.hours )
+    ct = rmOlderThan ( sdirs, args.hours, args.dry_run )
+    ct += rmOldTempFiles ( args.hours, args.dry_run )
+    print ( f"[rmOld] removed a total of {ct} files." )
 
 main()
