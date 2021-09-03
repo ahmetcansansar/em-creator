@@ -1,0 +1,4 @@
+import @@HEPMCFILE@@
+set main.merging.check = true
+set main.merging.njets = 2
+submit 
