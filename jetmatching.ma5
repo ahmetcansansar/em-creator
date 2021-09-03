@@ -1,0 +1,4 @@
+import THigWZ_1350_1350_870.13.hepmc
+set main.merging.check = true
+set main.merging.njets = 2
+submit 
