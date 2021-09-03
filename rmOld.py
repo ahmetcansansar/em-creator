@@ -27,13 +27,13 @@ def rmOldTempFiles( hours=8, dry_run = False ):
                 if ct % 10 == 0:
                     print ( cmd )
         except Exception as e:
-            pass
+            print ( f"[rmOld] exception {e}" )
     return ct
 
 def daysFromNow ( timestamp ):
     """ compute how many days in the past from now """
     t0=time.time()
-    return hoursFromNow ( timestamp ) / 24.
+    return hOURsFromNow ( timestamp ) / 24.
 
 def hoursFromNow ( timestamp ):
     """ compute how many hours in the past from now """
@@ -75,28 +75,28 @@ def createStats():
             ms = os.stat ( f ).st_mtime
             sdirs[ms]=f
         except Exception as e:
-            pass
+            print ( f"[rmOld] exception {e}" )
     files = glob.glob("../smodels-utils/clip/_B*sh" )
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
             sdirs[ms]=f
         except Exception as e:
-            pass
+            print ( f"[rmOld] exception {e}" )
     files = glob.glob("/users/wolfgan.waltenberger/B*.sh" )
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
             sdirs[ms]=f
         except Exception as e:
-            pass
+            print ( f"[rmOld] exception {e}" )
     files = glob.glob(".lock*" )
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
             sdirs[ms]=f
         except Exception as e:
-            pass
+            print ( f"[rmOld] exception {e}" )
     return sdirs
 
 def loadPickle():
@@ -130,6 +130,7 @@ def rmOlderThan( sdirs, hours, dry_run ):
                 #    o = subprocess.getoutput ( cmd )
                 #print ( "   %s: %s" % ( cmd, o ) )
         except Exception as e:
+            print ( f"[rmOld] exception {e}" )
             pass
     return ct
 

@@ -75,6 +75,10 @@ class MG5Wrapper:
                           'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
+        if "TChi" in self.topo or "THig" in self.topo:
+            # for electroweakinos go lower in xqcut
+            self.mgParams["XQCUT"]="M[0]/6"
+        
         self.correctPythia8CfgFile()
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
         self.info ( "initialised" )
@@ -168,7 +172,8 @@ class MG5Wrapper:
                     if type(v)==str and "M[0]" in v:
                         m0 = masses[0]
                         if bakeryHelpers.isAssociateProduction ( self.topo ):
-                            m0 = min( masses[0], masses[1] )
+                            m0 = ( masses[0] + masses[1] ) / 2. ## mean!
+                            # m0 = min( masses[0], masses[1] )
                         v = v.replace("M[0]",str(m0))
                         v = str(eval (v ))
                     line = line.replace("@@%s@@" % k,v)
