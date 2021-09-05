@@ -12,7 +12,7 @@ def match():
     args = argparser.parse_args()
     hepmcfile = args.hepmc
     if hepmcfile.endswith ( ".gz" ):
-        hepmcfile = tempfile.mktemp(suffix=".hepmc",prefix="tmp" )
+        hepmcfile = tempfile.mktemp(suffix=".hepmc",prefix="tmp", dir="./" )
         # hepmcfile = "default.hepmc"
         with open( hepmcfile, 'wb') as f_out:
             in_f = gzip.open( args.hepmc, 'rb' )
