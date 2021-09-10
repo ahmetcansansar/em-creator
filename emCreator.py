@@ -476,7 +476,7 @@ def main():
                              action="store_true" )
     argparser.add_argument ( '-S', '--stats', help='create stats files',
                              action="store_true" )
-    argparser.add_argument ( '-c', '--copy', help='copy embaked (and stats if -s) file to smodels-database',
+    argparser.add_argument ( '-c', '--copy', help='copy embaked (and stats if -S) file to smodels-database',
                              action="store_true" )
     argparser.add_argument ( '-k', '--keep', help='keep all cruft files',
                              action="store_true" )
