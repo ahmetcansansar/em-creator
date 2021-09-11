@@ -43,21 +43,29 @@ class emCreator:
         print ( "%s[emCreator] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
                    colorama.Fore.RESET ) )
 
-    def getCutlangStatistics ( self, ana ):
+    def getCutlangStatistics ( self, ana, SRs ):
         """ obtain nobs, nb, etc from the ADL file
         :param ana: analysis id, e.g. atlas_susy_2016_07
+        :param SRs: list of signal regions
         FIXME not yet implemented
         """
         if hasWarned["cutlangstats"] == False:
             self.error ( "getCutlangStatistics not yet implemented!" )
             hasWarned["cutlangstats"]=True
-        return {}
+        ret = {}
+        for k in SRs:
+            if k.startswith("__"):
+                continue
+            if k in [ ]: # "signal_", "signal" ]:
+                continue
+            ret[k] = { "nobs": -1, "nb": -1, "deltanb": -1 }
+        return ret
 
-    def getStatistics ( self, ana = "atlas_susy_2016_07" ):
+    def getStatistics ( self, ana = "atlas_susy_2016_07", SRs = {} ):
         ### obtain nobs, nb, etc from the PAD info files, e.g.
         ### ma5/tools/PAD/Build/SampleAnalyzer/User/Analyzer/atlas_susy_2016_07.info
         if self.cutlang:
-            return self.getCutlangStatistics ( ana )
+            return self.getCutlangStatistics ( ana, SRs )
         import xml.etree.ElementTree as ET
         Dir = "ma5/tools/PAD/Build/SampleAnalyzer/User/Analyzer/"
         filename = "%s/%s.info" % ( Dir, ana )
@@ -330,7 +338,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
         if not cutlang:
             Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
-        stats = creator.getStatistics ( ana )
+        stats = creator.getStatistics ( ana, SRs )
         # print ( "[emCreator] obtained statistics for", ana, "in", fname )
 
         if copy and not os.path.exists (Dirname):
