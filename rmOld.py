@@ -24,7 +24,7 @@ def rmOldTempFiles( hours=8, dry_run = False ):
                 if not dry_run:
                     ct += 1
                     subprocess.getoutput ( cmd )
-                if ct % 10 == 0:
+                if ct % 10 == 0 or len(files)<6:
                     print ( cmd )
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
@@ -66,6 +66,8 @@ def createStats():
             continue
         try:
             ms = os.stat ( f ).st_mtime
+            while ms in sdirs:
+                ms+=.0001
             sdirs[ms]=f
         except Exception as e:
             pass
@@ -73,6 +75,8 @@ def createStats():
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
+            while ms in sdirs:
+                ms+=.0001
             sdirs[ms]=f
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
@@ -80,6 +84,8 @@ def createStats():
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
+            while ms in sdirs:
+                ms+=.0001
             sdirs[ms]=f
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
@@ -87,6 +93,8 @@ def createStats():
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
+            while ms in sdirs:
+                ms+=.0001
             sdirs[ms]=f
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
@@ -94,6 +102,8 @@ def createStats():
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
+            while ms in sdirs:
+                ms+=.0001
             sdirs[ms]=f
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
@@ -125,13 +135,8 @@ def rmOlderThan( sdirs, hours, dry_run ):
                     ct += 1
                     o = subprocess.getoutput ( cmd )
                 print ( "%s: %s" % ( cmd, o ) )
-                #cmd = "rm -rf ma5/ANA_%s" % sdirs[k] 
-                #if not dry_run:
-                #    o = subprocess.getoutput ( cmd )
-                #print ( "   %s: %s" % ( cmd, o ) )
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
-            pass
     return ct
 
 def main():
