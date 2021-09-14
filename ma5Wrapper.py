@@ -163,6 +163,7 @@ class MA5Wrapper:
             lines = h.readlines()
             h.close()
             for line in lines:
+                line = line.strip()
                 if line.startswith("#"):
                     continue
                 print ( line )
