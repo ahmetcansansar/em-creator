@@ -205,6 +205,15 @@ class CutLangWrapper:
         self._info("Delphes initialised.")
         self._info("Initialisation complete.")
 
+    def list_analyses ( self ):
+        """ list all analyses that are to be found in CutLang/ADLLHCanalyses/ """
+        import glob
+        files = glob.glob ( f"{self.adllhcanalyses}/CMS*" )
+        files += glob.glob ( f"{self.adllhcanalyses}/ATLAS*" )
+        for f in files:
+            t = f.replace( self.adllhcanalyses + "/", "" )
+            print ( t )
+
     def getMassesFromHEPMCFile ( self, hepmcfile: str ) -> str:
         """ try to obtain the masses from the hepmc file name """
         ret = hepmcfile.replace(".hepmc.gz","").replace(".hepmc","")
@@ -818,7 +827,13 @@ if __name__ == "__main__":
                            action="store_true")
     argparser.add_argument('-f', '--filter', help='Regions and bins to be filtered out, comma separated list. E.g. "SR7, SR5, SR4bin2, SR4bin3"',
                            type=str, default="")
+    argparser.add_argument ( '-l', '--list_analyses', help='list all analyses that are found in this ADL installation',
+                             action="store_true" )
     args = argparser.parse_args()
+    if args.list_analyses:
+        cutlang = CutLangWrapper(args.topo, args.njets, args.rerun, args.analyses)
+        cutlang.list_analyses()
+        sys.exit()
     if args.clean:
         cutlang = CutLangWrapper(args.topo, args.njets, args.rerun, args.analyses)
         cutlang.clean()
