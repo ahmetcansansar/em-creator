@@ -154,6 +154,19 @@ class MA5Wrapper:
             self.msg ( "%s not in summary file: rerun!" % self.analyses )
         return False
 
+    def list_analyses ( self ):
+        """ list all analyses that are to be found in ma5/ """
+        import glob
+        files = glob.glob ( f"{self.ma5install}/tools/PAD*/Input/analysis_description.dat" )
+        for f in files:
+            h = open ( f, "rt" )
+            lines = h.readlines()
+            h.close()
+            for line in lines:
+                if line.startswith("#"):
+                    continue
+                print ( line )
+
     def run( self, masses, hepmcfile, pid=None ):
         """ Run MA5 over an hepmcfile, specifying the process
         :param pid: process id, for debugging
@@ -290,6 +303,8 @@ if __name__ == "__main__":
                              action="store_true" )
     argparser.add_argument ( '-c', '--clean', help='clean all temporary files, then quit',
                              action="store_true" )
+    argparser.add_argument ( '-l', '--list_analyses', help='list all analyses that are found in this ma5 installation',
+                             action="store_true" )
     argparser.add_argument ( '-C', '--clean_all', help='clean all temporary files, even results directories, then quit',
                              action="store_true" )
     mdefault = "all"
@@ -300,6 +315,10 @@ if __name__ == "__main__":
     argparser.add_argument ( '-r', '--rerun', help='force rerun, even if there is a summary file already',
                              action="store_true" )
     args = argparser.parse_args()
+    if args.list_analyses:
+        ma5 = MA5Wrapper( args.topo, args.njets, args.rerun, args.analyses )
+        ma5.list_analyses()
+        sys.exit()
     if args.clean:
         ma5 = MA5Wrapper( args.topo, args.njets, args.rerun, args.analyses )
         ma5.clean()
