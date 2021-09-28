@@ -144,7 +144,7 @@ class CutLangWrapper:
                 sys.exit()
             # disable warnings for compilation to declutter output
             compile_path = os.path.abspath(self.cutlanginstall + "CLA/")
-            args = ['sed', '-i', 's/ -Wall//g', os.path.join(compile_path + "Makefile")]
+            args = ['sed', '-i', 's/ -Wall//g', os.path.join(compile_path, "Makefile")]
             self.exe(args)
 
             self._info("Compiling CutLang...")
