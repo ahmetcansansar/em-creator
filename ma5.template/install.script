@@ -2,6 +2,6 @@ install zlib
 install fastjet
 install delphes
 install PAD
-# install PADForSFS
-# install delphesMA5tune
-# install PADForMA5tune
+install PADForSFS
+install delphesMA5tune
+install PADForMA5tune
