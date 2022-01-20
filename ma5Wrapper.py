@@ -37,8 +37,8 @@ class MA5Wrapper:
             self.error ( "ma5 install is missing??" )
             if os.path.exists ( "%s/ma5.template/" % self.basedir ):
                 self.exe ( "cp -r %s/ma5.template/ %s" % ( self.basedir, self.ma5install ) ) 
-            elif os.path.exists ( "/mnt/hephy/pheno/ww/ma5" ):
-                self.exe ( "cp -r /mnt/hephy/pheno/ww/ma5 ." )
+            elif os.path.exists ( "/groups/hephy/pheno/ww/ma5" ):
+                self.exe ( "cp -r /groups/hephy/pheno/ww/ma5 ." )
         self.executable = "bin/ma5"
         if not os.path.exists ( self.ma5install + self.executable ):
             self.info ( "cannot find ma5 installation at %s" % self.ma5install )
@@ -254,7 +254,7 @@ class MA5Wrapper:
         home = os.environ["HOME"]
         home = home.replace("git/em-creator","")
         pylocaldir = "%s/.local/lib/python3.9/" % home
-        rootsys="/mnt/hephy/pheno/opt/root6.24-py39-u21.04/"
+        rootsys="/groups/hephy/pheno/opt/root/"
         import socket
         if socket.gethostname() in [ "two", "wnouc" ]:
             rootsys="/opt/root/"
