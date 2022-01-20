@@ -33,14 +33,14 @@ def install():
         return
     print ( "installing ma5 ..." )
     url="https://smodels.github.io/downloads/tarballs/"
-    import semver
-    sv = semver.parse ( ver )
+    sv = ver.split(".")
     tarball = "ma5_v%s.tgz" % ver
-    if sv["minor"]>=9 and sv["patch"]>=60:
+    if sv[2]=="60":
         tarball = f"MadAnalysis5_v{ver}.tgz"
     if not os.path.exists ( tarball ):
         cmd = "wget %s/%s" % ( url, tarball )
-        subprocess.getoutput ( cmd )
+        o = subprocess.getoutput ( cmd )
+        print ( f"[make.py] wget: {o}" )
     cmd = "tar xzvf %s" % tarball
     subprocess.getoutput ( cmd )
     cmd = "mv madanalysis5/* ."
