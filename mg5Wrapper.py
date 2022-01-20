@@ -27,7 +27,8 @@ signal.signal(signal.SIGINT, signal_handler)
 
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
-                   ignore_locks, sqrts=13, cutlang=False, ver="3_1_1" ):
+                   ignore_locks, sqrts=13, cutlang=False, ver="3_3_1",
+                   keephepmc = True ):
         """
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
@@ -42,6 +43,7 @@ class MG5Wrapper:
         self.ignore_locks = ignore_locks
         self.topo = topo
         self.keep = keep
+        self.keephepmc = keephepmc
         self.rerun = rerun
         self.recast = recast
         self.njets = njets
@@ -78,7 +80,7 @@ class MG5Wrapper:
         if "TChi" in self.topo or "THig" in self.topo:
             # for electroweakinos go lower in xqcut
             self.mgParams["XQCUT"]="M[0]/6"
-        
+
         self.correctPythia8CfgFile()
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
         self.info ( "initialised" )
@@ -257,9 +259,9 @@ class MG5Wrapper:
 
     def hasMA5Files ( self, masses ):
         """ check if all MA5 files are there """
-        destsaffile = bakeryHelpers.safFile ( self.ma5results, self.topo, masses, 
+        destsaffile = bakeryHelpers.safFile ( self.ma5results, self.topo, masses,
                                               self.sqrts )
-        destdatfile = bakeryHelpers.datFile ( self.ma5results, self.topo, masses, 
+        destdatfile = bakeryHelpers.datFile ( self.ma5results, self.topo, masses,
                                               self.sqrts )
         if os.path.exists ( destsaffile ) and os.path.exists ( destdatfile ):
             self.info ( "summary files %s,%s exist. skip point." % \
@@ -330,7 +332,7 @@ class MG5Wrapper:
         self.announce ( "starting MA5 on %s[%s] at %s%s" % ( str(masses), self.topo, time.asctime(), spid ) )
         from ma5Wrapper import MA5Wrapper
         ma5 = MA5Wrapper ( self.topo, self.njets, self.rerun, analyses, self.keep,
-                           self.sqrts )
+                           self.sqrts, keephepmc = self.keephepmc )
         self.debug ( "now call ma5Wrapper" )
         hepmcfile = self.hepmcFileName ( masses )
         ret = ma5.run ( masses, hepmcfile, pid )
@@ -551,6 +553,8 @@ def main():
                              type=str, default="T2" )
     argparser.add_argument ( '-k', '--keep', help='keep temporary files',
                              action="store_true" )
+    argparser.add_argument ( '-K', '--keephepmc', help='keep hepmc files',
+                             action="store_true" )
     argparser.add_argument ( '--show', help='show production stats',
                              action="store_true" )
     argparser.add_argument ( '-a', '--recast', help='run also recasting after producing the events',
@@ -661,8 +665,10 @@ def main():
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )
     if args.cutlang:
         args.recast = True
-    mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun, 
-                      args.recast, args.ignore_locks, args.sqrts, args.cutlang )
+
+    mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun,
+                      args.recast, args.ignore_locks, args.sqrts, args.cutlang,
+                      keephepmc = args.keephepmc )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 
@@ -688,7 +694,7 @@ def main():
         # analyses = "atlas_susy_2016_07"
         analyses = args.analyses
         args = SimpleNamespace ( masses="all", topo=args.topo, njets=args.njets, \
-                analyses = analyses, copy=args.copy, keep=args.keep, sqrts=args.sqrts, 
+                analyses = analyses, copy=args.copy, keep=args.keep, sqrts=args.sqrts,
                 verbose=False, ma5=not args.cutlang, cutlang=args.cutlang, stats=True )
         emCreator.run ( args )
     with open("baking.log","a") as f:

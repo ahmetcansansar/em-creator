@@ -14,9 +14,13 @@ import bakeryHelpers
 
 class MA5Wrapper:
     def __init__ ( self, topo, njets, rerun, analyses, keep=False, 
-                   sqrts=13, ver="1.9.beta" ):
+                   sqrts=13, ver="1.9.60", keephepmc=True ):
         """
+        :param topo: e.g. T1
+        :param keep: keep cruft files, for debugging
+        :param sqrts: sqrts, in TeV
         :param ver: version of ma5
+        :param keephepmc: keep mg5 hepmc file (typically in mg5results/)
         """
         self.topo = topo
         self.sqrts = sqrts
@@ -24,6 +28,7 @@ class MA5Wrapper:
         self.analyses = analyses
         self.rerun = rerun
         self.keep = keep
+        self.keephepmc = keephepmc
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
         self.ma5results = "%s/ma5results/" % self.basedir
@@ -237,8 +242,11 @@ class MA5Wrapper:
         if errFree: ## only move if we have both
             shutil.move ( origdatfile, destdatfile )
             shutil.move ( origsaffile, destsaffile )
-            if not self.keep:
-                self.exe ( "rm -rf %s" % hepmcfile )
+            if self.keephepmc:
+                self.info ( f"not removing {hepmcfile}" )
+            else:
+                cmd = f"rm -rf {hepmcfile}"
+                self.exe ( cmd )
         if not self.keep:
             self.exe ( "rm -rf %s" % tempdir )
         os.chdir ( self.basedir )
