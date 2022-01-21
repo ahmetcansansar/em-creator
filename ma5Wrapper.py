@@ -13,7 +13,7 @@ import multiprocessing
 import bakeryHelpers
 
 class MA5Wrapper:
-    def __init__ ( self, topo, njets, rerun, analyses, keep=False, 
+    def __init__ ( self, topo, njets, rerun, analyses, keep=False,
                    sqrts=13, ver="1.9.60", keephepmc=True ):
         """
         :param topo: e.g. T1
@@ -41,7 +41,7 @@ class MA5Wrapper:
         if not os.path.isdir ( self.ma5install ):
             self.error ( "ma5 install is missing??" )
             if os.path.exists ( "%s/ma5.template/" % self.basedir ):
-                self.exe ( "cp -r %s/ma5.template/ %s" % ( self.basedir, self.ma5install ) ) 
+                self.exe ( "cp -r %s/ma5.template/ %s" % ( self.basedir, self.ma5install ) )
             elif os.path.exists ( "/groups/hephy/pheno/ww/ma5" ):
                 self.exe ( "cp -r /groups/hephy/pheno/ww/ma5 ." )
         self.executable = "bin/ma5"
@@ -117,15 +117,27 @@ class MA5Wrapper:
         """
         self.info ( "writing commandfile %s" % self.commandfile )
         f = open( self.commandfile,'wt')
-        #f.write('install delphesMA5tune\n')
-        #f.write('install PADForMA5tune\n')
+        ## FIXME here I should activate e.g. delphesMA5tune if needed
+        if self.analyses in [ "atlas_susy_2013_02" ]:
+            f.write('install delphesMA5tune\n')
+            f.write('install PADForMA5tune\n')
         #f.write('install delphes\n')
         #f.write('install PAD\n')
         f.write('set main.recast = on\n')
         #filename = self.recastfile.replace(self.ma5install,"./")
         #f.write('set main.recast.card_path = %s\n' % filename )
         f.write('set main.recast.card_path = ./recast\n' )
-        f.write('set main.recast.global_likelihoods = off\n' )
+        ## I think I can turn off global likelihoods only if there is
+        ## no covariance matrix
+        noGlobalLikelihoodNeeded = [ "cms_sus_16_048" ]
+        anas = set(self.analyses.split(","))
+        needsLLhd = False
+        for i in anas:
+            if not i.strip() in noGlobalLikelihoodNeeded:
+                needsLLhd = True
+        self.info ( f"checking if we need a global likelihood for {self.analyses}: {needsLLhd}" )
+        if not needsLLhd:
+            f.write('set main.recast.global_likelihoods = off\n' )
         f.write('import '+hepmcfile+'\n')
         f.write('submit ANA_%s\n' % bakeryHelpers.dirName( process, masses )  )
         f.close()

@@ -1,7 +1,9 @@
 install zlib
 install fastjet
+## i think if we want anas from PADForSFS or PADForMA5tune, we need to
+## change the order here, or activate :(
 install PADForSFS
 install delphesMA5tune
 install PADForMA5tune
-install delphes 
+install delphes
 install PAD
