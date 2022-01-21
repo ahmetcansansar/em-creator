@@ -18,13 +18,14 @@ def install_plugins():
         if line[0]=="#":
             continue
         print ( " - %s" % line.strip() )
-        f=open("install.txt","w")
+        ## installing.txt is what is being installed right now
+        f=open("installing.txt","w")
         f.write(line)
         f.close()
-        cmd = "python3 bin/ma5 -s -f install.txt 2>&1 | tee /tmp/ma5.install"
+        cmd = "python3 bin/ma5 -s -f installing.txt 2>&1 | tee /tmp/ma5.install"
         a = subprocess.getoutput ( cmd )
         print ( a )
-    os.unlink ( "install.txt" )
+    os.unlink ( "installing.txt" )
 
 def install():
     # checkDependencies()
@@ -52,7 +53,7 @@ def install():
     if not os.path.exists ( "bin/ma5" ):
         print ( "something went wrong with the install. please check manually" )
         sys.exit()
-    install_plugins()
+    # install_plugins()
 
 def isInstalled ( library ):
     """ is library installed (deb) """
