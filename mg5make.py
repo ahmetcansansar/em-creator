@@ -17,13 +17,13 @@ def install_plugins( pyver=3 ):
         if line[0]=="#":
             continue
         print ( " - %s" % line.strip() )
-        f=open("install.txt","w")
+        f=open("installing.txt","w")
         f.write(line)
         f.close()
-        cmd = "python%d bin/mg5_aMC -f install.txt 2>&1 | tee /tmp/mg5.install" % pyver
+        cmd = "python%d bin/mg5_aMC -f installing.txt 2>&1 | tee /tmp/mg5.install" % pyver
         subprocess.getoutput ( cmd )
-    if os.path.exists ( "install.txt" ):
-        os.unlink ( "install.txt" )
+    if os.path.exists ( "installing.txt" ):
+        os.unlink ( "installing.txt" )
 
 def install( ver, plugins = True, pyver = 3 ):
     """
