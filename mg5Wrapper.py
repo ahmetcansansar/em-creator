@@ -26,7 +26,7 @@ class MG5Wrapper:
         os.chdir ( self.basedir )
         self.tempdir = bakeryHelpers.tempDir()
         self.resultsdir = os.path.join(self.basedir, "mg5results")
-        self.ma5results = os.path.join(self.basedir, "results")
+        self.ma5results = os.path.join(self.basedir, "ma5results")
         self.cutlang = cutlang
         self.mkdir ( self.resultsdir )
         self.locker = locker.Locker ( sqrts, topo, ignore_locks )
@@ -245,7 +245,7 @@ class MG5Wrapper:
             self.info ( f"If you wish to remove it:\nrm {self.locker.lockfile(masses)}" )
             return
         self.process = "%s_%djet" % ( self.topo, self.njets )
-        if self.hasHEPMC ( masses ):
+        if self.locker.hasHEPMC ( masses ):
             if not self.rerun:
                 which  = "MA5"
                 if self.cutlang:
@@ -290,7 +290,7 @@ class MG5Wrapper:
         ma5 = MA5Wrapper ( self.topo, self.njets, self.rerun, analyses, self.keep,
                            self.sqrts, keephepmc = self.keephepmc )
         self.debug ( "now call ma5Wrapper" )
-        hepmcfile = self.hepmcFileName ( masses )
+        hepmcfile = self.locker.hepmcFileName ( masses )
         ret = ma5.run ( masses, hepmcfile, pid )
         msg = "finished MG5+MA5"
         if ret > 0:
@@ -315,7 +315,7 @@ class MG5Wrapper:
                                   keep = self.keep )
             #                   self.sqrts )
             self.debug ( f"now call cutlangWrapper for {ana}" )
-            hepmcfile = self.hepmcFileName ( masses )
+            hepmcfile = self.locker.hepmcFileName ( masses )
             ret = cl.run ( masses, hepmcfile, pid )
             msg = "finished MG5+Cutlang: "
             if ret > 0:
@@ -435,7 +435,7 @@ class MG5Wrapper:
         self.exe ( cmd, masses )
         hepmcfile = self.orighepmcFileName( masses )
         if self.hasorigHEPMC ( masses ):
-            dest = self.hepmcFileName ( masses )
+            dest = self.locker.hepmcFileName ( masses )
             self.msg ( "moving", hepmcfile, "to", dest )
             shutil.move ( hepmcfile, dest )
         else:
@@ -467,13 +467,6 @@ class MG5Wrapper:
                             "/Events/run_01/tag_1_pythia8_events.hepmc.gz"
         return hepmcfile
 
-    def hepmcFileName ( self, masses ):
-        """ return the hepmc file name at final destination """
-        smasses = "_".join(map(str,masses))
-        dest = "%s/%s_%s.%d.hepmc.gz" % \
-               ( self.resultsdir, self.topo, smasses, self.sqrts )
-        return dest
-
     def hasorigHEPMC ( self, masses ):
         """ does it have a valid HEPMC file? if yes, then skip the point """
         hepmcfile = self.orighepmcFileName( masses )
@@ -484,15 +477,6 @@ class MG5Wrapper:
             return False
         return True
 
-    def hasHEPMC ( self, masses ):
-        """ does it have a valid HEPMC file? if yes, then skip the point """
-        hepmcfile = self.hepmcFileName( masses )
-        if not os.path.exists ( hepmcfile ):
-            return False
-        if os.stat ( hepmcfile ).st_size < 100:
-            ## too small to be real
-            return False
-        return True
 
 def main():
     import argparse

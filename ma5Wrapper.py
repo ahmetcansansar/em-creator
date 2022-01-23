@@ -11,6 +11,7 @@
 import os, sys, colorama, subprocess, shutil, tempfile, time, io
 import multiprocessing
 import bakeryHelpers
+import locker
 
 class MA5Wrapper:
     def __init__ ( self, topo, njets, rerun, analyses, keep=False,
@@ -31,6 +32,7 @@ class MA5Wrapper:
         self.keephepmc = keephepmc
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
+        self.locker = locker.Locker ( sqrts, topo, False )
         self.ma5results = "%s/ma5results/" % self.basedir
         bakeryHelpers.mkdir ( self.ma5results )
         self.ma5install = "%s/ma5/" % self.basedir
@@ -55,15 +57,6 @@ class MA5Wrapper:
             self.exe ( "%s/make.py" % self.ma5install )
         self.templateDir = "%s/templates/" % self.basedir
         # self.info ( "initialised" )
-
-    def hepmcFileName ( self, masses ):
-        """ return the hepmc file name at final destination 
-            make sure this method stay in sync with the one in mg5! """
-        smasses = "_".join(map(str,masses))
-        resultsdir = os.path.join(self.basedir, "mg5results")
-        dest = "%s/%s_%s.%d.hepmc.gz" % \
-               ( resultsdir, self.topo, smasses, self.sqrts )
-        return dest
 
     def info ( self, *msg ):
         print ( "%s[ma5Wrapper] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
@@ -227,7 +220,7 @@ class MA5Wrapper:
             return -1
             # sys.exit()
         # now write recasting card
-        self.msg ( "%sFound hepmcfile at %s" % ( spid, hepmcfile ) )
+        self.msg ( "%s Found hepmcfile at %s" % ( spid, hepmcfile ) )
         self.writeRecastingCard ()
         self.writeCommandFile( hepmcfile, process, masses )
         Dir = bakeryHelpers.dirName ( process, masses )
@@ -384,11 +377,12 @@ if __name__ == "__main__":
 
     def runChunk ( chunk, pid ):
         for c in chunk:
-            hepmcfile = ma5.hepmcFileName ( c )
-            if os.path.exists ( hepmcfile ):
+            hashepmc = ma5.locker.hasHEPMC ( c )
+            if hashepmc and not ma5.locker.isLocked ( c ):
+                hepmcfile = ma5.locker.hepmcFileName ( c )
                 ma5.run ( c, hepmcfile, pid )
             else:
-                ma5.info ( f"skipping {hepmcfile}: does not exist." )
+                ma5.info ( f"skipping {hepmcfile}: does not exist or is locked." )
 
     jobs=[]
     for i in range(nprocesses):

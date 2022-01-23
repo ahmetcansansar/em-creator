@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 """
-.. module:: mg5Wrapper
-        :synopsis: code that wraps around MadGraph5. Produces the data cards,
-                   and runs the mg5 executable.
+.. module:: locker
+   :synopsis: code to lock and unlock certain mass points,
+              for given topologies and sqrts. used to make sure,
+              we dont run the same point in parallel
 
 .. moduleauthor:: Wolfgang Waltenberger <wolfgang.waltenberger@gmail.com>
 """
@@ -25,22 +26,32 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 class Locker:
-    def __init__ ( self, sqrts, topo, ignore_locks ):
+    def __init__ ( self, sqrts, topo, ignore_locks, prefix=".lock" ):
         """
         the locking mechanism as a class
         :param sqrts: center of mass energy, e.g. 13
         :param topo: topology, e.g. T2
         :param ignore_locks: ignore all locks? for debugging only
+        :param prefix: prefix for lock files
         """
         self.basedir = bakeryHelpers.baseDir()
         self.ignore_locks = ignore_locks
         os.chdir ( self.basedir )
         self.sqrts = sqrts
         self.topo = topo
+        self.prefix = prefix
 
     def lockfile ( self, masses ):
-        ret = "%s/.lock%d_%s_%s" % ( self.basedir, self.sqrts, str(masses).replace(" ","").replace("(","").replace(")","").replace(",","_"), self.topo )
+        m = str(masses).replace(" ","").replace("(","").replace(")","")
+        m = m.replace(",","_")
+        ret = f"{self.basedir}/{self.prefix}{self.sqrts}_{m}_{self.topo}"
         return ret
+
+    def isLocked ( self, masses ):
+        """ a simple query if a point is locked, 
+            but does not lock itself. """
+        filename = self.lockfile( masses )
+        return os.path.exists ( filename )
 
     def lock ( self, masses ):
         """ lock for topo and masses, to make sure processes dont
@@ -77,6 +88,32 @@ class Locker:
             cmd = "rm -f %s" % filename
             subprocess.getoutput ( cmd )
 
+    def hepmcFileName ( self, masses ):
+        """ return the hepmc file name at final destination.
+            admittedly has not much to do with locking, but it's a nice
+            way to share this method between ma5Wrapper and mg5Wrapper """
+        smasses = "_".join(map(str,masses))
+        resultsdir = os.path.join(self.basedir, "mg5results")
+        dest = "%s/%s_%s.%d.hepmc.gz" % \
+               ( resultsdir, self.topo, smasses, self.sqrts )
+        return dest
+
+    def hasHEPMC ( self, masses ):
+        """ does it have a valid HEPMC file? if yes, then skip the point """
+        hepmcfile = self.hepmcFileName( masses )
+        if not os.path.exists ( hepmcfile ):
+            return False
+        if os.stat ( hepmcfile ).st_size < 100:
+            ## too small to be real
+            return False
+        return True
+
 if __name__ == "__main__":
     l = Locker ( 13, "T2", False )
-    l.lock( (120,100) )
+    masses=(120,100)
+    l.lock( masses )
+    il = l.isLocked ( masses )
+    print ( f"after locking: {masses} is locked? {il}" )
+    l.unlock( masses )
+    il = l.isLocked ( masses )
+    print ( f"after unlocking: {masses} is locked {il}" )
