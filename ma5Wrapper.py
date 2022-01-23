@@ -32,8 +32,7 @@ class MA5Wrapper:
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
         self.ma5results = "%s/ma5results/" % self.basedir
-        if not os.path.exists ( self.ma5results ):
-            subprocess.getoutput ( "mkdir %s" % self.ma5results )
+		    bakeryHelpers.mkdir ( self.ma5results )
         self.ma5install = "%s/ma5/" % self.basedir
         if abs ( sqrts - 8 ) < .1:
             self.ma5install = "%s/ma5.8tev/" % self.basedir
@@ -274,8 +273,13 @@ class MA5Wrapper:
             else:
                 cmd = f"rm -rf {hepmcfile}"
                 self.exe ( cmd )
-        if not self.keep and os.path.exists ( tempdir ):
+        if errFree and not self.keep and os.path.exists ( tempdir ):
             self.exe ( f"rm -rf {tempdir}" )
+        if not errFree:
+            ## for debugging
+		        dirname = f"{self.basedir}/debug/"
+            bakeryHelpers.mkdir ( dirname )
+            self.exe ( f"mv {tempdir} {dirname}" )
         os.chdir ( self.basedir )
         return 0
 

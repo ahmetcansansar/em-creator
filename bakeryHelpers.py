@@ -16,6 +16,10 @@ def yesno ( boolean ):
         return "yes"
     return "no"
 
+def mkdir ( dirname ):
+    if not os.path.exists ( dirname ):
+        os.mkdir ( dirname )
+
 def getAge ( f ):
     """ get the age of file in hours. age goes by last modification """
     if not os.path.exists ( f ):
