@@ -579,9 +579,9 @@ DECAY   1000023     1.00000000E+00   # neutralino2 decays
  
 DECAY   1000024     1.00000000E+00   # chargino1+ decays
  #           BR         NDA      ID1       ID2       ID3
-      0.32732273838630  3    1000022      -11       12   # BR(~chi_1+ -> ~chi_10 e+   nu_e)
-      0.32487775061124  3    1000022      -13       14   # BR(~chi_1+ -> ~chi_10 mu+  nu_mu)
-      0.34779951100244  3    1000022      -15       16   # BR(~chi_1+ -> ~chi_10 tau+ nu_tau)
+      0.333333333333  3    1000022      -11       12   # BR(~chi_1+ -> ~chi_10 e+   nu_e)
+      0.333333333333  3    1000022      -13       14   # BR(~chi_1+ -> ~chi_10 mu+  nu_mu)
+      0.333333333333  3    1000022      -15       16   # BR(~chi_1+ -> ~chi_10 tau+ nu_tau)
 #
 #      PDG        Width
 DECAY  1000025   0.000000e+00
