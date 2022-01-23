@@ -38,6 +38,9 @@ def install( ver, plugins = True, pyver = 3 ):
         else:
             print ( "[make.py] everything seems to be installed. Remove HEPTools or bin/mg5_aMC if you wish to trigger a reinstall" )
         return
+    if os.path.exists ( "bin" ):
+        ## bin exists, but not bin/mg5_aMC, make clean
+        clean()
     print ( "installing mg5 ..." )
     verdot = ver.replace("_",".")
     url="https://smodels.github.io/downloads/tarballs/"

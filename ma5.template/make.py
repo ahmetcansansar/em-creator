@@ -32,6 +32,9 @@ def install():
     if os.path.exists ( "bin/ma5" ):
         print ( "[make.py] not installing ma5: bin/ma5 exists" )
         return
+    if os.path.exists ( "bin" ):
+        ## so 'bin' exists, but not 'bin/ma5'. clean!
+        clean()
     print ( "installing ma5 ..." )
     url="https://smodels.github.io/downloads/tarballs/"
     sv = ver.split(".")
