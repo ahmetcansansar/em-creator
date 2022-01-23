@@ -121,8 +121,8 @@ class emCreator:
         toglob = f"{fdir}/*_{smass}.embaked"
         emglob = glob.glob ( toglob )
         if len(emglob)==1:
+            timestamp = os.stat ( emglob[0] ).st_mtime
             with open ( emglob[0], "rt" ) as f:
-                timestamp = os.stat ( f ).st_mtime
                 txt=f.read()
                 p = txt.find(": ")
                 D = eval( txt[p+2:] )
@@ -478,6 +478,12 @@ def run ( args ):
     if args.ma5:
         cutlangs = [ False ]
     ntot, ntotembaked = 0, 0
+    files = glob.glob ( "embaked/*embaked" )
+    for fname in files:
+        f=open(fname,"rt")
+        D=eval(f.read())
+        f.close()
+        ntotembaked+=len(D.keys())
     for cutlang in cutlangs:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
@@ -496,14 +502,14 @@ def run ( args ):
                 for ana in analyses.split(","):
                     ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
                                  args.copy, args.keep, args.sqrts, cutlang, args.stats )
-                    D = embakedFile ( ana, topo, cutlang )
-                    ntotembaked += len(D.keys())
+                    #D = embakedFile ( ana, topo, cutlang )
+                    #ntotembaked += len(D.keys())
         else:
             for ana in analyses.split(","):
                 ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                              args.copy, args.keep, args.sqrts, cutlang, args.stats )
-                D = embakedFile ( ana, args.topo, cutlang )
-                ntotembaked += len(D.keys())
+                #D = embakedFile ( ana, args.topo, cutlang )
+                #ntotembaked += len(D.keys())
     print ( f"[emCreator] I found a total of {ntotembaked} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
@@ -512,7 +518,7 @@ def run ( args ):
         print ( f"[emCreator]    last status was {lines[0].strip()}." )
     if args.topo == "all": #  and "," in args.analyses:
         f=open(".last.summary","wt")
-        f.write ( f"{ntot} points at {time.asctime()}\n" )
+        f.write ( f"{ntotembaked} points at {time.asctime()}\n" )
         f.write ( f"t={args.topo}, a={analyses}\n" )
         f.close()
 
