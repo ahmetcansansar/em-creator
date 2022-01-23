@@ -52,6 +52,15 @@ class MA5Wrapper:
         self.templateDir = "%s/templates/" % self.basedir
         # self.info ( "initialised" )
 
+    def hepmcFileName ( self, masses ):
+        """ return the hepmc file name at final destination 
+            make sure this method stay in sync with the one in mg5! """
+        smasses = "_".join(map(str,masses))
+        resultsdir = os.path.join(self.basedir, "mg5results")
+        dest = "%s/%s_%s.%d.hepmc.gz" % \
+               ( resultsdir, self.topo, smasses, self.sqrts )
+        return dest
+
     def info ( self, *msg ):
         print ( "%s[ma5Wrapper] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
                    colorama.Fore.RESET ) )
@@ -362,8 +371,9 @@ if __name__ == "__main__":
     # ma5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 
-    def runChunk ( chunk, hepmcfile, pid ):
+    def runChunk ( chunk, pid ):
         for c in chunk:
+            hepmcfile = ma5.hepmcFileName ( c )
             ma5.run ( c, hepmcfile, pid )
 
     jobs=[]

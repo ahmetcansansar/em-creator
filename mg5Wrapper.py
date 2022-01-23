@@ -97,7 +97,7 @@ class MG5Wrapper:
         if not ver.startswith ( "v" ):
             self.msg ( "I dont understand the version id %s" % ver )
             return
-        self.msg ( "determination of MG5 version says: %s" % ver )
+        self.msg ( f"this is MG5 {ver}" )
         if ver.startswith ( "v" ):
             self.ver = ver
         if "py3" in ver:
