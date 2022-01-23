@@ -269,8 +269,8 @@ class MA5Wrapper:
             else:
                 cmd = f"rm -rf {hepmcfile}"
                 self.exe ( cmd )
-        if not self.keep:
-            self.exe ( "rm -rf %s" % tempdir )
+        if not self.keep and os.path.exists ( tempdir ):
+            self.exe ( f"rm -rf {tempdir}" )
         os.chdir ( self.basedir )
         return 0
 
@@ -278,7 +278,7 @@ class MA5Wrapper:
         """ execute cmd in shell
         :param maxLength: maximum length of output to be printed
         """
-        self.msg ( "exec: [%s] %s" % (os.getcwd(), cmd ) )
+        self.msg ( f"exec: [{os.getcwd()}] {cmd}" )
         myenv = dict(os.environ)
         # home = "/scratch-cbe/users/wolfgan.waltenberger/"
         home = os.environ["HOME"]
