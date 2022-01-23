@@ -374,7 +374,10 @@ if __name__ == "__main__":
     def runChunk ( chunk, pid ):
         for c in chunk:
             hepmcfile = ma5.hepmcFileName ( c )
-            ma5.run ( c, hepmcfile, pid )
+            if os.path.exists ( hepmcfile ):
+                ma5.run ( c, hepmcfile, pid )
+            else:
+                ma5.error ( f"skipping {hepmcfile}: does not exist." )
 
     jobs=[]
     for i in range(nprocesses):
