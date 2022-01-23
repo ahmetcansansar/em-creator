@@ -22,10 +22,17 @@ def missing ( fname1, fname2 ):
     for k in k2:
         if not k in k1:
             in2Not1.append ( k )
-    print ( f"{len(in1Not2)} points in1Not2: {in1Not2[:5]}" )
-    print ( f"{len(in2Not1)} points in2Not1: {in2Not1[:5]}" )
+    print ( f"{len(in1Not2)} pts in 1 not 2: {in1Not2[:5]}" )
+    print ( f"{len(in2Not1)} pts in 2 not 1: {in2Not1[:5]}" )
     print ( f"{nInBoth} points in both" )
 
+if __name__ == "__main__":
+    import argparse
+    argparser = argparse.ArgumentParser(description='find missing points')
+    argparser.add_argument ( '-f1', '--file1', help='file #1 [embaked/CMS-SUS-16-039.TChiWZ.MA5.embaked]',
+                             type=str, default="embaked/CMS-SUS-16-039.TChiWZ.MA5.embaked" )
+    argparser.add_argument ( '-f2', '--file2', help='file #2 [../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZ.embaked]',
+                             type=str, default="../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZ.embaked" )
 
-missing ( "embaked/CMS-SUS-16-039.TChiWZ.MA5.embaked", 
-          "../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZ.embaked" )
+    args = argparser.parse_args()
+    missing ( args.file1, args.file2 )
