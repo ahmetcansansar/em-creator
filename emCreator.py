@@ -332,17 +332,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     for ana,values in effs.items():
         if len(values.keys()) == 0:
             continue
-        ts = {}
-        if ana in tstamps:
-            ts = tstamps[ana]
         fname = embakedFileName ( ana, topo, cutlang )
-        print ( "%s[emCreator] baking %s: %d points.%s" % \
-                ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
-        ntot += len(values)
-        SRs = set()
-        for k,v in values.items():
-            for sr in v.keys():
-                SRs.add(sr)
         ## read in the old stuff
         f = open ( fname, "rt" )
         D = eval ( f.read() )
@@ -350,6 +340,16 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         for k,v in D.items():
             if not k in values:
                 values[k]=v
+        ts = {}
+        if ana in tstamps:
+            ts = tstamps[ana]
+        print ( "%s[emCreator] baking %s: %d points.%s" % \
+                ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
+        ntot += len(values)
+        SRs = set()
+        for k,v in values.items():
+            for sr in v.keys():
+                SRs.add(sr)
         f=open(fname,"w")
         f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
                    ( time.asctime(), len(values.keys()), len(SRs), recaster ( cutlang ) ) )
