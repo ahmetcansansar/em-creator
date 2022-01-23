@@ -11,6 +11,11 @@ import numpy, sys, os, time, subprocess, glob
 sys.path.insert(0,"../../smodels" )
 from smodels.tools.runtime import nCPUs
 
+def yesno ( boolean ):
+    if boolean:
+        return "yes"
+    return "no"
+
 def getAge ( f ):
     """ get the age of file in hours. age goes by last modification """
     if not os.path.exists ( f ):

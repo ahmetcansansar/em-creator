@@ -145,7 +145,7 @@ class MA5Wrapper:
         for i in anas:
             if not i.strip() in noGlobalLikelihoodNeeded:
                 needsLLhd = True
-        self.info ( f"checking if we need a global likelihood for {self.analyses}: {needsLLhd}" )
+        self.info ( f"do we need a global likelihood for {self.analyses}: {bakeryHelpers.yesno(needsLLhd)}" )
         if not needsLLhd:
             f.write('set main.recast.global_likelihoods = off\n' )
         f.write('import '+hepmcfile+'\n')
