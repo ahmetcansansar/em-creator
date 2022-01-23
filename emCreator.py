@@ -204,38 +204,39 @@ class emCreator:
             return
         self.msg ( " `- %s" % ( ret[-maxLength:] ) )
 
-def countMG5 ( topo, njets ):
-    """ count the number of mg5 directories """
-    files = glob.glob ( "mg5results/%s_*.hepmc.gz" % ( topo ) )
-    return len(files)
+    def countMG5 ( self ):
+        """ count the number of mg5 directories """
+        files = glob.glob ( "mg5results/%s_*.hepmc.gz" % ( self.topo ) )
+        return len(files)
 
-def countRunningMG5 ( topo, njets ):
-    """ count the number of ma5 directories """
-    files = glob.glob ( "%s_*jet*" % ( topo ) )
-    return len(files)
+    def countRunningMG5 ( self ):
+        """ count the number of ma5 directories """
+        files = glob.glob ( "%s_*jet*" % ( self.topo ) )
+        return len(files)
 
-def countRunningCutlang ( topo, njets ):
-    """ count the number of cutlang directories """
-    files = glob.glob ( f"cutlang_results/*/ANA_{topo}_*jet/temp/{topo}_*.hepmc" )
-    return len(files)
+    def countRunningCutlang ( self ):
+        """ count the number of cutlang directories """
+        basedir = "cutlang_results"
+        files = glob.glob ( f"{basedir}/*/ANA_{self.topo}_*jet/temp/{self.topo}_*.hepmc" )
+        return len(files)
 
-def countRunningMA5 ( topo, njets ):
-    """ count the number of ma5 directories """
-    files = glob.glob ( "ma5_%s_%djet.*" % ( topo, njets) )
-    return len(files)
+    def countRunningMA5 ( self ):
+        """ count the number of ma5 directories """
+        files = glob.glob ( "ma5_%s_%djet.*" % ( self.topo, self.njets ) )
+        return len(files)
 
-def writeStatsFile ( statsfile : str, stats : dict ):
-    """ write stats to statsfile """
-    f = open ( statsfile, "w" )
-    f.write ( f"# created {time.asctime()}\n" )
-    f.write ( "{" )
-    for SR,stat in stats.items():
-        stat["comment"]=SR ## FIXME might need to be adapted
-        f.write ( "'%s': %s,\n" % ( SR, stat ) )
-    #    f.write ( "%s\n" % stats )
-    f.write ( "}\n" )
-    f.close()
-    print ( "[emCreator] wrote stats to %s" % statsfile )
+    def writeStatsFile ( self, statsfile : str, stats : dict ):
+        """ write stats to statsfile """
+        f = open ( statsfile, "w" )
+        f.write ( f"# created {time.asctime()}\n" )
+        f.write ( "{" )
+        for SR,stat in stats.items():
+            stat["comment"]=SR ## FIXME might need to be adapted
+            f.write ( "'%s': %s,\n" % ( SR, stat ) )
+        #    f.write ( "%s\n" % stats )
+        f.write ( "}\n" )
+        f.close()
+        print ( "[emCreator] wrote stats to %s" % statsfile )
 
 def recaster ( cutlang ):
     """ get the name of the recaster """
@@ -306,10 +307,10 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     if seffs == "":
         seffs = "no analysis"
     seffs_smodels = seffs.upper().replace("_","-")
-    nrmg5 = countRunningMG5 ( topo, njets )
-    nmg5 = countMG5 ( topo, njets )
+    nrmg5 = creator.countRunningMG5 ()
+    nmg5 = creator.countMG5 ( )
     if cutlang:
-        nrma5 = countRunningCutlang ( topo, njets )
+        nrma5 = creator.countRunningCutlang ( )
         if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
             return 0
         print ( )
@@ -318,7 +319,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                  ( colorama.Fore.RED, seffs_smodels, topo, adl_ma5, colorama.Fore.RESET ) )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running cutlang jobs." % ( nmg5, nrmg5, nrma5 ) )
     else:
-        nrma5 = countRunningMA5 ( topo, njets )
+        nrma5 = creator.countRunningMA5 ( )
         if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
             return 0
         print ( )
@@ -379,7 +380,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                 print ( "[emCreator] asked to copy but %s does not exist" % Dirname )
         if create_stats:
             statsfile = "./statsEM.py"
-            writeStatsFile ( statsfile, stats )
+            creator.writeStatsFile ( statsfile, stats )
         if copy and os.path.exists (Dirname):
             dest = "%s/%s.embaked" % ( Dirname, topo )
             prevN = 0
