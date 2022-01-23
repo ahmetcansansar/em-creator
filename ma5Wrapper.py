@@ -41,10 +41,15 @@ class MA5Wrapper:
         if not os.path.isdir ( self.ma5install ):
             self.error ( "ma5 install is missing??" )
             backupdir = "/groups/hephy/pheno/ww/ma5"
-            if os.path.exists ( backupdir ):
-                self.exe ( f"cp -r {backupdir} ." )
-            elif os.path.exists ( "%s/ma5.template/" % self.basedir ):
-                self.exe ( f"cp -r {self.basedir}/ma5.template/ {self.ma5install}" )
+            localbackup = f"{self.basedir}/ma5.backup/"
+            templatedir = f"{self.basedir}/ma5.template"
+            # print ( "localbackup?", os.path.exists ( localbackup ) )
+            if os.path.exists ( localbackup ):
+                self.exe ( f"cp -r {localbackup} {self.ma5install}" )
+            elif os.path.exists ( backupdir ):
+                self.exe ( f"cp -r {backupdir} {self.ma5install}" )
+            elif os.path.exists ( templatedir ):
+                self.exe ( f"cp -r {templatedir} {self.ma5install}" )
         self.executable = "bin/ma5"
         if not os.path.exists ( self.ma5install + self.executable ):
             self.info ( "cannot find ma5 installation at %s" % self.ma5install )
@@ -366,6 +371,8 @@ if __name__ == "__main__":
         masses = bakeryHelpers.parseMasses ( args.masses )
     nm = len(masses)
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )
+    if nprocesses == 0:
+        sys.exit()
     ma5 = MA5Wrapper( args.topo, args.njets, args.rerun, args.analyses, args.keep,
                       args.sqrts )
     # ma5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
