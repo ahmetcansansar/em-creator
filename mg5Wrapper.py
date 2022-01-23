@@ -216,6 +216,11 @@ class MG5Wrapper:
         """ Run MG5 for topo, with njets additional ISR jets, giving
         also the masses as a list.
         """
+        import emCreator
+        isIn = emCreator.massesInEmbakedFile ( masses, analyses, self.topo, \
+                                               self.cutlang )
+        if isIn and not self.rerun:
+            return
         if not self.cutlang and self.locker.hasMA5Files ( masses ) and not self.rerun:
             return
         if self.cutlang and self.locker.hasCutlangFiles ( masses ) and not self.rerun:

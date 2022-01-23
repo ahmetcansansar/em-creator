@@ -254,6 +254,25 @@ def embakedFileName ( analysis, topo, cutlang ):
     fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, recaster ( cutlang ) )
     return fname
 
+def massesInEmbakedFile ( masses, analysis, topo, cutlang ):
+    """ are the masses in the embaked file? 
+    :param masses: e.g. (800,200)
+    :param analysis: e.g. CMS-SUS-16-039
+    :param topo: e.g. T2
+    :param cutlang: true if cutlang, false if ma5
+    """
+    fname = embakedFileName ( analysis, topo, cutlang )
+    if not os.path.exists ( fname ):
+        # if we dont even have an embaked file, for sure the masses are not in.
+        return False
+    with open ( fname, "rt" ) as f:
+        lines = f.read()
+        f.close()
+        D = eval(lines)
+        if masses in D.keys():
+            return True
+    return False
+
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang, 
                  create_stats ):
     """
