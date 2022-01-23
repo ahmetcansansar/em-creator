@@ -377,7 +377,7 @@ if __name__ == "__main__":
             if os.path.exists ( hepmcfile ):
                 ma5.run ( c, hepmcfile, pid )
             else:
-                ma5.error ( f"skipping {hepmcfile}: does not exist." )
+                ma5.info ( f"skipping {hepmcfile}: does not exist." )
 
     jobs=[]
     for i in range(nprocesses):
