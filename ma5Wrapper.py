@@ -378,8 +378,8 @@ if __name__ == "__main__":
     def runChunk ( chunk, pid ):
         for c in chunk:
             hashepmc = ma5.locker.hasHEPMC ( c )
+            hepmcfile = ma5.locker.hepmcFileName ( c )
             if hashepmc and not ma5.locker.isLocked ( c ):
-                hepmcfile = ma5.locker.hepmcFileName ( c )
                 ma5.run ( c, hepmcfile, pid )
             else:
                 ma5.info ( f"skipping {hepmcfile}: does not exist or is locked." )
