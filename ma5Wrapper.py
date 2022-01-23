@@ -382,7 +382,11 @@ if __name__ == "__main__":
             if hashepmc and not ma5.locker.isLocked ( c ):
                 ma5.run ( c, hepmcfile, pid )
             else:
-                ma5.info ( f"skipping {hepmcfile}: does not exist or is locked." )
+                if not hashepmc:
+                    ma5.info ( f"skipping {hepmcfile}: does not exist." )
+                else:
+                    ma5.info ( f"skipping {hepmcfile}: is locked." )
+                    
 
     jobs=[]
     for i in range(nprocesses):
