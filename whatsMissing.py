@@ -33,6 +33,11 @@ if __name__ == "__main__":
                              type=str, default="embaked/CMS-SUS-16-039.TChiWZ.MA5.embaked" )
     argparser.add_argument ( '-f2', '--file2', help='file #2 [../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZ.embaked]',
                              type=str, default="../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZ.embaked" )
-
+    argparser.add_argument ( '-d', '--defaults', help='run over the defaults',
+                             action="store_true" )
     args = argparser.parse_args()
-    missing ( args.file1, args.file2 )
+    if args.defaults:
+        missing ( "embaked/CMS-SUS-16-039.TChiWZ.MA5.embaked", "../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZ.embaked" )
+        missing ( "embaked/CMS-SUS-16-039.TChiWZoffL.MA5.embaked", "../smodels-database/13TeV/CMS/CMS-SUS-16-039-ma5/orig/TChiWZoffL.embaked" )
+    else:
+        missing ( args.file1, args.file2 )
