@@ -328,14 +328,14 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                  ( colorama.Fore.RED, seffs_smodels, topo, adl_ma5, colorama.Fore.RESET ) )
         print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
     ntot = 0
+    bakeryHelpers.mkdir ( "embaked/" )
     for ana,values in effs.items():
         if len(values.keys()) == 0:
             continue
         ts = {}
         if ana in tstamps:
             ts = tstamps[ana]
-        bakeryHelpers.mkdir ( "embaked/" )
-        fname = embakedFileName ( analyses, topo, cutlang )
+        fname = embakedFileName ( ana, topo, cutlang )
         print ( "%s[emCreator] baking %s: %d points.%s" % \
                 ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
         ntot += len(values)
@@ -343,6 +343,13 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         for k,v in values.items():
             for sr in v.keys():
                 SRs.add(sr)
+        ## read in the old stuff
+        f = open ( fname, "rt" )
+        D = eval ( f.read() )
+        f.close()
+        for k,v in D.items():
+            if not k in values:
+                values[k]=v
         f=open(fname,"w")
         f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
                    ( time.asctime(), len(values.keys()), len(SRs), recaster ( cutlang ) ) )
