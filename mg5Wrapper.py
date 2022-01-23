@@ -26,7 +26,6 @@ class MG5Wrapper:
         os.chdir ( self.basedir )
         self.tempdir = bakeryHelpers.tempDir()
         self.resultsdir = os.path.join(self.basedir, "mg5results")
-        self.ma5results = os.path.join(self.basedir, "ma5results")
         self.cutlang = cutlang
         self.mkdir ( self.resultsdir )
         self.locker = locker.Locker ( sqrts, topo, ignore_locks )
@@ -213,31 +212,13 @@ class MG5Wrapper:
             f.write ( line )
         f.close()
 
-    def hasMA5Files ( self, masses ):
-        """ check if all MA5 files are there """
-        destsaffile = bakeryHelpers.safFile ( self.ma5results, self.topo, masses,
-                                              self.sqrts )
-        destdatfile = bakeryHelpers.datFile ( self.ma5results, self.topo, masses,
-                                              self.sqrts )
-        if os.path.exists ( destsaffile ) and os.path.exists ( destdatfile ):
-            self.info ( "summary files %s,%s exist. skip point." % \
-                        ( destsaffile, destdatfile ) )
-            return True
-        return False
-
-    def hasCutlangFiles ( self, masses ):
-        """ check if cutlang files for masses are lying around.
-            check also if they appear to be correct, complete,
-            and usable """
-        return False
-
     def run( self, masses, analyses, pid=None ):
         """ Run MG5 for topo, with njets additional ISR jets, giving
         also the masses as a list.
         """
-        if not self.cutlang and self.hasMA5Files ( masses ):
+        if not self.cutlang and self.locker.hasMA5Files ( masses ) and not self.rerun:
             return
-        if self.cutlang and self.hasCutlangFiles ( masses ):
+        if self.cutlang and self.locker.hasCutlangFiles ( masses ) and not self.rerun:
             return
         locked = self.locker.lock ( masses )
         if locked:

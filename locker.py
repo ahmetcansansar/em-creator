@@ -9,7 +9,7 @@
 .. moduleauthor:: Wolfgang Waltenberger <wolfgang.waltenberger@gmail.com>
 """
 
-import os, sys, subprocess, time, socket, random
+import os, sys, subprocess, time, socket, random, colorama
 import signal
 import bakeryHelpers
 
@@ -40,6 +40,17 @@ class Locker:
         self.sqrts = sqrts
         self.topo = topo
         self.prefix = prefix
+
+    def info ( self, *msg ):
+        print ( "%s[locker] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
+                   colorama.Fore.RESET ) )
+
+    def msg ( self, *msg):
+        print ( "[locker] %s" % " ".join ( msg ) )
+
+    def error ( self, *msg ):
+        print ( "%s[locker] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
+                   colorama.Fore.RESET ) )
 
     def lockfile ( self, masses ):
         m = str(masses).replace(" ","").replace("(","").replace(")","")
@@ -107,6 +118,25 @@ class Locker:
             ## too small to be real
             return False
         return True
+
+    def hasMA5Files ( self, masses ):
+        """ check if all MA5 files are there """
+        ma5results = os.path.join(self.basedir, "ma5results")
+        destsaffile = bakeryHelpers.safFile ( ma5results, self.topo, masses,
+                                              self.sqrts )
+        destdatfile = bakeryHelpers.datFile ( ma5results, self.topo, masses,
+                                              self.sqrts )
+        if os.path.exists ( destsaffile ) and os.path.exists ( destdatfile ):
+            self.info ( "summary files %s,%s exist." % \
+                        ( destsaffile, destdatfile ) )
+            return True
+        return False
+
+    def hasCutlangFiles ( self, masses ):
+        """ check if cutlang files for masses are lying around.
+            check also if they appear to be correct, complete,
+            and usable """
+        return False
 
 if __name__ == "__main__":
     l = Locker ( 13, "T2", False )

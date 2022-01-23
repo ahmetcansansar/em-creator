@@ -109,26 +109,25 @@ class emCreator:
         return -1
 
     def cutlangExtract ( self, masses ):
-        """ extract the efficiencies from MA5 """
+        """ extract the efficiencies from cutlang """
         topo = self.topo
-        #summaryfile = "./CL_output_summary.dat"
-        summaryfile = f"clsum_{self.topo}_{self.analyses}.dat"
-        if not os.path.exists ( summaryfile ):
-            return {}, 0.
-        timestamp = os.stat ( summaryfile ).st_mtime
+        #summaryfile = f"clsum_{self.topo}_{self.analyses}.dat"
+        #if not os.path.exists ( summaryfile ):
+        #    return {}, 0.
         effs = {}
         smass = "_".join(map(str,masses))
         fdir = f"cutlang_results/{self.analyses}/ANA_{self.topo}_{self.njets}jet/output/"
+        timestamp = os.stat ( fdir ).st_mtime
         toglob = f"{fdir}/*_{smass}.embaked"
         emglob = glob.glob ( toglob )
         if len(emglob)==1:
             with open ( emglob[0], "rt" ) as f:
+                timestamp = os.stat ( f ).st_mtime
                 txt=f.read()
                 p = txt.find(": ")
                 D = eval( txt[p+2:] )
                 f.close()
                 effs[self.analyses]=D
-            # print ( "found!" )
         if len(emglob)==0:
             print ( "[emCreator] trying to extract cutlang for", masses, end=", " )
             print ( f"could not find {toglob}" )
@@ -238,6 +237,23 @@ def writeStatsFile ( statsfile : str, stats : dict ):
     f.close()
     print ( "[emCreator] wrote stats to %s" % statsfile )
 
+def recaster ( cutlang ):
+    """ get the name of the recaster """
+    ma5orcutlang = "MA5"
+    if cutlang:
+        ma5orcutlang = "ADL"
+    return ma5orcutlang
+
+def embakedFileName ( analysis, topo, cutlang ):
+    """ get the file name of the .embaked file 
+    :param analysis: e.g. CMS-SUS-16-039
+    :param topo: e.g. T2
+    :param cutlang: true if cutlang, false if ma5
+    """
+    ana_smodels = analysis.upper().replace("_","-")
+    fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, recaster ( cutlang ) )
+    return fname
+
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang, 
                  create_stats ):
     """
@@ -256,7 +272,6 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     if cutlang:
         adl_ma5 = "ADL"
     creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )
-    ana_smodels = analyses.upper().replace("_","-")
     effs,tstamps={},{}
     if verbose:
         print ( "[emCreator] topo %s: %d mass points considered" % ( topo, len(masses) ) )
@@ -299,12 +314,8 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         ts = {}
         if ana in tstamps:
             ts = tstamps[ana]
-        if not os.path.exists( "embaked/" ):
-            os.makedirs ( "embaked" )
-        ma5orcutlang = "MA5"
-        if cutlang:
-            ma5orcutlang = "ADL"
-        fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, ma5orcutlang )
+        bakeryHelpers.mkdir ( "embaked/" )
+        fname = embakedFileName ( analyses, topo, cutlang )
         print ( "%s[emCreator] baking %s: %d points.%s" % \
                 ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
         ntot += len(values)
@@ -314,7 +325,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                 SRs.add(sr)
         f=open(fname,"w")
         f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
-                   ( time.asctime(), len(values.keys()), len(SRs), ma5orcutlang ) )
+                   ( time.asctime(), len(values.keys()), len(SRs), recaster ( cutlang ) ) )
         # f.write ( "%s\n" % values )
         f.write ( "{" )
         for k,v in values.items():
