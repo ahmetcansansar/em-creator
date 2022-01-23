@@ -41,7 +41,7 @@ class MA5Wrapper:
         if not os.path.isdir ( self.ma5install ):
             self.error ( "ma5 install is missing??" )
             backupdir = "/groups/hephy/pheno/ww/ma5"
-            if os.path.exists ( backupdir )
+            if os.path.exists ( backupdir ):
                 self.exe ( f"cp -r {backupdir} ." )
             elif os.path.exists ( "%s/ma5.template/" % self.basedir ):
                 self.exe ( f"cp -r {self.basedir}/ma5.template/ {self.ma5install}" )
