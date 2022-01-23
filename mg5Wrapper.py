@@ -9,21 +9,10 @@
 """
 
 import os, sys, colorama, subprocess, shutil, tempfile, time, socket, random
-import multiprocessing, signal, glob, io
+import multiprocessing, glob, io
 import bakeryHelpers
 from bakeryHelpers import rmLocksOlderThan
-
-__locks__ = set()
-
-def signal_handler(sig, frame):
-    print('You pressed Ctrl+C, remove all locks!')
-    for l in __locks__:
-        cmd = "rm -f %s" % l
-        subprocess.getoutput ( cmd )
-        print ( cmd )
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
+import locker
 
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
@@ -40,7 +29,7 @@ class MG5Wrapper:
         self.ma5results = os.path.join(self.basedir, "results")
         self.cutlang = cutlang
         self.mkdir ( self.resultsdir )
-        self.ignore_locks = ignore_locks
+        self.locker = locker.Locker ( sqrts, topo, ignore_locks )
         self.topo = topo
         self.keep = keep
         self.keephepmc = keephepmc
@@ -224,45 +213,6 @@ class MG5Wrapper:
             f.write ( line )
         f.close()
 
-    def lockfile ( self, masses ):
-        ret = "%s/.lock%d_%s_%s" % ( self.basedir, self.sqrts, str(masses).replace(" ","").replace("(","").replace(")","").replace(",","_"), self.topo )
-        return ret
-
-    def lock ( self, masses ):
-        """ lock for topo and masses, to make sure processes dont
-            overwrite each other
-        :returns: True if there is already a lock on it
-        """
-        if self.ignore_locks:
-            return False
-        filename = self.lockfile( masses )
-        __locks__.add ( filename )
-        if os.path.exists ( filename ):
-            return True
-        for i in range(5):
-            try:
-                with open ( filename, "wt" ) as f:
-                    f.write ( time.asctime()+","+socket.gethostname()+"\n" )
-                    f.close()
-                return False
-            except FileNotFoundError as e:
-                t0 = random.uniform(2.,4.*i)
-                self.msg ( "FileNotFoundError #%d %s. Sleep for %.1fs" % ( i, e, t0 ) )
-                time.sleep( t0 )
-        return True ## pretend there is a lock
-
-    def unlock ( self, masses ):
-        """ unlock for topo and masses, to make sure processes dont
-            overwrite each other """
-        if self.ignore_locks:
-            return
-        filename = self.lockfile( masses )
-        if filename in __locks__:
-            __locks__.remove ( filename )
-        if os.path.exists ( filename ):
-            cmd = "rm -f %s" % filename
-            subprocess.getoutput ( cmd )
-
     def hasMA5Files ( self, masses ):
         """ check if all MA5 files are there """
         destsaffile = bakeryHelpers.safFile ( self.ma5results, self.topo, masses,
@@ -289,10 +239,10 @@ class MG5Wrapper:
             return
         if self.cutlang and self.hasCutlangFiles ( masses ):
             return
-        locked = self.lock ( masses )
+        locked = self.locker.lock ( masses )
         if locked:
             self.info ( "%s[%s] is locked. Skip it" % ( masses, self.topo ) )
-            self.info ( f"If you wish to remove it:\nrm {self.lockfile(masses)}" )
+            self.info ( f"If you wish to remove it:\nrm {self.locker.lockfile(masses)}" )
             return
         self.process = "%s_%djet" % ( self.topo, self.njets )
         if self.hasHEPMC ( masses ):
@@ -303,7 +253,7 @@ class MG5Wrapper:
                 self.info ( "hepmc file for %s[%s] exists. go directly to %s." % \
                             ( str(masses), self.topo, which ) )
                 self.runRecasting ( masses, analyses, pid )
-                self.unlock ( masses )
+                self.locker.unlock ( masses )
                 return
             else:
                 self.info ( "hepmc file for %s exists, but rerun requested." % str(masses) )
@@ -319,7 +269,7 @@ class MG5Wrapper:
         self.unlink ( self.slhafile )
         if r:
             self.runRecasting ( masses, analyses, pid )
-        self.unlock ( masses )
+        self.locker.unlock ( masses )
 
     def runRecasting ( self, masses, analyses, pid ):
         """ run the recasting. cutlang or ma5 """

@@ -79,4 +79,4 @@ class Locker:
 
 if __name__ == "__main__":
     l = Locker ( 13, "T2", False )
-    l.lock( [120,100] )
+    l.lock( (120,100) )
