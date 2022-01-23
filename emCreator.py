@@ -363,7 +363,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                 v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
             else:
                 v["__t__"]="?"
-            if not cutlang:
+            if not cutlang and not "__nevents__" in v:
                 v["__nevents__"]=creator.getNEvents ( k )
             f.write ( "%s: %s, \n" % ( k,v ) )
         f.write ( "}\n" )
