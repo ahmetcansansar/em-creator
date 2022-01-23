@@ -458,15 +458,26 @@ def getMA5ListOfAnalyses():
     ret = ",".join ( tokens )
     return ret
 
+def embakedFile ( ana, topo, cutlang ):
+    """ return the content of the embaked file """
+    fname = embakedFileName ( ana, topo, cutlang )
+    if not os.path.exists ( fname ):
+        return {}
+    with open ( fname, "rt" ) as f:
+        lines = f.read()
+        f.close()
+        D=eval(lines)
+        return D
+    return {}
+
 def run ( args ):
     analyses = args.analyses
-    #cutlang = args.cutlang
     cutlangs = [ False, True ]
     if args.cutlang:
         cutlangs = [ True ]
     if args.ma5:
         cutlangs = [ False ]
-    ntot = 0
+    ntot, ntotembaked = 0, 0
     for cutlang in cutlangs:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
@@ -485,11 +496,15 @@ def run ( args ):
                 for ana in analyses.split(","):
                     ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
                                  args.copy, args.keep, args.sqrts, cutlang, args.stats )
+                    D = embakedFile ( ana, topo, cutlang )
+                    ntotembaked += len(D.keys())
         else:
             for ana in analyses.split(","):
                 ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                              args.copy, args.keep, args.sqrts, cutlang, args.stats )
-    print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
+                D = embakedFile ( ana, args.topo, cutlang )
+                ntotembaked += len(D.keys())
+    print ( f"[emCreator] I found a total of {ntotembaked} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
         lines = f.readlines()
