@@ -49,19 +49,20 @@ class MG5Wrapper:
         self.executable = os.path.join(self.mg5install, "bin/mg5_aMC")
         if not os.path.exists ( self.executable ):
             self.info ( "cannot find mg5 installation at %s" % self.mg5install )
-            if not os.path.exists ( "mg5/" ):
-                self.info ( "cannot even find directory. copy from template!" )
-                localbackup = f"{self.basedir}/mg5.backup/"
-                backupdir = "/groups/hephy/pheno/ww/git/mg5" 
-                templatedir = f"{self.basedir}/mg5.template"
-                destdir = f"{self.basedir}/mg5"
-                if os.path.exists ( localbackup ):
-                    self.exe ( f"cp -r {localbackup} {destdir}" )
-                elif os.path.exists ( backupdir ):
-                    self.exe ( f"cp -r {backupdir} {destdir}" )
-                elif os.path.exists ( templatedir ):
-                    self.exe ( f"cp -r {templatedir} {destdir}" )
-                    self.exe ( "mg5/make.py" )
+            if os.path.exists ( self.mg5install ):
+                subprocess.getoutput ( f"rm -rf {self.mg5install}" )
+            self.info ( "cannot even find directory. copy from template!" )
+            localbackup = f"{self.basedir}/mg5.backup/"
+            backupdir = "/groups/hephy/pheno/ww/git/mg5"
+            templatedir = f"{self.basedir}/mg5.template"
+            destdir = f"{self.basedir}/mg5"
+            if os.path.exists ( localbackup ):
+                self.exe ( f"cp -r {localbackup} {destdir}" )
+            elif os.path.exists ( backupdir ):
+                self.exe ( f"cp -r {backupdir} {destdir}" )
+            elif os.path.exists ( templatedir ):
+                self.exe ( f"cp -r {templatedir} {destdir}" )
+                self.exe ( "mg5/make.py" )
         self.determineMG5Version()
         self.templateDir = os.path.join(self.basedir, "templates/")
         ebeam = str(int(self.sqrts*1000/2))

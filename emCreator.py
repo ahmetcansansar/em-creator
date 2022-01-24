@@ -334,12 +334,13 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             continue
         fname = embakedFileName ( ana, topo, cutlang )
         ## read in the old stuff
-        f = open ( fname, "rt" )
-        D = eval ( f.read() )
-        f.close()
-        for k,v in D.items():
-            if not k in values:
-                values[k]=v
+        if os.path.exists ( fname ):
+            f = open ( fname, "rt" )
+            D = eval ( f.read() )
+            f.close()
+            for k,v in D.items():
+                if not k in values:
+                    values[k]=v
         ts = {}
         if ana in tstamps:
             ts = tstamps[ana]

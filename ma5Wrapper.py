@@ -36,9 +36,13 @@ class MA5Wrapper:
         self.ma5results = "%s/ma5results/" % self.basedir
         bakeryHelpers.mkdir ( self.ma5results )
         self.ma5install = "%s/ma5/" % self.basedir
+        self.executable = "bin/ma5"
         if abs ( sqrts - 8 ) < .1:
             self.ma5install = "%s/ma5.8tev/" % self.basedir
         self.ver = ver
+        if os.path.isdir ( self.ma5install ) and not os.path.exists ( self.ma5install + self.executable ):
+            ## some crooked ma5 install, remove it all
+            subprocess.getoutput ( f"rm -rf {self.ma5install}" )
         if not os.path.isdir ( self.ma5install ):
             self.error ( "ma5 install is missing??" )
             backupdir = "/groups/hephy/pheno/ww/ma5"
@@ -51,7 +55,6 @@ class MA5Wrapper:
                 self.exe ( f"cp -r {backupdir} {self.ma5install}" )
             elif os.path.exists ( templatedir ):
                 self.exe ( f"cp -r {templatedir} {self.ma5install}" )
-        self.executable = "bin/ma5"
         if not os.path.exists ( self.ma5install + self.executable ):
             self.info ( "cannot find ma5 installation at %s" % self.ma5install )
             self.exe ( "%s/make.py" % self.ma5install )
