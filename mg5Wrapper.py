@@ -63,6 +63,8 @@ class MG5Wrapper:
             elif os.path.exists ( templatedir ):
                 self.exe ( f"cp -r {templatedir} {destdir}" )
                 self.exe ( "mg5/make.py" )
+        if not os.path.exists ( f"{self.mg5install}/idm" ):
+            subprocess.getoutput ( f"cp -r idm {self.mg5install}" )
         self.determineMG5Version()
         self.templateDir = os.path.join(self.basedir, "templates/")
         ebeam = str(int(self.sqrts*1000/2))
