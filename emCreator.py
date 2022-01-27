@@ -28,6 +28,7 @@ class emCreator:
         self.keep = keep
         self.sqrts = sqrts
         self.cutlang = cutlang
+        self.toDelete = [] # collect all that is ok to delete
 
     def info ( self, *msg ):
         print ( "%s[emCreator] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
@@ -146,6 +147,8 @@ class emCreator:
         dirname = bakeryHelpers.dirName ( process, masses )
         summaryfile = bakeryHelpers.datFile ( self.resultsdir, topo, masses, \
                                               self.sqrts )
+        saffile = bakeryHelpers.safFile ( self.resultsdir, topo, masses, \
+                                          self.sqrts )
         if not os.path.exists ( summaryfile):
             # self.info ( "could not find ma5 summary file %s. Skipping." % summaryfile )
             ret = {}
@@ -190,6 +193,8 @@ class emCreator:
             if not ananame in effs:
                 effs[ananame]={}
             effs[ananame][sr]=eff
+        self.toDelete.append ( summaryfile )
+        self.toDelete.append ( saffile )
         return effs,timestamp
 
     def exe ( self, cmd ):
@@ -408,6 +413,11 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                 cmd = "cp statsEM.py %s" % ( Dirname )
                 o = subprocess.getoutput ( cmd )
                 print ( f"[emCreator] {cmd} {o}" )
+    if not keep:
+        for i in creator.toDelete:
+            print ( f"[emCreator] deleting {i}" )
+            os.unlink ( i )
+        creator.toDelete = []
     return ntot
 
 def getAllCutlangTopos():
@@ -498,6 +508,7 @@ def run ( args ):
         ntotembaked+=nplus
     if ntotembaked > 0:
         print ( f"[emCreator] in embaked files I found {ntotembaked} points before adding" )
+    removeMA5Files = True
     for cutlang in cutlangs:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
@@ -523,8 +534,6 @@ def run ( args ):
             for ana in analyses.split(","):
                 ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
                              args.copy, args.keep, args.sqrts, cutlang, args.stats )
-                #D = embakedFile ( ana, args.topo, cutlang )
-                #ntotembaked += len(D.keys())
     print ( f"[emCreator] I found a total of {ntotembaked} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
