@@ -492,7 +492,12 @@ def run ( args ):
         f=open(fname,"rt")
         D=eval(f.read())
         f.close()
-        ntotembaked+=len(D.keys())
+        nplus = len(D.keys())
+        if args.verbose:
+            print ( f"[emCreator] in {fname}: {nplus} points" )
+        ntotembaked+=nplus
+    if ntotembaked > 0:
+        print ( f"[emCreator] in embaked files I found {ntotembaked} points before adding" )
     for cutlang in cutlangs:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
@@ -509,8 +514,9 @@ def run ( args ):
             topos.sort()
             for topo in topos:
                 for ana in analyses.split(","):
-                    ntot += runForTopo ( topo, args.njets, args.masses, ana, args.verbose,
-                                 args.copy, args.keep, args.sqrts, cutlang, args.stats )
+                    ntot += runForTopo ( topo, args.njets, args.masses, ana, 
+                        args.verbose, args.copy, args.keep, args.sqrts, 
+                        cutlang, args.stats )
                     #D = embakedFile ( ana, topo, cutlang )
                     #ntotembaked += len(D.keys())
         else:
