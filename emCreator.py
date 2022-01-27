@@ -280,12 +280,13 @@ def massesInEmbakedFile ( masses, analysis, topo, cutlang ):
     return False
 
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang, 
-                 create_stats ):
+                 create_stats, cleanup ):
     """
     :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
     :param keep: keep the cruft files
     :param cutlang: is it a cutlang result?
     :param create_stats: create also stats file
+    :param cleanup: if true, remove a few more temporary files
     """
     if masses == "all":
         masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
@@ -413,7 +414,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
                 cmd = "cp statsEM.py %s" % ( Dirname )
                 o = subprocess.getoutput ( cmd )
                 print ( f"[emCreator] {cmd} {o}" )
-    if not keep:
+    if not keep and cleanup:
         for i in creator.toDelete:
             print ( f"[emCreator] deleting {i}" )
             os.unlink ( i )
@@ -506,9 +507,8 @@ def run ( args ):
         if args.verbose:
             print ( f"[emCreator] in {fname}: {nplus} points" )
         ntotembaked+=nplus
-    if ntotembaked > 0:
-        print ( f"[emCreator] in embaked files I found {ntotembaked} points before adding" )
-    removeMA5Files = True
+    #if ntotembaked > 0:
+    #    print ( f"[emCreator] in embaked files I found {ntotembaked} points before adding" )
     for cutlang in cutlangs:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
@@ -527,13 +527,12 @@ def run ( args ):
                 for ana in analyses.split(","):
                     ntot += runForTopo ( topo, args.njets, args.masses, ana, 
                         args.verbose, args.copy, args.keep, args.sqrts, 
-                        cutlang, args.stats )
-                    #D = embakedFile ( ana, topo, cutlang )
-                    #ntotembaked += len(D.keys())
+                        cutlang, args.stats, args.cleanup )
         else:
             for ana in analyses.split(","):
-                ntot += runForTopo ( args.topo, args.njets, args.masses, ana, args.verbose,
-                             args.copy, args.keep, args.sqrts, cutlang, args.stats )
+                ntot += runForTopo ( args.topo, args.njets, args.masses, ana, 
+                                     args.verbose, args.copy, args.keep, args.sqrts, 
+                                     cutlang, args.stats, args.cleanup )
     print ( f"[emCreator] I found a total of {ntotembaked} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
@@ -562,6 +561,8 @@ def main():
     argparser.add_argument ( '-c', '--copy', help='copy embaked (and stats if -S) file to smodels-database',
                              action="store_true" )
     argparser.add_argument ( '-k', '--keep', help='keep all cruft files',
+                             action="store_true" )
+    argparser.add_argument ( '-C', '--cleanup', help='cleanup most files',
                              action="store_true" )
     argparser.add_argument ( '-l', '--cutlang', help='cutlang only results',
                              action="store_true" )
