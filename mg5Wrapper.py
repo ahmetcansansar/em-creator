@@ -624,7 +624,8 @@ def main():
         analyses = args.analyses
         args = SimpleNamespace ( masses="all", topo=args.topo, njets=args.njets, \
                 analyses = analyses, copy=args.copy, keep=args.keep, sqrts=args.sqrts,
-                verbose=False, ma5=not args.cutlang, cutlang=args.cutlang, stats=True )
+                verbose=False, ma5=not args.cutlang, cutlang=args.cutlang, stats=True,
+                cleanup = False )
         emCreator.run ( args )
     with open("baking.log","a") as f:
         cmd = ""
