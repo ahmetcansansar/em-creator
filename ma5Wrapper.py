@@ -139,7 +139,7 @@ class MA5Wrapper:
         f.write('set main.recast.card_path = ./recast\n' )
         ## I think I can turn off global likelihoods only if there is
         ## no covariance matrix
-        noGlobalLikelihoodNeeded = [ "cms_sus_16_048" ]
+        noGlobalLikelihoodNeeded = [ "cms_sus_16_048", "cms_sus_17_001" ]
         anas = set(self.analyses.split(","))
         needsLLhd = False
         for i in anas:
