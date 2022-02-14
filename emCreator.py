@@ -562,7 +562,7 @@ def main():
                              action="store_true" )
     argparser.add_argument ( '-k', '--keep', help='keep all cruft files',
                              action="store_true" )
-    argparser.add_argument ( '-C', '--cleanup', help='cleanup most files',
+    argparser.add_argument ( '-C', '--cleanup', help='cleanup most temporary files after running, like the saf and dat files of ma5',
                              action="store_true" )
     argparser.add_argument ( '-l', '--cutlang', help='cutlang only results',
                              action="store_true" )
