@@ -80,7 +80,7 @@ def createStats():
             sdirs[ms]=f
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
-    files = glob.glob("../smodels-utils/clip/_B*sh" )
+    files = glob.glob("../smodels-utils/clip/temp/_B*sh" )
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
@@ -89,7 +89,7 @@ def createStats():
             sdirs[ms]=f
         except Exception as e:
             print ( f"[rmOld] exception {e}" )
-    files = glob.glob("/users/wolfgan.waltenberger/B*.sh" )
+    files = glob.glob("/users/wolfgan.waltenberger/temp/B*.sh" )
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
