@@ -15,4 +15,7 @@ install_ma5:
 	$(shell [ -x "ma5" ] && { mv -f ma5.template ma5.old; } )
 	tar xzvf ma5.tar.gz 
 
+backup_embaked:
+	cp embaked/* /groups/hephy/pheno/ww/embaked.backup/
+
 .PHONY:
