@@ -82,6 +82,7 @@ def createStats():
             print ( f"[rmOld] exception {e}" )
     files = glob.glob("../smodels-utils/clip/temp/_B*sh" )
     files += glob.glob("../smodels-utils/clip/temp/_V*sh" )
+    ctexceptions = 0
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
@@ -89,9 +90,14 @@ def createStats():
                 ms+=.0001
             sdirs[ms]=f
         except Exception as e:
-            print ( f"[rmOld] exception {e}" )
+            ctexceptions += 1
+            if ctexceptions < 4:
+                print ( f"[rmOld] exception {e}" )
+    if ctexceptions > 3:
+        print ( f"[rmOld] ({ctexceptions-3} more, similar exceptions)" )
     files = glob.glob("/users/wolfgan.waltenberger/temp/B*.sh" )
     files += glob.glob("/users/wolfgan.waltenberger/temp/V*.sh" )
+    ctexceptions = 0
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
@@ -99,8 +105,13 @@ def createStats():
                 ms+=.0001
             sdirs[ms]=f
         except Exception as e:
-            print ( f"[rmOld] exception {e}" )
+            ctexceptions += 1
+            if ctexceptions < 4:
+                print ( f"[rmOld] exception {e}" )
+    if ctexceptions > 3:
+        print ( f"[rmOld] ({ctexceptions-3} more, similar exceptions)" )
     files = glob.glob(".lock*" )
+    ctexceptions = 0
     for f in files:
         try:
             ms = os.stat ( f ).st_mtime
@@ -108,7 +119,11 @@ def createStats():
                 ms+=.0001
             sdirs[ms]=f
         except Exception as e:
-            print ( f"[rmOld] exception {e}" )
+            ctexceptions += 1
+            if ctexceptions < 4:
+                print ( f"[rmOld] exception {e}" )
+    if ctexceptions > 3:
+        print ( f"[rmOld] ({ctexceptions-3} more, similar exceptions)" )
     return sdirs
 
 def loadPickle():
