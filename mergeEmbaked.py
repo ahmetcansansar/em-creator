@@ -4,6 +4,7 @@ def merge ( infiles : list, outfile : str ):
     """ merge infile into outfile """
     comments = []
     points = {}
+    overwrites = 0
     for f in infiles:
         h = open ( f, "rt" )
         lines = h.readlines()
@@ -12,8 +13,13 @@ def merge ( infiles : list, outfile : str ):
                 comments.append ( "# "+f+": "+ line[1:] )
         txt = eval ( "\n".join ( lines ) )
         for k,v in txt.items():
+            if k in points:
+                overwrites += 1
+                if overwrites < 5:
+                    print ( f"[mergeEmbaked] overwriting {k} with {f}" )
             points[k]=v
         h.close()
+    print ( f"[mergeEmbaked] total of {overwrites} overwrites" )
     g = open ( outfile, "wt" )
     g.write ( f"# merger of: {', '.join(infiles)}\n" )
     print ( f"[mergeEmbaked] added {len(comments)} comments to {outfile}" )
