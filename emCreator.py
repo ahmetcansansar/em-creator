@@ -357,9 +357,14 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         for k,v in values.items():
             for sr in v.keys():
                 SRs.add(sr)
+        # nSRs = len ( SRs )
+        nSRs = 0
+        for x in SRs:
+            if not x.startswith ( "__" ):
+                nSRs += 1
         f=open(fname,"w")
         f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
-                   ( time.asctime(), len(values.keys()), len(SRs)-2, recaster ( cutlang ) ) )
+                   ( time.asctime(), len(values.keys()), nSRs, recaster ( cutlang ) ) )
         # f.write ( "%s\n" % values )
         f.write ( "{" )
         for k,v in values.items():
