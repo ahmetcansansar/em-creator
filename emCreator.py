@@ -368,13 +368,14 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
         # f.write ( "%s\n" % values )
         f.write ( "{" )
         for k,v in values.items():
-            t=0
+            t=None
             if k in ts:
                 t = ts[k]
-            if t > 0:
-                v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
-            else:
-                v["__t__"]="?"
+            if t== None:
+                # print ( f"[emCreator] key {k} not in timestamps" )
+                t = time.time()
+            v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
+                # v["__t__"]="?"
             if not cutlang and not "__nevents__" in v:
                 v["__nevents__"]=creator.getNEvents ( k )
             f.write ( "%s: %s, \n" % ( k,v ) )
