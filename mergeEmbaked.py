@@ -9,13 +9,13 @@ def merge ( infiles : list, outfile : str ):
         lines = h.readlines()
         for line in lines:
             if line.startswith ( "#" ):
-                comments.append ( line )
+                comments.append ( "# "+f+": "+ line[1:] )
         txt = eval ( "\n".join ( lines ) )
         for k,v in txt.items():
             points[k]=v
         h.close()
     g = open ( outfile, "wt" )
-    g.write ( "# merger of {','.join(infiles)}\n" )
+    g.write ( f"# merger of: {', '.join(infiles)}\n" )
     print ( f"[mergeEmbaked] added {len(comments)} comments to {outfile}" )
     for c in comments:
         g.write ( c )
