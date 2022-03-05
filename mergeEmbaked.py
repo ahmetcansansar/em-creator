@@ -5,6 +5,7 @@ def merge ( infiles : list, outfile : str ):
     comments = []
     points = {}
     overwrites = 0
+    files = {}
     for f in infiles:
         h = open ( f, "rt" )
         lines = h.readlines()
@@ -13,6 +14,7 @@ def merge ( infiles : list, outfile : str ):
                 comments.append ( "# "+f+": "+ line[1:] )
         txt = eval ( "\n".join ( lines ) )
         for k,v in txt.items():
+            files[k]=f
             if k in points:
                 overwrites += 1
                 if overwrites < 5:
@@ -20,6 +22,13 @@ def merge ( infiles : list, outfile : str ):
             points[k]=v
         h.close()
     print ( f"[mergeEmbaked] total of {overwrites} overwrites" )
+    nstarved = 0
+    for k,v in points.items():
+        if "__nevents__" in v and v["__nevents__"]<10000:
+            if nstarved < 5:
+                print ( f"[mergeEmbaked] point {k} has {v['__nevents__']} events only, in {files[k]}." )
+            nstarved+=1
+    print ( f"[mergeEmbaked] a total of {nstarved} points with low statistics." )
     g = open ( outfile, "wt" )
     g.write ( f"# merger of: {', '.join(infiles)}\n" )
     print ( f"[mergeEmbaked] added {len(comments)} comments to {outfile}" )
