@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+""" a simple tool for manipulation of embaked files, like merging and filtering
+"""
+
 def merge ( infiles : list, outfile : str, remove ):
     """ merge infile into outfile """
     comments = []
