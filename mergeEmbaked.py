@@ -3,6 +3,35 @@
 """ a simple tool for manipulation of embaked files, like merging and filtering
 """
 
+import time, copy
+from datetime import datetime
+from smodels_utils.helper.various import round_to_n
+
+def mergePoints ( new, old ):
+    """ merge the old and the new, weighted average """
+    if not "__nevents__" in old:
+        return new
+    if not "__nevents__" in new:
+        return old
+    S = new["__nevents__"]
+    S += old["__nevents__"]
+    ret = copy.deepcopy ( old )
+    t = time.time()
+    ret["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
+    ret["__nevents__"]= new["__nevents__"] + old["__nevents__"]
+    for k,v in new.items():
+        if k.startswith("__"):
+            continue
+        ret[k] = ret[k] * old["__nevents__"] + v * new["__nevents__"]
+    for k,v in ret.items():
+        if k.startswith("__"):
+            continue
+        ret[k]=round_to_n ( v/S, 6 )
+    #print ( "mergePoints new", new )
+    #print ( "mergePoints old", old )
+    #print ( "mergePoints ret", ret )
+    return ret
+
 def merge ( infiles : list, outfile : str, remove ):
     """ merge infile into outfile """
     comments = []
@@ -19,12 +48,13 @@ def merge ( infiles : list, outfile : str, remove ):
         txt = eval ( "\n".join ( lines ) )
         for k,v in txt.items():
             if k in files:
+                v = mergePoints ( v, points[k] )
                 overwrites += 1
                 if overwrites < 5:
-                    print ( f"[mergeEmbaked] overwriting {k} with {f}, old was {files[k]}" )
+                    print ( f"[mergeEmbaked] averaging {k} with {f}, old was {files[k]}" )
             points[k]=v
             files[k]=f
-    print ( f"[mergeEmbaked] total of {overwrites} overwrites" )
+    print ( f"[mergeEmbaked] total of {overwrites} averaged" )
     nstarved = 0
     cleaned = {}
     for k,v in points.items():
