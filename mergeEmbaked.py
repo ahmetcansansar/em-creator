@@ -12,18 +12,18 @@ def merge ( infiles : list, outfile : str, remove ):
     for f in infiles:
         h = open ( f, "rt" )
         lines = h.readlines()
+        h.close()
         for line in lines:
             if line.startswith ( "#" ):
                 comments.append ( "# "+f+": "+ line[1:] )
         txt = eval ( "\n".join ( lines ) )
         for k,v in txt.items():
-            files[k]=f
-            if k in points:
+            if k in files:
                 overwrites += 1
                 if overwrites < 5:
-                    print ( f"[mergeEmbaked] overwriting {k} with {f}" )
+                    print ( f"[mergeEmbaked] overwriting {k} with {f}, old was {files[k]}" )
             points[k]=v
-        h.close()
+            files[k]=f
     print ( f"[mergeEmbaked] total of {overwrites} overwrites" )
     nstarved = 0
     cleaned = {}
