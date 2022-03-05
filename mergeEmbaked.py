@@ -18,7 +18,9 @@ def mergePoints ( new, old ):
     ret = copy.deepcopy ( old )
     t = time.time()
     ret["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
-    ret["__nevents__"]= new["__nevents__"] + old["__nevents__"]
+    ret["__nevents__"] = S
+    #print ( "setting nevents to", new["__nevents__"],"+",old["__nevents__"],
+    #        "=", S )
     for k,v in new.items():
         if k.startswith("__"):
             continue
@@ -50,7 +52,7 @@ def merge ( infiles : list, outfile : str, remove ):
             if k in files:
                 v = mergePoints ( v, points[k] )
                 overwrites += 1
-                if overwrites < 5:
+                if overwrites < 4:
                     print ( f"[mergeEmbaked] averaging {k} with {f}, old was {files[k]}" )
             points[k]=v
             files[k]=f
