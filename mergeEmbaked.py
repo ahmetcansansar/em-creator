@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-def merge ( infiles : list, outfile : str ):
+def merge ( infiles : list, outfile : str, remove ):
     """ merge infile into outfile """
     comments = []
     points = {}
@@ -23,11 +23,15 @@ def merge ( infiles : list, outfile : str ):
         h.close()
     print ( f"[mergeEmbaked] total of {overwrites} overwrites" )
     nstarved = 0
+    cleaned = {}
     for k,v in points.items():
-        if "__nevents__" in v and v["__nevents__"]<10000:
+        if "__nevents__" in v and remove != None and v["__nevents__"]<remove:
             if nstarved < 5:
                 print ( f"[mergeEmbaked] point {k} has {v['__nevents__']} events only, in {files[k]}." )
             nstarved+=1
+        else:
+            cleaned[k]=v
+    points = cleaned
     print ( f"[mergeEmbaked] a total of {nstarved} points with low statistics." )
     g = open ( outfile, "wt" )
     g.write ( f"# merger of: {', '.join(infiles)}\n" )
@@ -54,8 +58,10 @@ def run():
                              type=str, default="out.embaked" )
     argparser.add_argument ( '-i', '--infile', nargs="+", 
             help='input file(s)', type=str )
+    argparser.add_argument ( '-r', '--remove', help='remove entries with fewer than n events [None]',
+                             type=int, default=None )
     args = argparser.parse_args()
-    merge ( args.infile, args.outfile )
+    merge ( args.infile, args.outfile, args.remove )
 
 if __name__ == "__main__":
     run()
