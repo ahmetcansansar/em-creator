@@ -12,6 +12,8 @@ def rmOldTempFiles( hours=8, dry_run = False ):
     files += glob.glob ( "/scratch-cbe/users/wolfgan.waltenberger/outputs/bake*" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/CLA*" )
     files += glob.glob ( "cutlang_results/*/ANA_*_*jet/output/delphes_out*root" )
+    files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/*hepmc" )
+    files += glob.glob ( "cutlang_results/*/ANA_*_*jet/temp/" )
     t = time.time()
     random.shuffle ( files )
     ct = 0

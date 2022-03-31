@@ -391,13 +391,19 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
             Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
         stats = creator.getStatistics ( ana, SRs )
         # print ( "[emCreator] obtained statistics for", ana, "in", fname )
+        if copy:
+            extensions = [ "ma5", "eff", "adl" ]
+            foundExtension = None
+            for e in extensions:
+                Dirname = f"../smodels-database/{sqrts}TeV/{experiment}/{sana}-{e}/orig/"
+                if os.path.exists ( Dirname ):
+                    foundExtension = e
+                    break
+            if not foundExtension:
+                print ( f"[emCreator] asked to copy to e.g. {Dirname} but no extension found" )
+            else:
+                print ( f"[emCreator] found {Dirname}" )
 
-        if copy and not os.path.exists (Dirname):
-            Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
-            if cutlang:
-                Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
-            if not os.path.exists ( Dirname ):
-                print ( "[emCreator] asked to copy but %s does not exist" % Dirname )
         if create_stats:
             statsfile = "./statsEM.py"
             creator.writeStatsFile ( statsfile, stats )
