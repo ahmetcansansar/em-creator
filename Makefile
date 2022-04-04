@@ -16,6 +16,7 @@ install_ma5:
 	tar xzvf ma5.tar.gz 
 
 backup_embaked:
+	cp /groups/hephy/pheno/ww/embaked.backup/* /groups/hephy/pheno/ww/embaked.backup2/
 	cp embaked/* /groups/hephy/pheno/ww/embaked.backup/
 
 .PHONY:

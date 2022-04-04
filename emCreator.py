@@ -513,7 +513,11 @@ def run ( args ):
     files = glob.glob ( "embaked/*embaked" )
     for fname in files:
         f=open(fname,"rt")
-        D=eval(f.read())
+        txt=f.read()
+        try:
+            D=eval(txt)
+        except Exception as e:
+            print ( f"xxx {fname}: {e} {txt:20}" )
         f.close()
         nplus = len(D.keys())
         if args.verbose:
