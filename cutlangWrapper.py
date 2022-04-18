@@ -49,8 +49,8 @@ import random                  # Used to randomize waiting time after blocking i
 from datetime import datetime  # For timestamp of embaked files
 from typing import List        # For type hinting
 
+
 # 3 party imports
-import ROOT                # To parse CutLang output
 
 # local imports
 import bakeryHelpers       # For dirnames
@@ -333,8 +333,21 @@ class CutLangWrapper:
                 filecount += 1
                 filename = os.path.join(cla_run_dir, filename)
                 # get partial efficiencies from each file
-                tmp_entries, tmp_nevents = self.extract_efficiencies(filename,
+                tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(filename,
                                                                      cutlangfile)
+                #Rtmp_entries, Rtmp_nevents = self.extract_efficiencies_ROOT(filename,
+                #                                                     cutlangfile)
+                #for i,(x,y) in enumerate ( zip ( tmp_entries, Rtmp_entries ) ):
+                #    if x!=y:
+                #        print ( f"difference in #{i}/{len(tmp_entries)}:\n  >>{tmp_entries[i-20:i+20]}<<\n  >>{Rtmp_entries[i-20:i+20]}<<" )
+                #        break
+                #with open('/dev/pts/5') as user_tty:
+                #    import sys
+                #    sys.stdin=user_tty
+                #    import IPython
+                #    IPython.embed( )
+                #print ( tmp_entries == Rtmp_entries )
+                #sys.exit()
                 nevents += tmp_nevents
                 entries += tmp_entries
                 shutil.move(filename, os.path.join(self.tmp_dir.get(),
@@ -379,8 +392,7 @@ class CutLangWrapper:
             self._error("Could not find CLA output file. Aborting.")
             # sys.exit()
 
-
-    def extract_efficiencies(self, cla_out, cla_file):
+    def extract_efficiencies_ROOT(self, cla_out, cla_file):
         """ Extracts the efficiencies from CutLang output.
             returns:
                 entries, nevents tuple:
@@ -389,11 +401,12 @@ class CutLangWrapper:
             :param cla_out:  .root file output of CLA
             :param cla_file:  .adl file specifying CutLang regions
         """
+        import ROOT # To parse CutLang output
 
         # open the ROOT file
         rootFile = ROOT.TFile(cla_out)
         if rootFile is None:
-            self._error("Cannot find CutLang results at {cla_out}.")
+            self._error( f"ROOT Cannot find CutLang results at {cla_out}.")
             return None
 
         # temporary TH1D structure to write results in
@@ -403,7 +416,7 @@ class CutLangWrapper:
         contains_eff = False  # Whether this root file yielded an efficiencies
         ignorelist = {'baseline', 'presel'} & self.filterRegions
 
-        self._debug("Objects found in CutLang results:")
+        self._debug("ROOT Objects found in CutLang results:")
         self._debug(str([x.ReadObj().GetName() for x in rootFile.GetListOfKeys()]))
 
         # Traverse all keys in ROOT file
@@ -433,13 +446,15 @@ class CutLangWrapper:
                     continue
                 # rootTmp[2] == number of all events
                 entry += str(rootTmp[(s-1)]/rootTmp[2]) + ', '
-                self._debug(entry)
+                self._debug("ROOT "+entry)
                 nevents.append(rootTmp[2])
+                if "searchbins_" in entry:
+                    self._error ( f"ROOT entry {entry}" )
                 entries += entry
                 contains_eff = True
                 # if the region contains bins, process them
                 if "bincounts" in keys:
-                    self._info(f"Found bins in {regionName} section.")
+                    self._info(f"ROOT Found bins in {regionName} section.")
                     rootTmp = x.bincounts
                     # set the bins to be excluded from printout
                     if regionName in self.filterBins:
@@ -456,15 +471,95 @@ class CutLangWrapper:
                         bin_name = "_".join([regionName, bin_name.replace(" ", "_")])
                         bin_name = self._shorten_bin_name(bin_name)
                         entry = "".join(["'", bin_name, "': "])
-                        self._debug(f"bin no {rootTmp[i]} nevents: {nevents[-1]}.")
+                        self._debug(f"ROOT bin {bin_name} nevents: {nevents[-1]}.")
                         entry += str(rootTmp[i]/nevents[-1]) + ', '
                         entries += entry
             else:
-                self._debug(f"{x.GetName()} is not a Directory File.")
-                self._debug(f"{x.GetName()} is of type {type(x)}")
+                self._debug(f"ROOT {x.GetName()} is not a Directory File.")
+                self._debug(f"ROOT {x.GetName()} is of type {type(x)}")
             # entry ~ data point to write into efficiency map
         if contains_eff is False:
-            self._error(f"No efficiencies found in file {cla_out}.")
+            self._error(f"ROOT No efficiencies found in file {cla_out}.")
+        # print ( f"returning {entries} {nevents}" )
+        return entries, nevents
+
+    def extract_efficiencies_uproot(self, cla_out, cla_file):
+        """ Extracts the efficiencies from CutLang output, via uproot
+            returns:
+                entries, nevents tuple:
+                        entries -- String containing efficiencies extracted from the cla_out file
+                        nevents -- Tuple of numbers of events for each entry.
+            :param cla_out:  .root file output of CLA
+            :param cla_file:  .adl file specifying CutLang regions
+        """
+        if not os.path.exists ( cla_out ):
+            self._error( f"Cannot find CutLang results at {cla_out}.")
+            return None
+        import uproot
+
+        rootFile = None
+        try:
+            # open the ROOT file
+            rootFile = uproot.open(cla_out)
+        except Exception as e:
+            self._error(f"Exception {e}")
+            rootFile = None
+
+        if rootFile is None:
+            self._error( f"Cannot find CutLang results at {cla_out}." )
+            return None
+
+        # temporary TH1D structure to write results in
+        # rootTmp = ROOT.TH1D()
+        rootTmp = []
+        nevents = []  # list of starting numbers of events
+        entries = ""  # efficiency entries for output
+        contains_eff = False  # Whether this root file yielded an efficiencies
+        ignorelist = {'baseline', 'presel'} & self.filterRegions
+
+        self._debug("uproot: Objects found in CutLang results:")
+        # self._debug(str([x.ReadObj().GetName() for x in rootFile.GetListOfKeys()]))
+        self._debug(str([x for x in rootFile] ) )
+
+        # Traverse all keys in ROOT file
+        # for x in rootFile.GetListOfKeys():
+        self._info ( f"uproot filterBins {self.filterBins} filterRegions {self.filterRegions}" )
+        for name,obj in rootFile.items():
+                if name.endswith ( "/bincounts;1" ):
+                    self._info(f"Found bins in {name} section.")
+                    objname = objname.replace("/bincounts;1","")
+                    labels = obj.axes[0].labels()
+                    if objname in self.filterBins:
+                        filterBinNums = self.filterBins[objname]
+                    else:
+                        filterBinNums = []
+                    v = obj.values()
+                    entries += f"'{objname}_': {v[-1]}, "
+                    for i,v in enumerate ( v ):
+                        if i in filterBinNums:
+                            continue
+                        bin_name = labels[i]
+                        bin_name = "_".join([objname, bin_name.replace(" ", "_")])
+                        bin_name = self._shorten_bin_name(bin_name)
+                        entry = "".join(["'", bin_name, "': "])
+                        self._debug(f"uproot bin no {v} nevents: {nevents[-1]}.")
+                        entry += str(v/nevents[-1]) + ', '
+                        entries += entry
+                    continue
+                if not "/cutflow;1" in name:
+                    continue
+                objname = name.replace("/cutflow;1","")
+                if objname in ignorelist:
+                    continue
+                # copy cutflow object into temp root object and process it
+                entry = "".join(["'", objname , "': "])
+                v = obj.values()
+                s = len ( v )
+                entry += str(v[(s-2)]/v[1]) + ', '
+                self._debug( f"uproot {entry}" )
+                nevents.append(v[1])
+                entries += entry
+                contains_eff = True
         return entries, nevents
 
     def pickCutLangFile(self, a_name):
@@ -738,6 +833,7 @@ class CutLangWrapper:
     @staticmethod
     def _debug(*msg):
         """Print green debug message."""
+        return
         print("%s[CutLangWrapper] %s%s" % (colorama.Fore.GREEN, " ".join(msg),
               colorama.Fore.RESET))
 
