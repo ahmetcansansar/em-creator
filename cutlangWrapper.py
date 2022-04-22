@@ -322,7 +322,7 @@ class CutLangWrapper:
                                  self._get_embaked_name(self.analysis,
                                                         self.topo,
                                                         mass_stripped))
-        self._info(f"Writing partial efficiencies into file: {effi_file}")
+        self._info(f"Writing partial efficiencies into file: {os.getcwd()}/{effi_file}")
         # to store intermediate results
         nevents = []
         entries = ""
@@ -333,10 +333,11 @@ class CutLangWrapper:
                 filecount += 1
                 filename = os.path.join(cla_run_dir, filename)
                 # get partial efficiencies from each file
-                tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(filename,
-                                                                     cutlangfile)
-                #Rtmp_entries, Rtmp_nevents = self.extract_efficiencies_ROOT(filename,
+                self._info(f"processing #{filecount}: {filename}" )
+                #tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(filename,
                 #                                                     cutlangfile)
+                tmp_entries, tmp_nevents = self.extract_efficiencies_ROOT(filename,
+                                                                     cutlangfile)
                 #for i,(x,y) in enumerate ( zip ( tmp_entries, Rtmp_entries ) ):
                 #    if x!=y:
                 #        print ( f"difference in #{i}/{len(tmp_entries)}:\n  >>{tmp_entries[i-20:i+20]}<<\n  >>{Rtmp_entries[i-20:i+20]}<<" )
@@ -350,9 +351,10 @@ class CutLangWrapper:
                 #sys.exit()
                 nevents += tmp_nevents
                 entries += tmp_entries
-                shutil.move(filename, os.path.join(self.tmp_dir.get(),
-                                                   os.path.basename(filename)))
-        self._debug(f"Nevents: {nevents[:3]}")
+                destdir = os.path.join(self.tmp_dir.get(), os.path.basename(filename))
+                self._info(f"found {nevents}/{entries}, move to {destdir}" )
+                shutil.move(filename, destdir)
+        self._info(f"Nevents: {nevents[:3]}")
         # check that the number of events was the same for all regions
         if len(set(nevents)) > 1:
             self._error("Number of events before selection is not constant in all regions:")
@@ -371,6 +373,7 @@ class CutLangWrapper:
                     nev = int(nev)
                 f.write(f"'__nevents__':{nev}")
                 f.write("}")
+            self._msg(f"done writing into {effi_file}")
             ## now that we have an embaked file, mark also the CLA dir as removable
             self.tempFiles.append ( f"{cla_temp_name}" )
             self.removeTempFiles()

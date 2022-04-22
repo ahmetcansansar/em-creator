@@ -160,8 +160,8 @@ def rmOlderThan( sdirs, hours, dry_run ):
 
 def main():
     argparser = argparse.ArgumentParser(description='remove old directories.')
-    argparser.add_argument ( '-t', '--hours', help='number of hours the dir has to be old [24]',
-                             type=int, default=24 )
+    argparser.add_argument ( '-t', '--hours', help='number of hours the dir has to be old [8]',
+                             type=int, default=8 )
     #argparser.add_argument ( '-f', '--force_rebuild', help='force rebuilding pickle file',
     #                         action="store_true" )
     argparser.add_argument ( '-d', '--dry_run', help='dry_run, dont remove',
