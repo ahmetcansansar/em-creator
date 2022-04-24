@@ -334,21 +334,8 @@ class CutLangWrapper:
                 filename = os.path.join(cla_run_dir, filename)
                 # get partial efficiencies from each file
                 self._info(f"processing #{filecount}: {filename}" )
-                #tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(filename,
-                #                                                     cutlangfile)
-                tmp_entries, tmp_nevents = self.extract_efficiencies_ROOT(filename,
+                tmp_entries, tmp_nevents = self.extract_efficiencies(filename,
                                                                      cutlangfile)
-                #for i,(x,y) in enumerate ( zip ( tmp_entries, Rtmp_entries ) ):
-                #    if x!=y:
-                #        print ( f"difference in #{i}/{len(tmp_entries)}:\n  >>{tmp_entries[i-20:i+20]}<<\n  >>{Rtmp_entries[i-20:i+20]}<<" )
-                #        break
-                #with open('/dev/pts/5') as user_tty:
-                #    import sys
-                #    sys.stdin=user_tty
-                #    import IPython
-                #    IPython.embed( )
-                #print ( tmp_entries == Rtmp_entries )
-                #sys.exit()
                 nevents += tmp_nevents
                 entries += tmp_entries
                 destdir = os.path.join(self.tmp_dir.get(), os.path.basename(filename))
@@ -394,6 +381,37 @@ class CutLangWrapper:
         else:
             self._error("Could not find CLA output file. Aborting.")
             # sys.exit()
+
+    def extract_efficiencies(self, cla_out, cla_file):
+        """ Extracts the efficiencies from CutLang output, via uproot or ROOT
+            returns:
+                entries, nevents tuple:
+                        entries -- String containing efficiencies extracted from the cla_out file
+                        nevents -- Tuple of numbers of events for each entry.
+            :param cla_out:  .root file output of CLA
+            :param cla_file:  .adl file specifying CutLang regions
+        """
+        # first try via ROOT, then uproot
+        try:
+            tmp_entries, tmp_nevents = self.extract_efficiencies_ROOT(filename,
+                                                             cutlangfile)
+        except Exception as e:
+            tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(filename,
+                                                             cutlangfile)
+        # if we wish to compare
+        #for i,(x,y) in enumerate ( zip ( tmp_entries, Rtmp_entries ) ):
+        #    if x!=y:
+        #        print ( f"difference in #{i}/{len(tmp_entries)}:\n" )
+        #        print ( f">>{tmp_entries[i-20:i+20]}<<\n >>{Rtmp_entries[i-20:i+20]}<<" )
+        #        break
+        #with open('/dev/pts/5') as user_tty:
+        #    import sys
+        #    sys.stdin=user_tty
+        #    import IPython
+        #    IPython.embed( )
+        #print ( tmp_entries == Rtmp_entries )
+        #sys.exit()
+        return tmp_entries, tmp_nevents
 
     def extract_efficiencies_ROOT(self, cla_out, cla_file):
         """ Extracts the efficiencies from CutLang output.
