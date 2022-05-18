@@ -19,7 +19,8 @@ For cutlang wrapper:
   * On Debian-like distributions run::
 
       apt install bison flex zlib1g-dev
-      and install ROOT from sources
+    
+  and install ROOT from sources
 
   * On Arch linux run::
 
