@@ -339,7 +339,7 @@ class CutLangWrapper:
                 nevents += tmp_nevents
                 entries += tmp_entries
                 destdir = os.path.join(self.tmp_dir.get(), os.path.basename(filename))
-                self._info(f"found {nevents}/{entries}, move to {destdir}" )
+                self._info(f"found {len(nevents)}/{len(entries)}, move to {destdir}" )
                 shutil.move(filename, destdir)
         self._info(f"Nevents: {nevents[:3]}")
         # check that the number of events was the same for all regions
@@ -396,6 +396,7 @@ class CutLangWrapper:
             tmp_entries, tmp_nevents = self.extract_efficiencies_ROOT(
                                             cla_out, cla_file )
         except Exception as e:
+            self._info ( f"ROOT-based extractor failed {e}, using uproot-based extractor!" )
             tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(
                                             cla_out, cla_file )
         # if we wish to compare
@@ -469,22 +470,20 @@ class CutLangWrapper:
                 entry += str(rootTmp[(s-1)]/rootTmp[2]) + ', '
                 self._debug("ROOT "+entry)
                 nevents.append(rootTmp[2])
-                if "searchbins_" in entry:
-                    self._error ( f"ROOT entry {entry}" )
                 entries += entry
                 contains_eff = True
                 # if the region contains bins, process them
                 if "bincounts" in keys:
-                    self._info(f"ROOT Found bins in {regionName} section.")
                     rootTmp = x.bincounts
+                    nbins = rootTmp.GetNbinsX()
+                    self._info(f"ROOT Found {nbins} bins in {regionName} section.")
                     # set the bins to be excluded from printout
                     if regionName in self.filterBins:
                         filterBinNums = self.filterBins[regionName]
                     else:
                         filterBinNums = []
 
-                    nbins = rootTmp.GetNbinsX()
-                    for i in range(nbins):
+                    for i in range(nbins+1):
                         # if bin number i is filtered out, skip it
                         if i in filterBinNums:
                             continue
