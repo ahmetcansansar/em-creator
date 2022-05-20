@@ -393,11 +393,11 @@ class CutLangWrapper:
         """
         # first try via ROOT, then uproot
         try:
-            tmp_entries, tmp_nevents = self.extract_efficiencies_ROOT(filename,
-                                                             cutlangfile)
+            tmp_entries, tmp_nevents = self.extract_efficiencies_ROOT(
+                                            cla_out, cla_file )
         except Exception as e:
-            tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(filename,
-                                                             cutlangfile)
+            tmp_entries, tmp_nevents = self.extract_efficiencies_uproot(
+                                            cla_out, cla_file )
         # if we wish to compare
         #for i,(x,y) in enumerate ( zip ( tmp_entries, Rtmp_entries ) ):
         #    if x!=y:
