@@ -16,6 +16,6 @@ install_ma5:
 	tar xzvf ma5.tar.gz 
 
 backup_embaked:
-	./backupEmbaked.py
+	./utils/backupEmbaked.py
 
 .PHONY:
