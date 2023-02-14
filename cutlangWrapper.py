@@ -167,12 +167,33 @@ class CutLangWrapper:
         if not os.path.isdir(self.adllhcanalyses):
             self._error("ADL LHC Analyses path is not a direcotry, exiting.")
             sys.exit()
+        dirname = os.path.dirname(self.adllhcanalyses)
         if len(os.listdir(self.adllhcanalyses)) == 0:
             args = ["rm", "-rf", self.adllhcanalyses]
             self.exe(args)
             args = ["git", "clone", "https://github.com/ADL4HEP/ADLLHCanalyses"]
-            self.exe(args, cwd=os.path.dirname(self.adllhcanalyses),
-                     exit_on_fail=True, logfile=self.initlog)
+            self.exe( args, cwd=dirname, exit_on_fail=True, 
+                      logfile=self.initlog)
+        allowDraftAnas = True
+        if allowDraftAnas:
+            draftname = "ADLAnalysisDrafts"
+            fulldraft = os.path.join ( dirname, draftname )
+            if os.path.exists ( fulldraft ):
+                pass
+            #    args = ["rm", "-rf", fulldraft ]
+            #    self.exe(args)
+            else:
+                args = ["git", "clone", f"https://github.com/ADL4HEP/{draftname}"]
+                self.exe(args, cwd=dirname,
+                         exit_on_fail=True, logfile=self.initlog)
+            import shutil, glob
+            for x in glob.glob ( f"{dirname}/ADLAnalysisDrafts/*" ):
+                if not "CMS-" in x and not "ATLAS-" in x:
+                    continue
+                fname = os.path.basename ( x )
+                if not os.path.exists ( os.path.join ( dirname, "ADLLHCanalyses", fname ) ):
+                    shutil.copytree ( f"{dirname}/ADLAnalysisDrafts/{fname}", f"{dirname}/ADLLHCanalyses/{fname}" )
+
         self._info("ADLLHC Analyses initialisation finished.")
 
         # ====================
