@@ -16,7 +16,7 @@ import locker
 
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
-                   ignore_locks, sqrts=13, cutlang=False, ver="3_3_1",
+                   ignore_locks, sqrts=13, cutlang=False, ver="3_4_2",
                    keephepmc = True ):
         """
         :param ver: version of mg5
