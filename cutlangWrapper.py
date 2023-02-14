@@ -614,6 +614,10 @@ class CutLangWrapper:
             return os.path.abspath(cla_path)
             self._msg(f"Using CutLang file {cla_path}.")
         else:
+            cla_path = cla_path.replace("_CutLang.adl",".adl" )
+            if os.path.isfile(cla_path):
+                return os.path.abspath(cla_path)
+                self._msg(f"Using CutLang file {cla_path}.")
             raise Exception(f"No analysis file found for analysis {a_name} found at: \n" + cla_path)
 
 
