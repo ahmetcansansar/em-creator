@@ -93,8 +93,7 @@ def dirName ( process, masses, basedir=None ):
 
 def parseMasses ( massstring, mingap1=None, maxgap1=None,
                   mingap2=None, maxgap2=None, mingap13=None, maxgap13=None ):
-    """ parse the mass string, e.g. (500,510,10),(100,110,10). keywords like "half" are
-        accepted.
+    """ parse the mass string, e.g. (500,510,10),(100,110,10). keywords like "half" or "same" are accepted.
     :param mingap1: min mass gap between first and second particle, ignore if None.
                     this is meant to force onshellness or a mass hierarchy
     :param maxgap1: max mass gap between second and third particle, ignore if None.
@@ -125,8 +124,12 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
                 tmp.append ( mtuple )
                 lists.append ( tuple(tmp) )
                 continue
+            elif mtuple == "same" and ctr == 1:
+                tmp.append ( mtuple )
+                lists.append ( tuple(tmp) )
+                continue
             else:
-                print ( "error: i know only 'half' for a string, and only in middle position" )
+                print ( "error: i know only 'half' or 'same' for a string, and only in middle position" )
                 sys.exit()
         if type(mtuple) in [ int, float ]:
             tmp.append ( mtuple )
@@ -150,6 +153,10 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
             for z in lists[2]:
                 y=int(.5*x+.5*z)
                 ret.append ( (int(x),y,int(z)) )
+    elif lists[1][0]=="same":
+        for x  in lists[0]:
+            for z in lists[2]:
+                ret.append ( (int(x),int(x),int(z)) )
     elif len(lists)==2:
         for x in range ( len(lists[0] ) ):
             for y in range ( len(lists[1]) ):
