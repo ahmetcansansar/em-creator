@@ -27,7 +27,7 @@ def install_plugins( pyver=3 ):
 
 def install( ver, plugins = True, pyver = 3 ):
     """
-    :param ver: MG5 version (eg 3_1_1)
+    :param ver: MG5 version (eg 3_4_2)
     :param plugins: install also plugins
     :param pyver: python version, 2 or 3
     """
