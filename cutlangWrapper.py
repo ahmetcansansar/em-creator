@@ -391,6 +391,8 @@ class CutLangWrapper:
             # self.error(f"directory reads {os.listdir(cla_run_dir)}" )
             self.removeTempFiles()
             return -4
+    def error ( self, *args ):
+        print ( "[cutlangWrapper]", " ".join(map(str,args)) )
 
     def get_cla_out_filename(self, cla_run_dir, inputname):
         """ Returns the name of CLA output file"""
