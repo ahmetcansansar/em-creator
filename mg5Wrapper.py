@@ -428,7 +428,7 @@ class MG5Wrapper:
             self.msg ( "moving", hepmcfile, "to", dest )
             shutil.move ( hepmcfile, dest )
         else:
-            self.error ( "could not find orig hepmc file! maybe there is something wrong with the mg5 installation?" )
+            self.error ( f"could not find orig hepmc file {self.orighepmcFileName( masses )}! maybe there is something wrong with the mg5 installation?" )
         self.clean( Dir )
         return True
 
