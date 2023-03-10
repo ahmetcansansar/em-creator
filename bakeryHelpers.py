@@ -14,6 +14,11 @@ def nCPUs():
     """ obtain the number of CPU cores on the machine, for several
         platforms and python versions. """
     try:
+        from smodels.tools.runtime import nCPUs as smodelsNCPUs
+        return smodelsNCPUs()
+    except ImportError:
+        pass
+    try:
         import multiprocessing
         return multiprocessing.cpu_count()
     except ImportError:
