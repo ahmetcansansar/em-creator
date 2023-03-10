@@ -91,6 +91,7 @@ class MA5Wrapper:
         f = open ( filename, "at" )
         recastcard = { "atlas_susy_2016_07": "delphes_card_atlas_exot_2015_03" }
         recastcard["atlas_susy_2013_02"] = "delphesma5tune_card_atlas_dileptonsusy"
+        recastcard["atlas_susy_2019_08"] = "delphes_card_atlas_susy_2019_08"
         recastcard["cms_sus_16_033"] = "delphes_card_cms_sus_16_033"
         recastcard["cms_sus_19_006"] = "delphes_card_cms_sus_19_006"
         recastcard["cms_sus_16_048"] = "delphes_card_cms_sus_16_048"
@@ -100,6 +101,7 @@ class MA5Wrapper:
         versions = { "atlas_susy_2016_07": "1.2",
                      "atlas_susy_2013_02": "1.1",
                      "cms_sus_19_006": "1.2",
+                     "atlas_susy_2019_08": "1.2",
                      "cms_sus_16_048": "1.2",
                      "cms_sus_17_001": "1.2",
                      "cms_sus_16_039": "1.2",
