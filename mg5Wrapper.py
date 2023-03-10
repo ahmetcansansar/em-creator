@@ -16,7 +16,7 @@ import locker
 
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
-                   ignore_locks, sqrts=13, cutlang=False, ver="3_3_1",
+                   ignore_locks, sqrts=13, cutlang=False, ver="3_4_2",
                    keephepmc = True ):
         """
         :param ver: version of mg5
@@ -428,7 +428,7 @@ class MG5Wrapper:
             self.msg ( "moving", hepmcfile, "to", dest )
             shutil.move ( hepmcfile, dest )
         else:
-            self.error ( "could not find orig hepmc file! maybe there is something wrong with the mg5 installation?" )
+            self.error ( f"could not find orig hepmc file {self.orighepmcFileName( masses )}! maybe there is something wrong with the mg5 installation?" )
         self.clean( Dir )
         return True
 
@@ -524,7 +524,7 @@ def main():
                              action="store_true" )
     #mdefault = "(2000,1000,10),(2000,1000,10)"
     mdefault = "(1000,2000,50),'half',(1000,2000,50)"
-    argparser.add_argument ( '-m', '--masses', help='mass ranges, comma separated list of tuples. One tuple gives the range for one mass parameter, as (m_lowest, m_highest, delta_m). m_highest and delta_m may be omitted. Keyword "half" (add quotes) is accepted for intermediate masses. [%s]' % mdefault,
+    argparser.add_argument ( '-m', '--masses', help='mass ranges, comma separated list of tuples. One tuple gives the range for one mass parameter, as (m_lowest, m_highest, delta_m). m_highest and delta_m may be omitted. Keywords "half" and "same" (add quotes) are accepted for intermediate masses. [%s]' % mdefault,
                              type=str, default=mdefault )
     args = argparser.parse_args()
     if args.topo in [ "T1", "T2", "T1bbbb", "T2bb", "T2ttoff", "T1ttttoff", "TGQ" ] and args.mingap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
