@@ -9,7 +9,32 @@
 
 import numpy, sys, os, time, subprocess, glob
 sys.path.insert(0,"../../smodels" )
-from smodels.tools.runtime import nCPUs
+
+def nCPUs():
+    """ obtain the number of CPU cores on the machine, for several
+        platforms and python versions. """
+    try:
+        from smodels.tools.runtime import nCPUs as smodelsNCPUs
+        return smodelsNCPUs()
+    except ImportError:
+        pass
+    try:
+        import multiprocessing
+        return multiprocessing.cpu_count()
+    except ImportError:
+        pass
+    try:
+        import psutil
+        return psutil.NUM_CPUS
+    except ImportError:
+        pass
+    try:
+        import os
+        res = int(os.sysconf('SC_NPROCESSORS_ONLN'))
+        if res>0: return res
+    except ImportError:
+        pass
+    return None
 
 def yesno ( boolean ):
     if boolean:
