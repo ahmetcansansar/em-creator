@@ -153,8 +153,12 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
                 tmp.append ( mtuple )
                 lists.append ( tuple(tmp) )
                 continue
+            elif any(f"M0+{i}" in mtuple for i in range(5, 50, 1)) and ctr == 2:
+                tmp.append ( mtuple )
+                lists.append ( tuple(tmp) )
+                continue
             else:
-                print ( "error: i know only 'half' or 'same' for a string, and only in middle position" )
+                print ( "error: i know only 'half' or 'same' for a string, and only in middle position. the only exception is 'M0+nb' in the third position when we have 4 mass tuples with nb in range(5,50,1) and M0 is the mass of the LSP, this can't be used with 'half' though" )
                 sys.exit()
         if type(mtuple) in [ int, float ]:
             tmp.append ( mtuple )
@@ -178,10 +182,33 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
             for z in lists[2]:
                 y=int(.5*x+.5*z)
                 ret.append ( (int(x),y,int(z)) )
-    elif lists[1][0]=="same":
+   # elif lists[1][0]=="same":
+   #     for x  in lists[0]:
+   #         for z in lists[2]:
+   #             ret.append ( (int(x),int(x),int(z)) )
+   # elif len(lists)==2:
+   #     for x in range ( len(lists[0] ) ):
+   #         for y in range ( len(lists[1]) ):
+   #             ret.append ( (int(lists[0][x]),int(lists[1][y])) )
+   # elif len(lists)==3:
+   #     for x in range ( len(lists[0] ) ):
+   #         for y in range ( len(lists[1]) ):
+   #             for z in range ( len(lists[2]) ):
+   #                 ret.append ( (int(lists[0][x]),int(lists[1][y]),int(lists[2][z])) )
+    elif lists[1][0]=="same" and len(lists)<4:
         for x  in lists[0]:
             for z in lists[2]:
                 ret.append ( (int(x),int(x),int(z)) )
+    elif lists[1][0]=="same" and not isinstance(lists[2][0], str) and len(lists)==4:
+        for x  in lists[0]:
+            for z in lists[2]:
+                for k in lists[3]:
+                    ret.append ( (int(x),int(x),int(z),int(k)) )
+    elif lists[1][0]=="same" and any(f"M0+{i}" in lists[2][0] for i in range(5, 50, 1)) and len(lists)==4:
+        substrings = lists[2][0].split("+")
+        for x  in lists[0]:
+                for k in lists[3]:
+                    ret.append ( (int(x),int(x),int(k)+int(substrings[1]),int(k)) )
     elif len(lists)==2:
         for x in range ( len(lists[0] ) ):
             for y in range ( len(lists[1]) ):
@@ -191,6 +218,18 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
             for y in range ( len(lists[1]) ):
                 for z in range ( len(lists[2]) ):
                     ret.append ( (int(lists[0][x]),int(lists[1][y]),int(lists[2][z])) )
+    elif len(lists)==4 and not isinstance(lists[2][0], str):
+        for x in range ( len(lists[0] ) ):
+            for y in range ( len(lists[1]) ):
+                for z in range ( len(lists[2]) ):
+                    for k in range ( len(lists[3]) ):
+                        ret.append ( (int(lists[0][x]),int(lists[1][y]),int(lists[2][z]),int(lists[3][k])) )
+    elif len(lists)==4 and any(f"M0+{i}" in lists[2][0] for i in range(5, 50, 1)):
+        substrings = lists[2][0].split("+")
+        for x in range ( len(lists[0] ) ):
+            for y in range ( len(lists[1]) ):
+                    for k in range ( len(lists[3]) ):
+                        ret.append ( (int(lists[0][x]),int(lists[1][y]),int(lists[3][k])+int(substrings[1]),int(lists[3][k])) )
     ret = filterForGap ( ret, mingap1, True, [0,1] )
     ret = filterForGap ( ret, mingap2, True, [1,2] )
     ret = filterForGap ( ret, mingap13, True, [0,2] )

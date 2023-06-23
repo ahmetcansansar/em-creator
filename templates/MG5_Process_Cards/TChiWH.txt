@@ -1,2 +1,2 @@
-generate p p > n2 x1- $ n2 x1-
-add process p p > n2 x1+ $ n2 x1+
+generate p p > n2 x1- / cl ul sl dl
+add process p p > n2 x1+ / cl ul sl dl
