@@ -300,6 +300,7 @@ class MA5Wrapper:
         myenv["PATH"]=f".:{rootsys}/bin:/usr/bin:/bin:/usr/local/bin"
         myenv["LD_LIBRARY_PATH"]=f"{rootsys}/lib:/.singularity.d/libs" 
         myenv["PYTHONPATH"]=f"{pylocaldir}:{pylocaldir}/site-packages/:{rootsys}/lib:/users/wolfgan.waltenberger/git/smodels-utils"
+        # myenv["PYTHONPATH"]+=":/software/f2022/software/anaconda3/2023.03/lib/python3.10"
         pipe = subprocess.Popen ( cmd, env = myenv, shell=True,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE )
