@@ -364,7 +364,11 @@ class MG5Wrapper:
 
     def mkdir ( self, dirname ):
         if not os.path.exists ( dirname ):
-            os.mkdir ( dirname )
+            try:
+                os.mkdir ( dirname )
+            except FileExistsError as e:
+                # can happen if many processses start at once
+                pass
 
     def execute ( self, slhaFile, masses ):
         templatefile = self.templateDir + '/MG5_Process_Cards/'+self.topo+'.txt'
