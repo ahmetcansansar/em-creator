@@ -290,16 +290,16 @@ class MA5Wrapper:
         # home = "/scratch-cbe/users/wolfgan.waltenberger/"
         home = os.environ["HOME"]
         home = home.replace("git/em-creator","")
-        pylocaldir = "%s/.local/lib/python3.9/" % home
+        pyver = sys.version_info
+        pylocaldir = f"{home}/.local/lib/python{pyver.major}.{pyver.minor}/" 
         rootsys="/groups/hephy/pheno/opt/root/"
         import socket
         if socket.gethostname() in [ "two", "wnouc" ]:
             rootsys="/opt/root/"
         myenv["ROOTSYS"]=rootsys
-        myenv["PATH"]=".:%s/bin:/usr/bin:/bin:/usr/local/bin" % rootsys
-        myenv["LD_LIBRARY_PATH"]="%s/lib:/.singularity.d/libs" % rootsys
-        myenv["PYTHONPATH"]="%s:%s/site-packages/:%s/lib:/users/wolfgan.waltenberger/git/smodels-utils" % \
-            ( pylocaldir, pylocaldir, rootsys )
+        myenv["PATH"]=f".:{rootsys}/bin:/usr/bin:/bin:/usr/local/bin"
+        myenv["LD_LIBRARY_PATH"]=f"{rootsys}/lib:/.singularity.d/libs" 
+        myenv["PYTHONPATH"]=f"{pylocaldir}:{pylocaldir}/site-packages/:{rootsys}/lib:/users/wolfgan.waltenberger/git/smodels-utils"
         pipe = subprocess.Popen ( cmd, env = myenv, shell=True,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE )
