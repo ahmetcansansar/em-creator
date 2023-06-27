@@ -482,7 +482,7 @@ def main():
                              type=int, default=13 )
     argparser.add_argument ( '-p', '--nprocesses', help='number of process to run in parallel. 0 means 1 per CPU [1]',
                              type=int, default=1 )
-    argparser.add_argument ( '-t', '--topo', help='topology [T2]',
+    argparser.add_argument ( '-T', '--topo', help='topology [T2]',
                              type=str, default="T2" )
     argparser.add_argument ( '-k', '--keep', help='keep temporary files',
                              action="store_true" )
