@@ -15,6 +15,10 @@ install_ma5:
 	$(shell [ -x "ma5" ] && { mv -f ma5.template ma5.old; } )
 	tar xzvf ma5.tar.gz 
 
+pull_from_clip:
+	mkdir -p embaked
+	scp -r clip-login-1:git/em-creator/embaked/\*embaked embaked
+
 backup_embaked:
 	./utils/backupEmbaked.py
 
