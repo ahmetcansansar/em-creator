@@ -549,7 +549,7 @@ def run ( args ):
                 ntot += runForTopo ( args.topo, args.njets, args.masses, ana, 
                                      args.verbose, args.copy, args.keep, args.sqrts, 
                                      cutlang, args.stats, args.cleanup )
-    print ( f"[emCreator] I found a total of {ntotembaked} points at {time.asctime()}." )
+    print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
         lines = f.readlines()
