@@ -45,6 +45,7 @@ import re                      # For delphes card picker
 import multiprocessing         # Used when run as __main__
 import gzip                    # For decompression of hepmc file
 import time                    # Used for waiting after blocking io error
+import glob                    # for finding adl files
 import random                  # Used to randomize waiting time after blocking io error
 from datetime import datetime  # For timestamp of embaked files
 from typing import List        # For type hinting
@@ -186,7 +187,7 @@ class CutLangWrapper:
                 args = ["git", "clone", f"https://github.com/ADL4HEP/{draftname}"]
                 self.exe(args, cwd=dirname,
                          exit_on_fail=True, logfile=self.initlog)
-            import shutil, glob
+            import shutil
             for x in glob.glob ( f"{dirname}/ADLAnalysisDrafts/*" ):
                 if not "CMS-" in x and not "ATLAS-" in x:
                     continue
@@ -228,7 +229,6 @@ class CutLangWrapper:
 
     def list_analyses ( self ):
         """ list all analyses that are to be found in CutLang/ADLLHCanalyses/ """
-        import glob
         files = glob.glob ( f"{self.adllhcanalyses}/CMS*" )
         files += glob.glob ( f"{self.adllhcanalyses}/ATLAS*" )
         for f in files:
@@ -611,17 +611,16 @@ class CutLangWrapper:
                                  e.g. 'CMS_SUS_012_32'
         """
         a_name = a_name.replace("_", "-")
-        cla_path = os.path.join(self.adllhcanalyses, a_name.upper(), a_name.upper() + "_CutLang.adl")
-        if os.path.isfile(cla_path):
-            return os.path.abspath(cla_path)
-            self._msg(f"Using CutLang file {cla_path}.")
-        else:
-            cla_path = cla_path.replace("_CutLang.adl",".adl" )
-            if os.path.isfile(cla_path):
-                return os.path.abspath(cla_path)
-                self._msg(f"Using CutLang file {cla_path}.")
-            raise Exception(f"No analysis file found for analysis {a_name} found at: \n" + cla_path)
-
+        cla_path = os.path.join(self.adllhcanalyses, a_name.upper(), a_name.upper() + "*.adl")
+        files = glob.glob ( cla_path )
+        if len(files)>1:
+             self._msg ( f"Found several adl files for analysis {a_name}: {files}" )
+             self._msg ( f"Please implement a way to deal with this" )
+             raise Exception ( f"Found several adl files for analysis {a_name}: {files}" )
+        if len(files)==0:
+            line = f"found no adl file for analysis {a_name}"
+            raise Exception ( line )
+        return os.path.abspath ( files[0] )
 
     @classmethod
     def get_effi_name(cls, mass):
