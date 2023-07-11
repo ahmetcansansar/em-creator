@@ -247,7 +247,7 @@ class MG5Wrapper:
             else:
                 self.info ( "hepmc file for %s exists, but rerun requested." % str(masses) )
         self.announce ( "starting MG5 on %s[%s] at %s in job #%s" % (masses, self.topo, time.asctime(), pid ) )
-        slhaTemplate = "slha/%s_template.slha" % self.topo
+        slhaTemplate = f"slha/{self.topo}_template.slha"
         self.pluginMasses( slhaTemplate, masses )
         # first write pythia card
         self.writePythiaCard ( process=self.process, masses=masses )
