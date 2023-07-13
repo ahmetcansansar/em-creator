@@ -248,6 +248,25 @@ class CutLangWrapper:
         ret = ret.replace("_",",")
         ret = "(" + ret + ")"
         return ret
+        
+    def filterDelphes ( self, delph_out : str ):
+        """ lets now go through the delphes file, and keep only events
+            that contains Z bosons AND gammas """
+        import uproot
+        f = uproot.open ( delph_out )
+        delphes = f["Delphes"]
+        allpids = delphes["Parton/Parton.PID"].array()
+        askfor = ( 22, 23 ) # 22: gamma, 23: Z, 25: higgs
+        keeps = []
+        for i,pids in enumerate ( allpids ):
+            addMe = True
+            for ask in askfor:
+                if not ask in pids and not -ask in pids:
+                    addMe = False
+            if addMe:
+                keeps.append ( i )
+        self._msg ( f"we keep {keeps}" )
+        f.close()
 
     def run(self, mass: str, hepmcfile: str, pid: int = None) -> int:
         """ Gives efficiency values for the given hepmc file.
@@ -308,6 +327,9 @@ class CutLangWrapper:
         args = [self.delphes_exe, delphes_card, delph_out, hepmcfile]
         self.exe(args, logfile=logfile)
         self._debug("Delphes finished.")
+
+        ## possibly we need to filter the delphes output
+        self.filterDelphes ( delph_out )
 
         # ======================
         #        CutLang
