@@ -740,14 +740,15 @@ module UniqueObjectFinder UniqueObjectFinder {
 
 module TreeWriter TreeWriter {
 # add Branch InputArray BranchName BranchClass
-#  add Branch Delphes/allParticles Particle GenParticle
+  add Branch Delphes/allParticles Particle GenParticle
+  add Branch Delphes/partons Parton GenParticle
 
-#  add Branch TrackMerger/tracks Track Track
-#  add Branch Calorimeter/towers Tower Tower
+  add Branch TrackMerger/tracks Track Track
+  add Branch Calorimeter/towers Tower Tower
 
-#  add Branch HCal/eflowTracks EFlowTrack Track
-#  add Branch ECal/eflowPhotons EFlowPhoton Tower
-#  add Branch HCal/eflowNeutralHadrons EFlowNeutralHadron Tower
+  add Branch HCal/eflowTracks EFlowTrack Track
+  add Branch ECal/eflowPhotons EFlowPhoton Tower
+  add Branch HCal/eflowNeutralHadrons EFlowNeutralHadron Tower
 
   add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET

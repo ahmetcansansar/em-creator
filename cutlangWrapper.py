@@ -867,9 +867,11 @@ class CutLangWrapper:
 
     def _pick_delphes_card(self):
         if not re.search("ATLAS", self.analysis) is None:
-            return os.path.abspath("./delphes/cards/delphes_card_ATLAS.tcl")
+            return os.path.abspath("./templates/delphes_card_ATLAS.tcl")
+            # return os.path.abspath("./delphes/cards/delphes_card_ATLAS.tcl")
         elif not re.search("CMS", self.analysis) is None:
-            return os.path.abspath("./delphes/cards/delphes_card_CMS.tcl")
+            return os.path.abspath("./templates/delphes_card_CMS.tcl")
+            # return os.path.abspath("./delphes/cards/delphes_card_CMS.tcl")
         else:
             self._error(f"Could not find a suitable Delphes card for analysis {self.analysis}. Exiting.")
             sys.exit()
