@@ -48,7 +48,7 @@ import time                    # Used for waiting after blocking io error
 import glob                    # for finding adl files
 import random                  # Used to randomize waiting time after blocking io error
 from datetime import datetime  # For timestamp of embaked files
-from typing import List        # For type hinting
+from typing import List, Union, Text # For type hinting
 
 
 # 3 party imports
@@ -63,7 +63,7 @@ class CutLangWrapper:
 
     def __init__(self, topo: str, njets: int, rerun: bool, analysis: str,
                  auto_confirm: bool = True, filterString: str = "",
-                 keep: bool = False ) -> None:
+                 keep: bool = False, adl_file : Union[Text,None] = None ) -> None:
         """
         If not already present, clones and builds Delphes, CutLang and ADLLHC Analyses.
         Prepares output directories.
@@ -79,6 +79,7 @@ class CutLangWrapper:
         """
         # General vars
         self.njets = njets
+        self.adl_file = adl_file
         self.keep = keep ## keep temporary files?
         self.topo = topo
         if "," in analysis:
@@ -611,6 +612,16 @@ class CutLangWrapper:
                                  e.g. 'CMS_SUS_012_32'
         """
         a_name = a_name.replace("_", "-")
+        if self.adl_file != None:
+            if "/" in self.adl_file:
+                self._msg ( f"for the adl file name, please supply only the file name, not a path like {self.adl_file}" )
+                p = self.adl_file.rfind("/")
+                self.adl_file = self.adl_file[p+1:]
+            cla_path = os.path.join(self.adllhcanalyses, a_name.upper(), self.adl_file )
+            if os.path.exists ( cla_path ):
+                return os.path.abspath ( cla_path )
+            self._error ( f"you specified an adl file {self.adl_file} but I could not find it at {cla_path}. Aborting." )
+            sys.exit()
         cla_path = os.path.join(self.adllhcanalyses, a_name.upper(), a_name.upper() + "*.adl")
         files = glob.glob ( cla_path )
         if len(files)>1:
