@@ -707,7 +707,7 @@ class CutLangWrapper:
         a_name = a_name.replace("_", "-")
         if self.adl_file != None:
             if "/" in self.adl_file:
-                cla_path = os.path.absname ( self.adl_file )
+                cla_path = os.path.abspath ( self.adl_file )
                 #self._msg ( f"for the adl file name, please supply only the file name, not a path like {self.adl_file}" )
                 #p = self.adl_file.rfind("/")
                 #self.adl_file = self.adl_file[p+1:]
