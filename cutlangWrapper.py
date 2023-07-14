@@ -305,6 +305,8 @@ class CutLangWrapper:
     def filterDelphes ( self, delph_out : str ):
         """ lets now go through the delphes file, and keep only events
             that contains Z bosons AND gammas """
+        if self.event_condition is None:
+            return
         bitmask = []
         self._msg ( f"filtering {delph_out}" )
         import ROOT
