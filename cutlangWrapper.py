@@ -707,10 +707,12 @@ class CutLangWrapper:
         a_name = a_name.replace("_", "-")
         if self.adl_file != None:
             if "/" in self.adl_file:
-                self._msg ( f"for the adl file name, please supply only the file name, not a path like {self.adl_file}" )
-                p = self.adl_file.rfind("/")
-                self.adl_file = self.adl_file[p+1:]
-            cla_path = os.path.join(self.adllhcanalyses, a_name.upper(), self.adl_file )
+                cla_path = os.path.absname ( self.adl_file )
+                #self._msg ( f"for the adl file name, please supply only the file name, not a path like {self.adl_file}" )
+                #p = self.adl_file.rfind("/")
+                #self.adl_file = self.adl_file[p+1:]
+            else:
+                cla_path = os.path.join(self.adllhcanalyses, a_name.upper(), self.adl_file )
             if os.path.exists ( cla_path ):
                 return os.path.abspath ( cla_path )
             self._error ( f"you specified an adl file {self.adl_file} but I could not find it at {cla_path}. Aborting." )
