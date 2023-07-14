@@ -17,17 +17,19 @@ import locker
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
                    ignore_locks, sqrts=13, cutlang=False, ver="3_4_2",
-                   keephepmc = True, adl_file = None ):
+                   keephepmc = True, adl_file = None, event_condition = None ):
         """
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
         """
+        self.checkHost()
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
         self.tempdir = bakeryHelpers.tempDir()
         self.resultsdir = os.path.join(self.basedir, "mg5results")
         self.cutlang = cutlang
         self.adl_file = adl_file
+        self.event_condition = event_condition
         self.mkdir ( self.resultsdir )
         self.locker = locker.Locker ( sqrts, topo, ignore_locks )
         self.topo = topo
@@ -82,6 +84,20 @@ class MG5Wrapper:
         self.correctPythia8CfgFile()
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
         self.info ( "initialised" )
+
+    def checkHost ( self ):
+        """ check which host and environment we are in. Warn against running
+            outside of singularity container, on clip """
+        import socket
+        hostname = socket.gethostname()
+        if "clip-login-1" in hostname:
+            self._msg ( "WARNING: running on the login node!" )
+        if "clip" in hostname:
+            try:
+                singularity = os.environ["SINGULARITY_NAME"]
+            except KeyError as e:
+                self._error ( "we seem to not be inside of a singularity container!" )
+                sys.exit(-1)
 
     def determineMG5Version ( self ):
         """ find out version of mg5, by peeking into mg5 directory """
@@ -301,8 +317,9 @@ class MG5Wrapper:
         analist = analyses.split(",")
         for ana in analist:
             ana = ana.strip()
-            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana, auto_confirm = True,
-                                  keep = self.keep, adl_file = self.adl_file )
+            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana, 
+                    auto_confirm = True, keep = self.keep, adl_file = self.adl_file,
+                    event_condition = self.event_condition )
             #                   self.sqrts )
             self.debug ( f"now call cutlangWrapper for {ana}" )
             hepmcfile = self.locker.hepmcFileName ( masses )
@@ -503,6 +520,8 @@ def main():
                              action="store_true" )
     argparser.add_argument ( '--adl_file', help='specify the name of the adl description to be used [if not specified, try to guess]',
                              type=str, default=None )
+    argparser.add_argument ( '--event_condition', help='specify conditions on the events, filter out the rest, e.g. {"higgs":1}: one and only one higgs [None]',
+                             type=str, default=None )
     argparser.add_argument ( '--copy', help='copy embaked file to smodels-database',
                              action="store_true" )
     argparser.add_argument ( '-l', '--list_analyses', help='print a list of MA5 analyses, then quit',
@@ -604,7 +623,8 @@ def main():
 
     mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun,
                       args.recast, args.ignore_locks, args.sqrts, args.cutlang,
-                      keephepmc = args.keephepmc, adl_file = args.adl_file )
+                      keephepmc = args.keephepmc, adl_file = args.adl_file,
+                      event_condition = args.event_condition )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 

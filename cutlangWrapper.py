@@ -50,6 +50,7 @@ import random                  # Used to randomize waiting time after blocking i
 from datetime import datetime  # For timestamp of embaked files
 from typing import List, Union, Text # For type hinting
 
+from colorama import Fore
 
 # 3 party imports
 
@@ -63,7 +64,8 @@ class CutLangWrapper:
 
     def __init__(self, topo: str, njets: int, rerun: bool, analysis: str,
                  auto_confirm: bool = True, filterString: str = "",
-                 keep: bool = False, adl_file : Union[Text,None] = None ) -> None:
+                 keep: bool = False, adl_file : Union[Text,None] = None,
+                 event_condition : Union[Text,None] = None ) -> None:
         """
         If not already present, clones and builds Delphes, CutLang and ADLLHC Analyses.
         Prepares output directories.
@@ -80,6 +82,7 @@ class CutLangWrapper:
         # General vars
         self.njets = njets
         self.adl_file = adl_file
+        self.getEventCondition ( event_condition )
         self.keep = keep ## keep temporary files?
         self.topo = topo
         if "," in analysis:
@@ -228,6 +231,21 @@ class CutLangWrapper:
         self._info("Delphes initialised.")
         self._info("Initialisation complete.")
 
+    def getEventCondition ( self, event_condition ):
+        pids = { "gamma": 22, "Z": 23, "higgs": 25 }
+        self.event_condition = event_condition
+        if event_condition == None:
+            return
+        self.event_condition = {}
+        for k,v in eval ( event_condition ).items():
+            if type(k)==int:
+                self.event_condition[k]=v
+            elif type(k)==str and k in pids.keys():
+                self.event_condition[pids[k]]=v
+            else:
+                self._error ( f"i dont understand {k} in event condition" )
+                sys.exit(-1)
+
     def list_analyses ( self ):
         """ list all analyses that are to be found in CutLang/ADLLHCanalyses/ """
         files = glob.glob ( f"{self.adllhcanalyses}/CMS*" )
@@ -249,24 +267,76 @@ class CutLangWrapper:
         ret = "(" + ret + ")"
         return ret
         
-    def filterDelphes ( self, delph_out : str ):
+    def filterDelphesUproot ( self, delph_out : str ):
         """ lets now go through the delphes file, and keep only events
-            that contains Z bosons AND gammas """
+            that contains Z bosons AND gammas FIXME doesnt work yet """
         import uproot
         f = uproot.open ( delph_out )
         delphes = f["Delphes"]
-        allpids = delphes["Parton/Parton.PID"].array()
-        askfor = ( 22, 23 ) # 22: gamma, 23: Z, 25: higgs
-        keeps = []
+        allpids = delphes["Particle/Particle.PID"].array()
+        print ( "pids of entry 0", list(allpids[0][:10]) )
+        print ( "pids of entry 1", list(allpids[1][:10]) )
+        askfor = ( 22, 25 ) # 22: gamma, 23: Z, 25: higgs
+        bitmask = []
         for i,pids in enumerate ( allpids ):
             addMe = True
             for ask in askfor:
                 if not ask in pids and not -ask in pids:
                     addMe = False
-            if addMe:
-                keeps.append ( i )
-        self._msg ( f"we keep {keeps}" )
-        f.close()
+            bitmask.append ( addMe )
+        self._msg ( f"@@@@ bitmask is {bitmask}" )
+        """
+        g = uproot.recreate ( "new.root", compression=uproot.ZLIB(4) )
+        g["ProcessID0"]=f["ProcessID0"]
+        g["Delphes"]=delphes
+        g.close()
+        """
+
+    def readRootArray ( self, arr ):
+        """ arr is ROOT.TLeafElement, read all entries """
+        ret = []
+        for i in range(arr.GetNdata()):
+            tmp = arr.GetValue(i)
+            if tmp == int(tmp):
+                tmp = int(tmp)
+            ret.append ( tmp )
+        return ret
+
+    def filterDelphes ( self, delph_out : str ):
+        """ lets now go through the delphes file, and keep only events
+            that contains Z bosons AND gammas """
+        bitmask = []
+        self._msg ( f"filtering {delph_out}" )
+        import ROOT
+        f = ROOT.TFile ( delph_out, "read" )
+        g = ROOT.TFile ( "new.root", "recreate" )
+        d = f.Delphes
+        # d = f.Get("Delphes") does the same as above
+        # branch = d.GetBranch("Particle")
+        leaf = d.GetLeaf("Particle.PID")
+        n = d.GetEntries()
+        cloned = d.CopyTree("0")
+        # 22: gamma, 23: Z, 25: higgs
+        # print ( "event condition is", self.event_condition )
+        for event in range(n):
+            d.GetEntry(event) # start with event #0
+            pids = self.readRootArray(leaf)
+            counts = {}
+            for k in self.event_condition.keys():
+                counts[k] = pids.count(k)
+            passes = True
+            for k,v in self.event_condition.items():
+                if k in counts and v == counts[k]:
+                    continue
+                passes = False
+            # print ( "counts for event", event, "are", counts, "passes", passes )
+            if passes:
+                cloned.Fill()
+        g.Write()
+        g.Close()
+        f.Close()
+        cmd = f"mv new.root {delph_out}"
+        subprocess.getoutput ( cmd )
 
     def run(self, mass: str, hepmcfile: str, pid: int = None) -> int:
         """ Gives efficiency values for the given hepmc file.
@@ -329,6 +399,7 @@ class CutLangWrapper:
         self._debug("Delphes finished.")
 
         ## possibly we need to filter the delphes output
+        # self.filterDelphesUproot ( delph_out )
         self.filterDelphes ( delph_out )
 
         # ======================
@@ -908,26 +979,24 @@ class CutLangWrapper:
     @staticmethod
     def _info(*msg):
         """Print yellow info message"""
-        print("%s[CutLangWrapper] %s%s" % (colorama.Fore.YELLOW, " ".join(msg),
-              colorama.Fore.RESET))
+        print( f"{Fore.YELLOW}[CutLangWrapper] {' '.join(msg)}{Fore.RESET}")
 
     @staticmethod
     def _debug(*msg):
         """Print green debug message."""
         return
-        print("%s[CutLangWrapper] %s%s" % (colorama.Fore.GREEN, " ".join(msg),
-              colorama.Fore.RESET))
+        print(f"{Fore.GREEN}[CutLangWrapper] {' '.join(msg)}{Fore.RESET}")
 
     @staticmethod
     def _msg(*msg):
         """Print normal message"""
-        print("[CutLangWrapper] %s" % " ".join(msg))
+        print( f"{Fore.GREEN}[CutLangWrapper] {' '.join(msg)}{Fore.RESET}")
 
     @staticmethod
     def _error(*msg):
         """Print red error message"""
         string = ' '.join(msg)
-        print(f"{colorama.Fore.RED}[CutLangWrapper] Error: {string} {colorama.Fore.RESET}")
+        print(f"{Fore.RED}[CutLangWrapper] Error: {string} {Fore.RESET}")
 
     @staticmethod
     def process_filter_string(string):
