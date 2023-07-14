@@ -237,14 +237,9 @@ class CutLangWrapper:
         if event_condition == None:
             return
         self.event_condition = {}
-        for k,v in eval ( event_condition ).items():
-            if type(k)==int:
-                self.event_condition[k]=v
-            elif type(k)==str and k in pids.keys():
-                self.event_condition[pids[k]]=v
-            else:
-                self._error ( f"i dont understand {k} in event condition" )
-                sys.exit(-1)
+        for k,v in pids.items():
+            event_condition = event_condition.replace(k,str(v))
+        self.event_condition = eval ( event_condition )
 
     def list_analyses ( self ):
         """ list all analyses that are to be found in CutLang/ADLLHCanalyses/ """
@@ -1029,6 +1024,7 @@ class CutLangWrapper:
 
     def _shorten_bin_name(self, name):
         result = name.replace("[", "").replace("]", "")
+        result = name.replace("'", "").replace('"', "")
         result = result.replace("and", "").replace("__", "_")
         result = result.replace("Size(jets)", "njets")
         result = result.replace("Size(bjets)", "nbjets")
