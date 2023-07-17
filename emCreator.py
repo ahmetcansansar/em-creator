@@ -557,7 +557,7 @@ def run ( args ):
         print ( f"[emCreator]    last status was {lines[0].strip()}." )
     if args.topo == "all": #  and "," in args.analyses:
         f=open(".last.summary","wt")
-        f.write ( f"{ntotembaked} points at {time.asctime()}\n" )
+        f.write ( f"{ntot} points at {time.asctime()}\n" )
         f.write ( f"t={args.topo}, a={analyses}\n" )
         f.close()
 
