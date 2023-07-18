@@ -74,7 +74,8 @@ class emCreator:
             Dir = "ma5/tools/PADForMA5tune/Build/SampleAnalyzer/User/Analyzer/"
             filename = "%s/%s.info" % ( Dir, ana )
         if not os.path.exists ( filename ):
-            self.error ( "could not find statistics file for %s" % ana )
+            self.error ( f"could not find statistics file for {ana}" )
+            return
         tree = ET.parse( filename )
         root = tree.getroot()
         ret = {}
