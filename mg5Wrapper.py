@@ -91,7 +91,8 @@ class MG5Wrapper:
         import socket
         hostname = socket.gethostname()
         if "clip-login-1" in hostname:
-            self._msg ( "WARNING: running on the login node!" )
+            self.msg ( "WARNING: running on the login node!" )
+            sys.exit()
         if "clip" in hostname:
             try:
                 singularity = os.environ["SINGULARITY_NAME"]
