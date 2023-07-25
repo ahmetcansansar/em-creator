@@ -11,7 +11,7 @@
 import os, sys, colorama, subprocess, shutil, time, glob
 from datetime import datetime
 import bakeryHelpers
-        
+
 hasWarned = { "cutlangstats": False }
 
 class emCreator:
@@ -50,16 +50,47 @@ class emCreator:
         :param SRs: list of signal regions
         FIXME not yet implemented
         """
-        if hasWarned["cutlangstats"] == False:
-            self.error ( "getCutlangStatistics not yet implemented!" )
-            hasWarned["cutlangstats"]=True
+        filepath = f"cutlang_results/{ana}/ANA_{self.topo}_1jet/temp/histoOut*root"
+        files = glob.glob ( filepath )
+        if len(files)==0:
+            self.error ( f"could not find any files at {filepath}" )
+            ret = {}
+            for k in SRs:
+                if k.startswith("__"):
+                    continue
+                if k in [ ]: # "signal_", "signal" ]:
+                    continue
+                ret[k] = { "nobs": -1, "nb": -1, "deltanb": -1 }
+            return ret
+        import uproot
+        f = uproot.open ( files[0] )
+        tuples = f.items()
+        regions = set()
+        for t in tuples:
+            if "baseline" in t[0]:
+                continue
+            if not "obs" in t[0]:
+                continue
+            p=t[0].find("/obs")
+            regions.add ( t[0][:p] )
         ret = {}
-        for k in SRs:
-            if k.startswith("__"):
-                continue
-            if k in [ ]: # "signal_", "signal" ]:
-                continue
-            ret[k] = { "nobs": -1, "nb": -1, "deltanb": -1 }
+        #indices = { "EWSRs": [35,36,37,38,39,41,42,43,44,45],
+        #    "SPSRs": [2,3,4,5,6,7,9,10,11,12,13,15,16,17,18,20,21,22,23,25,26,27,28,30,31,32,33] }
+        for region in regions:
+            d = f[f"{region}/obs"].values()
+            est = f[f"{region}/est"].values()
+            estup = f[f"{region}/est_up"].values()
+            estdown = f[f"{region}/est_down"].values()
+            xaxis = f[F"{region}/bincounts"].all_members["fXaxis"]
+            for i in range(len(d)):
+                nr = xaxis.labels()[i].replace('"','')
+                sr = f"{region}{nr}"
+                nb = round(est[i],5)
+                err = round(max(estup[i],estdown[i]),5)
+                obs = int(round(d[i],0))
+                ret[sr] = { "nobs": obs, "nb": nb, "deltanb": err }
+        # ret[k] = { "nobs": -1, "nb": -1, "deltanb": -1 }
+        # import IPython ; IPython.embed(); sys.exit()
         return ret
 
     def getStatistics ( self, ana = "atlas_susy_2016_07", SRs = {} ):
@@ -252,7 +283,7 @@ def recaster ( cutlang ):
     return ma5orcutlang
 
 def embakedFileName ( analysis, topo, cutlang ):
-    """ get the file name of the .embaked file 
+    """ get the file name of the .embaked file
     :param analysis: e.g. CMS-SUS-16-039
     :param topo: e.g. T2
     :param cutlang: true if cutlang, false if ma5
@@ -262,7 +293,7 @@ def embakedFileName ( analysis, topo, cutlang ):
     return fname
 
 def massesInEmbakedFile ( masses, analysis, topo, cutlang ):
-    """ are the masses in the embaked file? 
+    """ are the masses in the embaked file?
     :param masses: e.g. (800,200)
     :param analysis: e.g. CMS-SUS-16-039
     :param topo: e.g. T2
@@ -280,7 +311,7 @@ def massesInEmbakedFile ( masses, analysis, topo, cutlang ):
             return True
     return False
 
-def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang, 
+def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang,
                  create_stats, cleanup ):
     """
     :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
@@ -533,7 +564,7 @@ def run ( args ):
                 analyses = getCutlangListOfAnalyses()
             else:
                 analyses = getMA5ListOfAnalyses()
-                
+
         if cutlang:
            analyses = analyses.replace("_","-").upper()
         if args.topo == "all":
@@ -542,13 +573,13 @@ def run ( args ):
             topos.sort()
             for topo in topos:
                 for ana in analyses.split(","):
-                    ntot += runForTopo ( topo, args.njets, args.masses, ana, 
-                        args.verbose, args.copy, args.keep, args.sqrts, 
+                    ntot += runForTopo ( topo, args.njets, args.masses, ana,
+                        args.verbose, args.copy, args.keep, args.sqrts,
                         cutlang, args.stats, args.cleanup )
         else:
             for ana in analyses.split(","):
-                ntot += runForTopo ( args.topo, args.njets, args.masses, ana, 
-                                     args.verbose, args.copy, args.keep, args.sqrts, 
+                ntot += runForTopo ( args.topo, args.njets, args.masses, ana,
+                                     args.verbose, args.copy, args.keep, args.sqrts,
                                      cutlang, args.stats, args.cleanup )
     print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
