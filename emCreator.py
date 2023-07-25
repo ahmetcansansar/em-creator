@@ -84,7 +84,7 @@ class emCreator:
             xaxis = f[F"{region}/bincounts"].all_members["fXaxis"]
             for i in range(len(d)):
                 nr = xaxis.labels()[i].replace('"','')
-                sr = f"{region}{nr}"
+                sr = f"{region}_{nr}"
                 nb = round(est[i],5)
                 err = round(max(estup[i],estdown[i]),5)
                 obs = int(round(d[i],0))
