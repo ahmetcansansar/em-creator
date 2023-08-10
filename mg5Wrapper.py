@@ -238,6 +238,7 @@ class MG5Wrapper:
         """ Run MG5 for topo, with njets additional ISR jets, giving
         also the masses as a list.
         """
+        self.checkInstallation()
         import emCreator
         isIn = emCreator.massesInEmbakedFile ( masses, analyses, self.topo, \
                                                self.cutlang )
@@ -389,6 +390,21 @@ class MG5Wrapper:
             except FileExistsError as e:
                 # can happen if many processses start at once
                 pass
+    def checkInstallation ( self ):
+        """ check the mg5 installation, including plugins 
+        :raises: Exception, if anything is wrong
+        :returns: True, if all is ok
+        """
+        path = os.path.join ( self.mg5install, "HEPTools", "bin" )
+        pythiaconfig = os.path.join ( path, "pythia8-config" )
+        print ( f"checking in {path}" )
+        if not os.path.exists ( pythiaconfig ):
+            raise Exception ( f"cannot find pythia8-config: {pythiaconfig}" ) 
+        cmd = f"{pythiaconfig} --with-lhapdf6"
+        o = subprocess.getoutput ( cmd )
+        if o == "false":
+            raise Exception ( f"pythia8 has no lhapdf6 support" ) 
+        return True
 
     def execute ( self, slhaFile, masses ):
         templatefile = self.templateDir + '/MG5_Process_Cards/'+self.topo+'.txt'
