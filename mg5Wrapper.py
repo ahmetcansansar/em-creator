@@ -400,10 +400,15 @@ class MG5Wrapper:
         print ( f"checking in {path}" )
         if not os.path.exists ( pythiaconfig ):
             raise Exception ( f"cannot find pythia8-config: {pythiaconfig}" ) 
-        cmd = f"{pythiaconfig} --with-lhapdf6"
+        cmd = f"{pythiaconfig} --with-hepmc2"
         o = subprocess.getoutput ( cmd )
         if o == "false":
-            raise Exception ( f"pythia8 has no lhapdf6 support" ) 
+            raise Exception ( f"pythia8 has no hepmc2 support" ) 
+        if False:
+            cmd = f"{pythiaconfig} --with-lhapdf6"
+            o = subprocess.getoutput ( cmd )
+            if o == "false":
+                raise Exception ( f"pythia8 has no lhapdf6 support" ) 
         return True
 
     def execute ( self, slhaFile, masses ):
