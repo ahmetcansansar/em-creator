@@ -26,6 +26,7 @@ class MA5Wrapper:
         self.topo = topo
         self.sqrts = sqrts
         self.njets = njets
+        analyses = analyses.lower().replace("-","_")
         self.analyses = analyses
         self.rerun = rerun
         self.keep = keep
