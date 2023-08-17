@@ -496,7 +496,9 @@ if __name__ == "__main__":
     argparser.add_argument ( '--maxgap1', help='maximum mass gap between first and second, to force offshell [None]',
                              type=float, default=None )
     args = argparser.parse_args()
-    masses=parseMasses ( args.masses, mingap1 = args.mingap1, maxgap1 = args.maxgap1 ) 
+    masses=parseMasses ( args.masses, mingap1 = args.mingap1, maxgap1 = args.maxgap1,
+           mingap2 = args.mingap2, maxgap2 = args.maxgap2, mingap13 = args.mingap13,
+           maxgap13 = args.maxgap13 ) 
     print ( f"the input will produce {len(masses)} mass vectors:" )
     for c,m in enumerate ( masses ):
         print ( f"    {m}", end="" )
