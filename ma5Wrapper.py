@@ -26,6 +26,7 @@ class MA5Wrapper:
         self.topo = topo
         self.sqrts = sqrts
         self.njets = njets
+        analyses = analyses.lower().replace("-","_")
         self.analyses = analyses
         self.rerun = rerun
         self.keep = keep
@@ -67,6 +68,20 @@ class MA5Wrapper:
 
     def debug( self, *msg ):
         pass
+
+    def checkInstallation ( self ):
+        """ check if installation looks reasonable and complete 
+        :raises: Exception, if sth seems missing
+        :returns: True, if all good
+        """
+        exefile = os.path.join ( self.ma5install, self.executable )
+        hasExe = os.path.exists ( exefile )
+        if not hasExe:
+            raise Exception ( f"{exefile} not found" )
+        sfsPath = os.path.join ( self.ma5install, "tools", "PADForSFS", "Build" )
+        if not os.path.exists ( sfsPath ):
+            raise Exception ( f"{sfsPath} is missing" )
+        return True
 
     def msg ( self, *msg):
         print ( "[ma5Wrapper] %s" % " ".join ( msg ) )
@@ -206,6 +221,7 @@ class MA5Wrapper:
         :returns: -1 if problem occured, 0 if all went smoothly,
                    1 if nothing needed to be done.
         """
+        self.checkInstallation()
         spid = ""
         if pid != None:
             spid = "[%d]" % pid
