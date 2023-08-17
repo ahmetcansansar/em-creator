@@ -7,7 +7,7 @@
 import subprocess, os, sys
     
 # ver="1.9.beta"
-ver="1.9.60"
+ver="1.10.10"
 
 def install_plugins():
     print ( "[make.py] installing plugins (tail -f /tmp/ma5.install to monitor) ... " )
@@ -38,7 +38,9 @@ def install():
     print ( "installing ma5 ..." )
     url="https://smodels.github.io/downloads/tarballs/"
     sv = ver.split(".")
-    tarball = "ma5_v%s.tgz" % ver
+    tarball = f"madanalysis5-{ver}.tar.gz"
+    if sv[1]=="9":
+        tarball = "ma5_v%s.tgz" % ver
     if sv[2]=="60":
         tarball = f"MadAnalysis5_v{ver}.tgz"
     if not os.path.exists ( tarball ):
@@ -47,9 +49,9 @@ def install():
         print ( f"[make.py] wget: {o}" )
     cmd = "tar xzvf %s" % tarball
     subprocess.getoutput ( cmd )
-    cmd = "mv madanalysis5/* ."
+    cmd = "mv madanalysis*/* ."
     subprocess.getoutput ( cmd )
-    cmd = "rmdir madanalysis5"
+    cmd = "rmdir -rf madanalysis*"
     subprocess.getoutput ( cmd )
     cmd = "rm %s" % tarball
     subprocess.getoutput ( cmd )
