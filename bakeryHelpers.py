@@ -397,15 +397,6 @@ def nRequiredMasses(topo):
             M.add(num)
     return len(M)
 
-if __name__ == "__main__":
-    print ( getListOfMasses ( "T2tt", True, 8 ) )
-    """
-    ms = "[(200,400,50.),(200,400.,50),(150.,440.,50)]"
-    masses = parseMasses ( ms, mingap13=0., mingap2=0. )
-    print ( "masses", masses )
-    print ( nRequiredMasses("T5ZZ") )
-    """
-
 def clean ():
     """ do the usual cleaning, but consider only files older than 2 hrs """
     t = tempDir()
@@ -488,5 +479,30 @@ def rmLocksOlderThan ( hours=8 ):
 
 
 if __name__ == "__main__":
-    print ( isAssociateProduction ( "TChiWZ" ) )
-    print ( parseMasses ( "[(350,691,50),(0,2351,50)]", mingap1 = 1., maxgap1 = 360. ) )
+    import argparse
+    argparser = argparse.ArgumentParser(description='show the masses for a given mass string')
+    argparser.add_argument ( '-m', '--masses', help='masses',
+                             type=str, default=None )
+    argparser.add_argument ( '--maxgap2', help='maximum mass gap between second and third, to force offshell [None]',
+                             type=float, default=None )
+    argparser.add_argument ( '--mingap1', help='minimum mass gap between first and second, to force onshell or a mass hierarchy [None]',
+                             type=float, default=None )
+    argparser.add_argument ( '--mingap2', help='minimum mass gap between second and third, to force onshell or a mass hierarchy [0.]',
+                             type=float, default=0. )
+    argparser.add_argument ( '--mingap13', help='minimum mass gap between first and third, to force onshell or a mass hierarchy [0.]',
+                             type=float, default=None )
+    argparser.add_argument ( '--maxgap13', help='maximum mass gap between first and third, to force offshell [None]',
+                             type=float, default=None )
+    argparser.add_argument ( '--maxgap1', help='maximum mass gap between first and second, to force offshell [None]',
+                             type=float, default=None )
+    args = argparser.parse_args()
+    masses=parseMasses ( args.masses, mingap1 = args.mingap1, maxgap1 = args.maxgap1 ) 
+    print ( f"the input will produce {len(masses)} mass vectors:" )
+    for c,m in enumerate ( masses ):
+        print ( f"    {m}", end="" )
+        if c%3==0:
+            print()
+        if c  == 30:
+            print ( " ..... " )
+            break
+    print()
