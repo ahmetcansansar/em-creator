@@ -289,7 +289,7 @@ class MA5Wrapper:
                 self.exe ( cmd )
         if errFree and not self.keep and os.path.exists ( tempdir ):
             self.exe ( f"rm -rf {tempdir}" )
-        if not errFree:
+        if False and not errFree: # skip this for now
             ## for debugging
             dirname = f"{self.basedir}/debug/"
             bakeryHelpers.mkdir ( dirname )
