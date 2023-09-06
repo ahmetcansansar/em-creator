@@ -98,8 +98,9 @@ class MG5Wrapper:
             try:
                 singularity = os.environ["SINGULARITY_NAME"]
             except KeyError as e:
-                self._error ( "we seem to not be inside of a singularity container!" )
-                sys.exit(-1)
+                pass
+                #self.error ( "we seem to not be inside of a singularity container!" )
+                #sys.exit(-1)
 
     def determineMG5Version ( self ):
         """ find out version of mg5, by peeking into mg5 directory """
