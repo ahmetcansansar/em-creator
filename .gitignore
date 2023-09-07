@@ -20,6 +20,7 @@ __pycache__
 
 # (temporary) results
 T*_*jet.*/
+ma5/
 ma5_T*_*jet.*/
 embaked/
 baking.log
@@ -37,3 +38,7 @@ mg5/
 py.py
 stats.pcl
 .last.summary
+temp/
+
+# another file produced by the baker
+statsEM.py
