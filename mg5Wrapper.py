@@ -98,8 +98,9 @@ class MG5Wrapper:
             try:
                 singularity = os.environ["SINGULARITY_NAME"]
             except KeyError as e:
-                self._error ( "we seem to not be inside of a singularity container!" )
-                sys.exit(-1)
+                pass
+                #self.error ( "we seem to not be inside of a singularity container!" )
+                #sys.exit(-1)
 
     def determineMG5Version ( self ):
         """ find out version of mg5, by peeking into mg5 directory """
@@ -634,7 +635,14 @@ def main():
     random.shuffle ( masses )
     nm = len(masses)
     if nm == 0:
-        print ( f"[mg5Wrapper] no masses found within the constraints: gap1-2 [{args.mingap1},{args.maxgap1}], gap1-3 [{args.mingap13},{args.maxgap13}] gap2-3 [{args.mingap2},{args.maxgap2}] " )
+        line = "[mg5Wrapper] no masses found within the constraints:"
+        if args.mingap1 != None or args.maxgap1 != None:
+            line += f" gap(1,2) not in [{args.mingap1},{args.maxgap1 if args.maxgap1 is not None else '+inf'}];"
+        if args.mingap13 != None or args.maxgap13 != None:
+            line += f" gap(1,3) not in [{args.mingap13},{args.maxgap13 if args.maxgap13 is not None else '+inf'}];"
+        if args.mingap2 != None or args.maxgap2 != None:
+            line += f" gap(2,3) not in [{args.mingap2},{args.maxgap2 if args.maxgap2 is not None else '+inf'}];"
+        print ( f"{line}" )
         sys.exit()
     if nReqM != len(masses[0]):
         print ( "[mg5Wrapper] you gave %d masses, but %d are required for %s." % \

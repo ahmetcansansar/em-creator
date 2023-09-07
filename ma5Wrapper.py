@@ -289,7 +289,7 @@ class MA5Wrapper:
                 self.exe ( cmd )
         if errFree and not self.keep and os.path.exists ( tempdir ):
             self.exe ( f"rm -rf {tempdir}" )
-        if not errFree:
+        if False and not errFree: # skip this for now
             ## for debugging
             dirname = f"{self.basedir}/debug/"
             bakeryHelpers.mkdir ( dirname )
@@ -302,6 +302,7 @@ class MA5Wrapper:
         :param maxLength: maximum length of output to be printed
         """
         self.msg ( f"exec: [{os.getcwd()}] {cmd}" )
+        """ for container only!
         myenv = dict(os.environ)
         # home = "/scratch-cbe/users/wolfgan.waltenberger/"
         home = os.environ["HOME"]
@@ -316,9 +317,12 @@ class MA5Wrapper:
         myenv["PATH"]=f".:{rootsys}/bin:/usr/bin:/bin:/usr/local/bin"
         myenv["LD_LIBRARY_PATH"]=f"{rootsys}/lib:/.singularity.d/libs" 
         myenv["PYTHONPATH"]=f"{pylocaldir}:{pylocaldir}/site-packages/:{rootsys}/lib:/users/wolfgan.waltenberger/git/smodels-utils"
-        # myenv["PYTHONPATH"]+=":/software/f2022/software/anaconda3/2023.03/lib/python3.10"
+        myenv["PYTHONPATH"]+=":/software/f2022/software/anaconda3/2023.03/lib/python3.10"
         pipe = subprocess.Popen ( cmd, env = myenv, shell=True,
                                   stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE )
+        """
+        pipe = subprocess.Popen ( cmd, shell=True, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE )
         ret=""
         for line in io.TextIOWrapper(pipe.stdout, encoding="latin1"):

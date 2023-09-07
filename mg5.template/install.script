@@ -1,7 +1,7 @@
 install zlib
 install hepmc
 install boost
-install lhapdf6
+#install lhapdf6
 install pythia8
 #install Delphes
 #install MadAnalysis5
