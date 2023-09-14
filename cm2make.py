@@ -7,7 +7,15 @@ import subprocess, os, sys
     
 ver="2.0.37"
 
+def installHepMC2():
+    path = os.path.abspath ( "../hepmc2/" )
+    if not os.path.exists ( path ):
+        os.mkdir ( path )
+        cmd = "ln -s { os.path.abspath ( '../hepmc2make.py' ) } {path}/make.py"
+        subprocess.getoutput ( cmd )
+
 def install():
+    installHepMC2()
     if os.path.exists ( "checkmate2/bin/CheckMATE" ):
         print ( "[make.py] not installing cm2: checkmate2/bin/CheckMATE exists" )
         return
@@ -43,7 +51,7 @@ def install():
 def clean():
     import glob
     for file in glob.glob ( "*" ):
-        if file not in [ "make.py", "install.script", "Makefile" ]:
+        if file not in [ "make.py", "Makefile" ]:
             cmd = "rm -rf %s" % file
             subprocess.getoutput ( cmd )
 
