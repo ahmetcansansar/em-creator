@@ -39,16 +39,26 @@ def install():
     cmd = f"git clone {url}"
     o = subprocess.getoutput ( cmd )
     print ( f"git clone: {o}" )
+    #cmd = "cd checkmate2 ; mv aclocal.m4 aclocal.old ; aclocal && libtoolize --force && autoreconf"
     cmd = "cd checkmate2 ; autoreconf"
     o = subprocess.getoutput ( cmd )
     print ( f"autoreconf: {o}" )
-    delphespath = "../../delphes/"
-    hepmcpath = "../../hepmc2/hepmc/HepMC-2.06.11/"
-    madgrafpath = "../../mg5/"
+    cmd = "cd checkmate2 ; cp /bin/libtool ."
+    o = subprocess.getoutput ( cmd )
+    print ( f"use correct libtool: {cmd} {o}" )
+    delphespath = os.path.abspath ( "../delphes/" )
+    hepmcpath = os.path.abspath ( "../hepmc2/hepmc/HepMC-2.06.11/" )
+    madgrafpath = os.path.abspath ( "../mg5/" )
     # pythiapath = "../../mg5/HEPTools/pythia8/"
-    cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath}'; ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
+    cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath} -I {delphespath}'; ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
     o = subprocess.getoutput ( cmd )
     print ( f"configure: {cmd} {o}" )
+    cmd = "cd checkmate2 ; cp /bin/libtool ."
+    o = subprocess.getoutput ( cmd )
+    print ( f"use correct libtool: {cmd} {o}" )
+    cmd = f"cd checkmate2 ; make -j 2" 
+    o = subprocess.getoutput ( cmd )
+    print ( f"make: {cmd} {o}" )
 
 def isInstalled ( library ):
     """ is library installed (deb) """
