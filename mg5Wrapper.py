@@ -542,6 +542,8 @@ def main():
                              action="store_true" )
     argparser.add_argument ( '--cutlang', help='use cutlang instead of MA5',
                              action="store_true" )
+    argparser.add_argument ( '--checkmate', help='use checkmate instead of MA5',
+                             action="store_true" )
     argparser.add_argument ( '--adl_file', help='specify the name of the adl description to be used [if not specified, try to guess]',
                              type=str, default=None )
     argparser.add_argument ( '--event_condition', help='specify conditions on the events, filter out the rest, e.g. {"higgs":1}: one and only one higgs [None]',
@@ -588,7 +590,7 @@ def main():
         print ( "[mg5Wrapper] for topo %s we set maxgap1 to 180." % args.topo )
         args.maxgap1 = 180.
     if args.list_analyses:
-        bakeryHelpers.listAnalyses( args.cutlang )
+        bakeryHelpers.listAnalyses( args.cutlang, args.checkmate )
         sys.exit()
     if args.show:
         import printProdStats

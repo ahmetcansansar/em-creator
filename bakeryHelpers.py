@@ -279,10 +279,12 @@ def listAnalysesCutLang():
             continue
         print ( f )
 
-def listAnalyses ( cutlang ):
+def listAnalyses ( cutlang, checkmate ):
     """ list the analyses that are available in MA5 or cutlang """
     if cutlang:
         listAnalysesCutLang()
+    elif checkmate:
+        listAnalysesCheckMATE()
     else:
         listAnalysesMA5()
 
@@ -305,6 +307,23 @@ def listAnalysesMA5():
         for d in dn:
             f = f.replace(d,"")
         print  ( "  %s" % f )
+
+def listAnalysesCheckMATE():
+    """ list the analyses that are available in CheckMATE """
+    import glob
+    path = "cm2/checkmate2/tools/analysis/include/analyses/"
+    files = glob.glob ( f"{path}/*/*.h" )
+    files = list ( set ( files ) )
+    files.sort()
+    print ( "List of analyses:" )
+    print ( "=================" )
+    for f in files:
+        f = f.replace(".h","")
+        f = f.replace( path, "" )
+        p = f.find("/")
+        f = f[p+1:]
+        print  ( "  %s" % f )
+
 
 def nJobs ( nproc, npoints ):
     """ determine the number of jobs we should run, given nproc is
