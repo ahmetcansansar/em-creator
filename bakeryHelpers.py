@@ -269,6 +269,18 @@ def ma5AnaNameToSModelSName ( name ):
     name = name.replace("_","-")
     return name
 
+def cm2AnaNameToSModelSName ( name ):
+    """ translate an analysis name from checkmate2 naming to
+        SModelS naming (looking up arxiv ids) """
+    transD = loadCM2DictionaryFile()
+    if name in transD.keys():
+        return transD[name]
+    f = name
+    if "sus" in f or "exo" in f or "smp" in f or "conf" in f or "higg" in f:
+        f = f.upper().replace("_","-")
+    return f
+
+
 def listAnalysesCutLang( ):
     """ list the analyses that are available in cutlang """
     dirname = "CutLang/ADLLHCanalyses/"
@@ -333,15 +345,12 @@ def listAnalysesCheckMATE( ):
         f = f.replace( path, "" )
         p = f.find("/")
         f = f[p+1:]
-        if f in transD.keys():
-            f = transD[f]
         nr = f.lower().replace("atlas","").replace("cms","")
         nr = nr.replace("phys","").replace("conf","").replace("exo","")
         nr = nr.replace( "higg", "" ).replace ("pas","").replace("pub_","")
         nr = nr.replace("_","").replace("smp","").replace("susy","")
         nr = nr.replace("atl","").replace("sus","").replace("-","")
-        if "sus" in f or "exo" in f or "smp" in f or "conf" in f or "higg" in f:
-            f = f.upper().replace("_","-")
+        f = cm2AnaNameToSModelSName ( f )
         cleaned[nr]=f
     cleanedkeys = list ( cleaned.keys() )
     cleanedkeys.sort()

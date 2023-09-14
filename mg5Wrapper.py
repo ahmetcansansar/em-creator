@@ -17,7 +17,8 @@ import locker
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
                    ignore_locks, sqrts=13, cutlang=False, ver="3_4_2",
-                   keephepmc = True, adl_file = None, event_condition = None ):
+                   keephepmc = True, adl_file = None, event_condition = None,
+                   checkmate = False ):
         """
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
@@ -28,6 +29,7 @@ class MG5Wrapper:
         self.tempdir = bakeryHelpers.tempDir()
         self.resultsdir = os.path.join(self.basedir, "mg5results")
         self.cutlang = cutlang
+        self.checkmate = checkmate
         self.adl_file = adl_file
         self.event_condition = event_condition
         self.mkdir ( self.resultsdir )
@@ -287,6 +289,8 @@ class MG5Wrapper:
             return
         if self.cutlang:
             self.runCutlang ( masses, analyses, pid )
+        elif self.checkmate:
+            self.runCheckmate ( masses, analyses, pid )
         else:
             self.runMA5 ( masses, analyses, pid )
 
@@ -334,6 +338,31 @@ class MG5Wrapper:
             if ret < 0:
                 msg += "error encountered"
             self.announce ( "%s for %s[%s] at %s%s" % ( msg, str(masses), self.topo, time.asctime(), spid ) )
+
+    def runCheckmate ( self, masses, analyses, pid ):
+        """ run checkmate, if desired """
+        spid=""
+        if pid != None:
+            spid = " in job #%d" % pid
+        self.announce ( "starting checkmate on %s[%s] at %s%s" % ( str(masses), self.topo, time.asctime(), spid ) )
+        from cm2Wrapper import CM2Wrapper
+        rerun = self.rerun
+        # rerun = True
+        analist = analyses.split(",")
+        for ana in analist:
+            ana = ana.strip()
+            cl = CM2Wrapper ( self.topo, self.njets, rerun, ana, keep = self.keep )
+            #                   self.sqrts )
+            self.debug ( f"now call cutlangWrapper for {ana}" )
+            hepmcfile = self.locker.hepmcFileName ( masses )
+            ret = cl.run ( masses, hepmcfile, pid )
+            msg = "finished MG5+Cutlang: "
+            if ret > 0:
+                msg += "nothing needed to be done"
+            if ret < 0:
+                msg += "error encountered"
+            self.announce ( "%s for %s[%s] at %s%s" % ( msg, str(masses), self.topo, time.asctime(), spid ) )
+
 
     def unlink ( self, f ):
         """ remove a file, if keep is not true """
@@ -651,13 +680,17 @@ def main():
                 ( len(masses[0]), nReqM, args.topo ) )
         sys.exit()
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )
-    if args.cutlang:
+    if args.cutlang or args.checkmate:
         args.recast = True
+    if args.checkmate and args.cutlang:
+        print ( "[mg5Wrapper] both checkmate and cutlang have been asked for. please choose!" )
+        sys.exit()
 
     mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun,
                       args.recast, args.ignore_locks, args.sqrts, args.cutlang,
                       keephepmc = args.keephepmc, adl_file = args.adl_file,
-                      event_condition = args.event_condition )
+                      event_condition = args.event_condition, 
+                      checkmate = args.checkmate )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 
