@@ -10,8 +10,7 @@ ver="2.0.37"
 def installHepMC2():
     path = os.path.abspath ( "../hepmc2/" )
     if not os.path.exists ( path ):
-        os.mkdir ( path )
-        cmd = "ln -s { os.path.abspath ( '../hepmc2make.py' ) } {path}/make.py"
+        cmd = "cp -r ../hepmc2.template ../hepmc2"
         subprocess.getoutput ( cmd )
 
 def install():
@@ -35,7 +34,7 @@ def install():
     o = subprocess.getoutput ( cmd )
     print ( f"use correct libtool: {cmd} {o}" )
     delphespath = os.path.abspath ( "../delphes/" )
-    hepmcpath = os.path.abspath ( "../hepmc2/hepmc/HepMC-2.06.11/" )
+    hepmcpath = os.path.abspath ( "../hepmc2/HepMC-2.06.11/" )
     madgrafpath = os.path.abspath ( "../mg5/" )
     # pythiapath = "../../mg5/HEPTools/pythia8/"
     cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath} -I {delphespath}'; ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"

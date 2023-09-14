@@ -7,21 +7,33 @@ import subprocess, os, sys
     
 ver="2.06.11"
 tarball = f"hepmc{ver}.tgz"
-path = "HepMC-{ver}"
+path = f"HepMC-{ver}"
 libraryname = f"{path}/fio/libHepMCfio.la"
 
 def fetchTarball():
     """ fetch the hepmc2.06.11.tgz tarball """
     if not os.path.exists ( tarball ):
-        cmd = "wget https://smodels.github.io/downloads/tarballs/{tarball}"
-        subprocess.getoutput ( tarball )
+        cmd = f"wget https://smodels.github.io/downloads/tarballs/{tarball}"
+        o = subprocess.getoutput ( tarball )
+        print ( f"[hepmc2make] {cmd}: {o}" )
 
 def explodeTarball():
+    """ fetch the tarball, then explode it """
     fetchTarball()
     if os.path.exists ( path ):
         shutil.rmtree ( path )
     cmd = f"tar xzvf {tarball}"
     subprocess.getoutput ( cmd )
+
+def makeHepmc2():
+    """ fetch the tarball, then explode it, then make hepmc2 """
+    explodeTarball()
+    cmd = f"cd {path}; ./configure --with-momentum=GEV --with-length=CM"
+    o = subprocess.getoutput ( cmd )
+    print ( f"[hepmc2make] {cmd}: {o}" )
+    cmd = f" cd {path}; make -j 2"
+    o = subprocess.getoutput ( cmd )
+    print ( f"[hepmc2make] {cmd}: {o}" )
 
 def install():
     if os.path.exists ( libraryname ):
@@ -31,7 +43,7 @@ def install():
         ## so path exists, but not the library. clean!
         clean()
     print ( "[hepmc2make] installing hepmc2 ..." )
-    explodeTarball()
+    makeHepmc2()
 
 def clean():
     import glob
