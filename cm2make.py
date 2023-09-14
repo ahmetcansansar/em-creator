@@ -43,10 +43,10 @@ def install():
     o = subprocess.getoutput ( cmd )
     print ( f"autoreconf: {o}" )
     delphespath = "../../delphes/"
-    hepmcpath = "../../hepmc2/hepmc/"
+    hepmcpath = "../../hepmc2/hepmc/HepMC-2.06.11/"
     madgrafpath = "../../mg5/"
-    pythiapath = "../../mg5/HEPTools/pythia8/"
-    cmd = f"cd checkmate2 ; ./configure --with-delpes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath} --with-pythia={pythiapath}"
+    # pythiapath = "../../mg5/HEPTools/pythia8/"
+    cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath}'; ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
     o = subprocess.getoutput ( cmd )
     print ( f"configure: {cmd} {o}" )
 
