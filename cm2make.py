@@ -1,37 +1,17 @@
 #!/usr/bin/env python3
 
 """ Simple script that handles the installation of checkmate2.
-    and its plugins.
 """
 
 import subprocess, os, sys
     
 ver="2.0.37"
 
-def install_plugins():
-    print ( "[make.py] installing plugins (tail -f /tmp/cm2.install to monitor) ... " )
-    f=open("install.script","r")
-    lines=f.readlines()
-    f.close()
-    for line in lines:
-        if line[0]=="#":
-            continue
-        print ( " - %s" % line.strip() )
-        ## installing.txt is what is being installed right now
-        f=open("installing.txt","w")
-        f.write(line)
-        f.close()
-        cmd = "python3 bin/cm2 -s -f installing.txt 2>&1 | tee /tmp/cm2.install"
-        a = subprocess.getoutput ( cmd )
-        print ( a )
-    os.unlink ( "installing.txt" )
-
 def install():
-    # checkDependencies()
-    if os.path.exists ( "bin/cm2" ):
-        print ( "[make.py] not installing cm2: bin/cm2 exists" )
+    if os.path.exists ( "checkmate2/bin/CheckMATE" ):
+        print ( "[make.py] not installing cm2: checkmate2/bin/CheckMATE exists" )
         return
-    if os.path.exists ( "bin" ):
+    if os.path.exists ( "checkmate2/" ):
         ## so 'bin' exists, but not 'bin/cm2'. clean!
         clean()
     print ( "installing cm2 ..." )
@@ -60,24 +40,6 @@ def install():
     o = subprocess.getoutput ( cmd )
     print ( f"make: {cmd} {o}" )
 
-def isInstalled ( library ):
-    """ is library installed (deb) """
-    cmd = "dpkg -l %s | tail -n 1" % library
-    o = subprocess.getoutput ( cmd )
-    if o.startswith ( "ii" ):
-        return True
-    if o.startswith ( "un" ):
-        return False
-    print ( "cannot decipher dpkg output %s" % o )
-    return False
-
-def checkDependencies():
-    """ check the dependencies on deb packages """
-    fj = isInstalled ( "libfastjet-dev" )
-    if not fj:
-        print ( "libfastjet-dev not installed" )
-        sys.exit()
-
 def clean():
     import glob
     for file in glob.glob ( "*" ):
@@ -92,8 +54,4 @@ if __name__ == "__main__":
     if len(sys.argv)>1 and sys.argv[1]=="clean":
         clean()
         sys.exit()
-    if len(sys.argv)>1 and sys.argv[1]=="plugins":
-        install_plugins()
-        sys.exit()
     install()
-    install_plugins()
