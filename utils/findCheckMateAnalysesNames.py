@@ -42,9 +42,15 @@ def findNames( dbpath ):
         print ( f"{k} :: {v}" )
     return D
 
-def writeToFile ( D : dict, filename : str = "cm2names.dict" ):
+def writeToFile ( D : dict, filename : str = "../cm2names.dict" ):
     f = open ( filename, "wt" )
-    f.write ( f"{D}\n" )
+    f.write ( f"# dictionary for analyses names: checkmate2 <-> SModelS\n" )
+    import time
+    f.write ( f"# created {time.asctime()}\n" )
+    f.write ( "{" )
+    for k,v in D.items():
+        f.write ( f"'{k}':'{v}',\n" )
+    f.write ( "}\n" )
     f.close()
 
 if __name__ == "__main__":
