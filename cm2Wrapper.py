@@ -36,7 +36,7 @@ class CM2Wrapper:
         self.cm2results = "%s/cm2results/" % self.basedir
         bakeryHelpers.mkdir ( self.cm2results )
         self.cm2install = "%s/cm2/" % self.basedir
-        self.executable = "bin/cm2"
+        self.executable = "checkmate2/bin/CheckMATE"
         if abs ( sqrts - 8 ) < .1:
             self.cm2install = "%s/cm2.8tev/" % self.basedir
         self.ver = ver
@@ -77,9 +77,6 @@ class CM2Wrapper:
         hasExe = os.path.exists ( exefile )
         if not hasExe:
             raise Exception ( f"{exefile} not found" )
-        sfsPath = os.path.join ( self.cm2install, "tools", "PADForSFS", "Build" )
-        if not os.path.exists ( sfsPath ):
-            raise Exception ( f"{sfsPath} is missing" )
         return True
 
     def msg ( self, *msg):
@@ -92,46 +89,7 @@ class CM2Wrapper:
     def writeRecastingCard ( self ):
         """ this method writes the recasting card, which defines which analyses
         are being recast. """
-        self.recastfile = tempfile.mktemp ( dir=self.cm2install, prefix="recast" )
-        filename = self.recastfile
-        # filename = self.cm2install + "recasting.dat"
-        self.debug ( "writing recasting card %s" % filename )
-        templatefile = self.templateDir+'/recasting_card.dat'
-        if not os.path.exists ( templatefile ):
-            self.error ( "cannot find %s" % templatefile )
-            sys.exit()
-        ## for now simply copy the recasting card
-        shutil.copy ( templatefile, filename )
-        f = open ( filename, "at" )
-        recastcard = { "atlas_susy_2016_07": "delphes_card_atlas_exot_2015_03" }
-        recastcard["atlas_susy_2013_02"] = "delphescm2tune_card_atlas_dileptonsusy"
-        recastcard["atlas_susy_2019_08"] = "delphes_card_atlas_susy_2019_08"
-        recastcard["cms_sus_16_033"] = "delphes_card_cms_sus_16_033"
-        recastcard["cms_sus_19_006"] = "delphes_card_cms_sus_19_006"
-        recastcard["cms_sus_16_048"] = "delphes_card_cms_sus_16_048"
-        recastcard["cms_sus_17_001"] = "delphes_card_cms_exo_16_010"
-        recastcard["cms_sus_16_039"] = "delphes_card_cms_sus_16_039"
-        anas = set(self.analyses.split(","))
-        versions = { "atlas_susy_2016_07": "1.2",
-                     "atlas_susy_2013_02": "1.1",
-                     "cms_sus_19_006": "1.2",
-                     "atlas_susy_2019_08": "1.2",
-                     "cms_sus_16_048": "1.2",
-                     "cms_sus_17_001": "1.2",
-                     "cms_sus_16_039": "1.2",
-                     "cms_sus_16_033": "1.2" }
-        self.info ( "adding %s to recast card %s" % ( self.analyses, filename ) )
-        for i in anas:
-            if not i in versions or not i in recastcard:
-                self.error ( f"{i} is not defined! Add at cm2Wrapper.py:{sys._getframe(0).f_lineno-4}" )
-                # we could also try to guess
-                versions[i]="1.2"
-                recastcard[i]=f"delphes_card_{i}"
-                self.error ( "for now we will guess" )
-                # sys.exit()
-            f.write ( "%s         v%s        on    %s.tcl\n" % ( i, versions[i], recastcard[i] ) )
-        f.close()
-        self.debug ( "wrote recasting card %s in %s" % ( filename, os.getcwd() ) )
+        return
 
     def unlink ( self, f ):
         if os.path.exists ( f ) and not self.keep:
@@ -141,77 +99,18 @@ class CM2Wrapper:
         """ this method writes the commands file for cm2.
         :param hepmcfile: I think thats the input events
         """
-        self.info ( "writing commandfile %s" % self.commandfile )
-        f = open( self.commandfile,'wt')
-        ## FIXME here I should activate e.g. delphescm2tune if needed
-        if self.analyses in [ "atlas_susy_2013_02" ]:
-            f.write('install delphescm2tune\n')
-            f.write('install PADForcm2tune\n')
-        #f.write('install delphes\n')
-        #f.write('install PAD\n')
-        f.write('set main.recast = on\n')
-        #filename = self.recastfile.replace(self.cm2install,"./")
-        #f.write('set main.recast.card_path = %s\n' % filename )
-        f.write('set main.recast.card_path = ./recast\n' )
-        ## I think I can turn off global likelihoods only if there is
-        ## no covariance matrix
-        noGlobalLikelihoodNeeded = [ "cms_sus_16_048", "cms_sus_17_001", "atlas_susy_2019_08" ]
-        anas = set(self.analyses.split(","))
-        needsLLhd = False
-        for i in anas:
-            if not i.strip() in noGlobalLikelihoodNeeded:
-                needsLLhd = True
-        self.info ( f"do we need a global likelihood for {self.analyses}: {bakeryHelpers.yesno(needsLLhd)}" )
-        if not needsLLhd:
-            f.write('set main.recast.global_likelihoods = off\n' )
-        f.write('import '+hepmcfile+'\n')
-        f.write('submit ANA_%s\n' % bakeryHelpers.dirName( process, masses )  )
-        f.close()
+        return
 
     def checkForSummaryFile ( self, masses ):
         """ given the process, and the masses, check summary file
         :returns: True, if there is a usable summary file, with all needed analyses
         """
-        process = "%s_%djet" % ( self.topo, self.njets )
-        dirname = bakeryHelpers.dirName ( process, masses )
-        summaryfile = "%s/ANA_%s/Output/SAF/CLs_output_summary.dat" % \
-                       ( self.cm2results, dirname )
-        if not os.path.exists ( summaryfile ) or os.stat(summaryfile).st_size<10:
-            self.msg ( "No summary file %s found. Run analyses!" % summaryfile )
-            return False
-        self.msg ( "It seems like there is already a summary file %s" % summaryfile )
-        f=open(summaryfile,"rt")
-        lines=f.readlines()
-        f.close()
-        anaIsIn = {}
-        analyses = self.analyses.split(",")
-        for ana in analyses:
-            anaIsIn[ana]=False
-        for line in lines:
-            for ana in analyses:
-                if ana in line:
-                    anaIsIn[ana]=True
-        allAnasIn = sum ( anaIsIn.values() ) == len(anaIsIn)
-        if allAnasIn and (not self.rerun):
-            self.msg ( "%s are in the summary file for %s: skip it." % ( self.analyses, str(masses) ) )
-            return True
-        if not allAnasIn:
-            self.msg ( "%s not in summary file: rerun!" % self.analyses )
-        return False
+        return
 
     def list_analyses ( self ):
         """ list all analyses that are to be found in cm2/ """
-        import glob
-        files = glob.glob ( f"{self.cm2install}/tools/PAD*/Input/analysis_description.dat" )
-        for f in files:
-            h = open ( f, "rt" )
-            lines = h.readlines()
-            h.close()
-            for line in lines:
-                line = line.strip()
-                if line.startswith("#"):
-                    continue
-                print ( line )
+        import bakeryHelpers
+        bakeryHelpers.listAnalysesCheckMATE()
 
     def run( self, masses, hepmcfile, pid=None ):
         """ Run cm2 over an hepmcfile, specifying the process
@@ -221,106 +120,13 @@ class CM2Wrapper:
                    1 if nothing needed to be done.
         """
         self.checkInstallation()
-        spid = ""
-        if pid != None:
-            spid = "[%d]" % pid
-        self.commandfile = tempfile.mktemp ( prefix="cm2cmd", dir=self.cm2install )
-        self.teefile = tempfile.mktemp ( prefix="cm2", suffix=".run", dir="/tmp" )
-        process = "%s_%djet" % ( self.topo, self.njets )
-        hasAllInfo = self.checkForSummaryFile ( masses )
-        if hasAllInfo:
-            return 1
-        if not os.path.exists ( hepmcfile ):
-            self.error ( "%scannot find hepmc file %s" % ( spid, hepmcfile ) )
-            p = hepmcfile.find("Events")
-            if not self.keep:
-                cmd = "rm -rf %s" % hepmcfile[:p]
-                o = subprocess.getoutput ( cmd )
-                self.error ( "%sdeleting the folder %s: %s" % ( spid, cmd, o ) )
-            return -1
-            # sys.exit()
-        # now write recasting card
-        self.msg ( "%s Found hepmcfile at %s" % ( spid, hepmcfile ) )
-        self.writeRecastingCard ()
-        self.writeCommandFile( hepmcfile, process, masses )
-        Dir = bakeryHelpers.dirName ( process, masses )
-        tempdir = "%s/cm2_%s" % ( self.basedir, Dir )
-        a = subprocess.getoutput ( "mkdir %s" % tempdir )
-        a = subprocess.getoutput ( "cp -r %s/bin %s/madanalysis %s/tools %s" % \
-                                   ( self.cm2install, self.cm2install, self.cm2install, tempdir ) )
-        a = subprocess.getoutput ( "mv %s %s/recast" % ( self.recastfile, tempdir ) )
-        # a = subprocess.getoutput ( "cp -r %s %s" % ( self.recastfile, tempdir ) )
-        a = subprocess.getoutput ( "mv %s %s/cm2cmd" % \
-                                   ( self.commandfile, tempdir ) )
-
-        # then run MadAnalysis
-        os.chdir ( tempdir )
-        cmd = "python3 %s -R -s ./cm2cmd 2>&1 | tee %s" % (self.executable, \
-                self.teefile )
-        self.exe ( cmd, maxLength=None )
-        # self.unlink ( self.recastfile )
-        # self.unlink ( self.commandfile )
-        self.unlink ( self.teefile )
-        smass = "_".join ( map ( str, masses ) )
-        origsaffile = "%s/ANA_%s_%djet.%s/Output/SAF/defaultset/defaultset.saf" % \
-                       ( tempdir, self.topo, self.njets, smass )
-        origsaffile = origsaffile.replace("//","/")
-        destsaffile = bakeryHelpers.safFile (self.cm2results, self.topo, masses, self.sqrts )
-        dirname = bakeryHelpers.dirName ( process, masses )
-        origdatfile = "%s/ANA_%s/Output/SAF/CLs_output_summary.dat" % \
-                      ( tempdir, dirname )
-        origdatfile = origdatfile.replace("//","/")
-        errFree=True
-        if not os.path.exists ( origdatfile ):
-            errFree=False
-            self.error ( "dat file %s does not exist!" % origdatfile )
-        if not os.path.exists ( origsaffile ):
-            errFree=False
-            self.error ( "saf file %s does not exist!" % origsaffile )
-        destdatfile = bakeryHelpers.datFile (  self.cm2results, self.topo, masses, self.sqrts )
-        if errFree: ## only move if we have both
-            shutil.move ( origdatfile, destdatfile )
-            shutil.move ( origsaffile, destsaffile )
-            if self.keephepmc:
-                self.info ( f"not removing {hepmcfile}" )
-            else:
-                cmd = f"rm -rf {hepmcfile}"
-                self.exe ( cmd )
-        if errFree and not self.keep and os.path.exists ( tempdir ):
-            self.exe ( f"rm -rf {tempdir}" )
-        if False and not errFree: # skip this for now
-            ## for debugging
-            dirname = f"{self.basedir}/debug/"
-            bakeryHelpers.mkdir ( dirname )
-            self.exe ( f"mv {tempdir} {dirname}" )
-        os.chdir ( self.basedir )
-        return 0
+        return -1
 
     def exe ( self, cmd, maxLength=100 ):
         """ execute cmd in shell
         :param maxLength: maximum length of output to be printed
         """
         self.msg ( f"exec: [{os.getcwd()}] {cmd}" )
-        """ for container only!
-        myenv = dict(os.environ)
-        # home = "/scratch-cbe/users/wolfgan.waltenberger/"
-        home = os.environ["HOME"]
-        home = home.replace("git/em-creator","")
-        pyver = sys.version_info
-        pylocaldir = f"{home}/.local/lib/python{pyver.major}.{pyver.minor}/" 
-        rootsys="/groups/hephy/pheno/opt/root/"
-        import socket
-        if socket.gethostname() in [ "two", "wnouc" ]:
-            rootsys="/opt/root/"
-        myenv["ROOTSYS"]=rootsys
-        myenv["PATH"]=f".:{rootsys}/bin:/usr/bin:/bin:/usr/local/bin"
-        myenv["LD_LIBRARY_PATH"]=f"{rootsys}/lib:/.singularity.d/libs" 
-        myenv["PYTHONPATH"]=f"{pylocaldir}:{pylocaldir}/site-packages/:{rootsys}/lib:/users/wolfgan.waltenberger/git/smodels-utils"
-        myenv["PYTHONPATH"]+=":/software/f2022/software/anaconda3/2023.03/lib/python3.10"
-        pipe = subprocess.Popen ( cmd, env = myenv, shell=True,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE )
-        """
         pipe = subprocess.Popen ( cmd, shell=True, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE )
         ret=""
@@ -328,12 +134,9 @@ class CM2Wrapper:
             ret+=line
         for line in io.TextIOWrapper(pipe.stderr, encoding="latin1"):
             ret+=line
-        #ret = subprocess.getoutput ( cmd )
         ret = ret.strip()
         if len(ret)==0:
             return
-        # maxLength=60
-        # maxLength=560
         if maxLength == None:
             maxLength = len(ret)+1
         if len(ret)<maxLength:
@@ -342,11 +145,9 @@ class CM2Wrapper:
         self.msg ( " `- %s" % ( ret[-maxLength:] ) )
 
     def clean ( self ):
-        subprocess.getoutput ( "rm -rf %s/recast*" % self.cm2install )
-        subprocess.getoutput ( "rm -rf %s/cm2cmd*" % self.cm2install )
+        return
     def clean_all ( self ):
-        self.clean()
-        subprocess.getoutput ( "rm -rf %s/ANA*" % self.cm2install )
+        return
 
 if __name__ == "__main__":
     import argparse
