@@ -269,7 +269,7 @@ def ma5AnaNameToSModelSName ( name ):
     name = name.replace("_","-")
     return name
 
-def listAnalysesCutLang():
+def listAnalysesCutLang( ):
     """ list the analyses that are available in cutlang """
     dirname = "CutLang/ADLLHCanalyses/"
     files = glob.glob ( "%s*" % dirname )
@@ -279,16 +279,16 @@ def listAnalysesCutLang():
             continue
         print ( f )
 
-def listAnalyses ( cutlang, checkmate ):
+def listAnalyses ( cutlang : bool, checkmate : bool ):
     """ list the analyses that are available in MA5 or cutlang """
     if cutlang:
-        listAnalysesCutLang()
+        listAnalysesCutLang( )
     elif checkmate:
-        listAnalysesCheckMATE()
+        listAnalysesCheckMATE( )
     else:
-        listAnalysesMA5()
+        listAnalysesMA5( )
 
-def listAnalysesMA5():
+def listAnalysesMA5( sqrts ):
     """ list the analyses that are available in MA5 """
     import glob
     # dname = "ma5/tools/PAD/Build/"
@@ -308,22 +308,45 @@ def listAnalysesMA5():
             f = f.replace(d,"")
         print  ( "  %s" % f )
 
-def listAnalysesCheckMATE():
+def loadCM2DictionaryFile():
+    """ load the checkmate2 <-> SModelS analyses names dictionary """
+    if not os.path.exists ( "cm2names.dict" ):
+        return {}
+    f=open("cm2names.dict")
+    D=eval(f.read())
+    f.close()
+    return D
+
+def listAnalysesCheckMATE( ):
     """ list the analyses that are available in CheckMATE """
     import glob
     path = "cm2/checkmate2/tools/analysis/include/analyses/"
     files = glob.glob ( f"{path}/*/*.h" )
     files = list ( set ( files ) )
     files.sort()
+    transD = loadCM2DictionaryFile()
     print ( "List of analyses:" )
     print ( "=================" )
+    cleaned = {}
     for f in files:
         f = f.replace(".h","")
         f = f.replace( path, "" )
         p = f.find("/")
         f = f[p+1:]
-        print  ( "  %s" % f )
-
+        if f in transD.keys():
+            f = transD[f]
+        nr = f.lower().replace("atlas","").replace("cms","")
+        nr = nr.replace("phys","").replace("conf","").replace("exo","")
+        nr = nr.replace( "higg", "" ).replace ("pas","").replace("pub_","")
+        nr = nr.replace("_","").replace("smp","").replace("susy","")
+        nr = nr.replace("atl","").replace("sus","").replace("-","")
+        if "sus" in f or "exo" in f or "smp" in f or "conf" in f or "higg" in f:
+            f = f.upper().replace("_","-")
+        cleaned[nr]=f
+    cleanedkeys = list ( cleaned.keys() )
+    cleanedkeys.sort()
+    for k in cleanedkeys:
+        print  ( f" * {cleaned[k]}" )
 
 def nJobs ( nproc, npoints ):
     """ determine the number of jobs we should run, given nproc is
