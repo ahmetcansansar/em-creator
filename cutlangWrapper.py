@@ -730,6 +730,7 @@ class CutLangWrapper:
         mass_stripped = str(mass).replace("(", "").replace(")", "")
         return os.path.join(cls.out_dir.get(), cls._get_embaked_name(cls.analyses, cls.topo, mass_stripped))
 
+    """
     @staticmethod
     def join_embaked(cls, out_dir, effi_name, time):
         effi_file = os.path.join(out_dir, effi_name)
@@ -742,6 +743,7 @@ class CutLangWrapper:
                     with open(filename, "r") as g:
                         f.write(g.read() + ",\n")
             f.write("}")
+    """
 
     def exe(self, cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
             exit_on_fail=False):

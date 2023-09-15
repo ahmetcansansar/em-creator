@@ -23,6 +23,7 @@ class CM2Wrapper:
         :param ver: version of cm2
         :param keephepmc: keep mg5 hepmc file (typically in mg5results/)
         """
+        self.instanceName = "emcreator1"
         self.topo = topo
         self.sqrts = sqrts
         self.njets = njets
@@ -34,10 +35,11 @@ class CM2Wrapper:
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
         self.locker = locker.Locker ( sqrts, topo, False )
-        self.cm2results = "%s/cm2results/" % self.basedir
+        self.cm2results = f"{self.basedir}/cm2results/"
         bakeryHelpers.mkdir ( self.cm2results )
-        self.cm2install = "%s/cm2/" % self.basedir
+        self.cm2install = f"{self.basedir}/cm2/" 
         self.executable = f"{self.cm2install}/checkmate2/bin/CheckMATE"
+        self.tempFiles = []
         if abs ( sqrts - 8 ) < .1:
             self.cm2install = "%s/cm2.8tev/" % self.basedir
         self.ver = ver
@@ -59,7 +61,7 @@ class CM2Wrapper:
                 self.exe ( f"cp -r {backupdir} {self.cm2install}" )
             elif os.path.exists ( templatedir ):
                 self.exe ( f"cp -r {templatedir} {self.cm2install}" )
-        if not os.path.exists ( self.cm2install + self.executable ):
+        if not os.path.exists ( self.executable ):
             self.info ( "cannot find cm2 installation at %s" % self.cm2install )
             self.exe ( "%s/make.py" % self.cm2install )
         self.templateDir = "%s/templates/" % self.basedir
@@ -81,6 +83,12 @@ class CM2Wrapper:
         hasExe = os.path.exists ( exefile )
         if not hasExe:
             raise Exception ( f"{exefile} not found" )
+        versionFile = os.path.join ( self.cm2install, "checkmate2", "VERSION" )
+        if not os.path.exists ( versionFile ):
+            raise Exception ( f"version file {versionFile} not found" )
+        with open ( versionFile, "rt" ) as f:
+            self.ver = f.read().strip()
+            f.close()
         return True
 
     def msg ( self, *msg):
@@ -129,6 +137,7 @@ class CM2Wrapper:
             with open( outfile, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
         self.info ( f"gunzipped hepmc file to {outfile}" )
+        self.tempFiles.append ( outfile )
         return outfile
         
     def createConfigFile ( self, masses, hepmcfile ):
@@ -141,11 +150,10 @@ class CM2Wrapper:
         f = open ( self.configfile, "wt" )
         outfile = self.gunzipHepmcFile ( hepmcfile )
         for line in lines:
-            line = line.replace("@@NAME@@","emcreator1" )
+            line = line.replace("@@NAME@@", self.instanceName )
             line = line.replace("@@ANALYSES@@", self.analyses )
             line = line.replace("@@HEPMCFILE@@", outfile )
-            line = line.replace("@@MAXEVENTS@@", "-1" )
-            line = line.replace("@@XSEC@@", '912*fb' )
+            line = line.replace("@@OUTPUTDIR@@", self.cm2results )
             f.write ( line )
         f.close()
 
@@ -156,12 +164,70 @@ class CM2Wrapper:
         :returns: -1 if problem occured, 0 if all went smoothly,
                    1 if nothing needed to be done.
         """
-        print ( "this is checkmate, lets rock!" )
+        print ( f"[cm2Wrapper] this is checkmate {self.ver}, lets rock!" )
         self.checkInstallation()
-        self.createConfigFile ( masses, hepmcfile )
-        self.executeCheckMate()
+        if not os.path.exists ( self.outputfile() ):
+            self.createConfigFile ( masses, hepmcfile )
+            self.executeCheckMate()
+        effs = self.extractEfficiencies()
+        mass_stripped = str(masses).replace("(", "").replace(")", "")
+        mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
+        effi_file = self._get_embaked_name ( self.analyses, self.topo, mass_stripped )
+        self.writeEmbaked ( effs, effi_file, masses )
+
         # self.clean()
         return -1
+
+    def writeEmbaked ( self, effs : dict, effi_file : PathLike, masses ):
+        """ write our new efficiencies to the embaked file """
+        self.info ( f"writing effs to  {effi_file}" )
+        previousEffs = {}
+        if os.path.exists ( effi_file ):
+            g = open ( effi_file, "rt" )
+            previousEffs = eval(g.read())
+            g.close()
+        previousEffs[masses]=effs
+        nregions = len(effs)
+        npoints = len(previousEffs)
+        f = open ( effi_file, "wt" )
+        f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate\n" )
+        f.write( "{" )
+        for m,v in previousEffs.items():
+            f.write(str(m)+":"+str(v)+",\n")
+        f.write ( "}\n" )
+        f.close()
+
+
+    def extractEfficiencies ( self ):
+        """ extract the efficiencies from outputfile """
+        if not os.path.exists ( self.outputfile() ):
+            self.error ( f"{self.outputfile()} not found, cannot extract any efficiencies" )
+        inSignalRegions = False
+        effs = {}
+        with open ( self.outputfile() ) as f:
+            lines = f.readlines()
+            for line in lines:
+                if inSignalRegions:
+                    tokens = line.split()
+                    effs[tokens[0]] = float(tokens[3])
+                if inSignalRegions == False and not line.startswith("SR"):
+                    continue
+                inSignalRegions = True
+
+            f.close()
+        return effs
+
+    def _get_embaked_name(self, analysis, topo, mass):        
+        #retval = "_".join([analysis.lower().replace("-", "_"), topo, "mass", mass])
+        #retval = ".".join([retval, "embaked"])
+        from bakeryHelpers import cm2AnaNameToSModelSName
+        retval = cm2AnaNameToSModelSName ( analysis ) + ".embaked"
+        retval = os.path.join ( "embaked", retval )
+        return retval
+
+    def outputfile ( self ):
+        # "cm2output/emcreator1/analysis/myprocess_cms_sus_16_048_signal.dat"
+        return f"{self.cm2results}/{self.instanceName}/analysis/myprocess_{self.analyses}_signal.dat"
 
     def executeCheckMate ( self ):
         """ run checkmate! """
@@ -169,9 +235,10 @@ class CM2Wrapper:
                 shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)# ,cwd=checkmateBin)
         output,errorMsg= run.communicate()
         errorMsg = errorMsg.decode("UTF-8")
-        self.info( f'CheckMATE error: {errorMsg}' )
-        output = output.decode("UTF-8")
-        self.info( f'CheckMATE output:\n {output}\n' )
+        if len(errorMsg)>0:
+            self.info( f'CheckMATE error: {errorMsg}' )
+        #output = output.decode("UTF-8")
+        #self.debug( f'CheckMATE output:\n {output}\n' )
 
     def exe ( self, cmd, maxLength=100 ):
         """ execute cmd in shell
@@ -198,6 +265,9 @@ class CM2Wrapper:
     def clean ( self ):
         if os.path.exists ( self.configfile ):
             os.unlink ( self.configfile )
+        for t in self.tempFiles:
+            if os.path.exists( t ):
+                os.unlink ( t )
         return
 
     def clean_all ( self ):
