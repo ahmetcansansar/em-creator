@@ -15,7 +15,7 @@ from os import PathLike
 
 class CM2Wrapper:
     def __init__ ( self, topo, njets, rerun, analyses, keep=False,
-                   sqrts=13, ver="2.0.37", keephepmc=True ):
+                   sqrts = 13, ver="2.0.37", keephepmc=True ):
         """
         :param topo: e.g. T1
         :param keep: keep cruft files, for debugging
@@ -23,7 +23,7 @@ class CM2Wrapper:
         :param ver: version of cm2
         :param keephepmc: keep mg5 hepmc file (typically in mg5results/)
         """
-        self.instanceName = f"emcreator_{analyses}"
+        self.instanceName = f"{analyses}"
         self.topo = topo
         self.sqrts = sqrts
         self.configfile = None
@@ -149,7 +149,7 @@ class CM2Wrapper:
         mass_stripped = str(masses).replace("(", "").replace(")", "")
         mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
 
-        self.configfile = os.path.join ( self.basedir, "temp", self.instanceName + "_" mass_stripped+".ini" )
+        self.configfile = os.path.join ( self.basedir, "temp", "cm2_" + self.instanceName + "_" + mass_stripped+".ini" )
         f = open ( self.configfile, "wt" )
         outfile = self.gunzipHepmcFile ( hepmcfile )
         for line in lines:
@@ -167,14 +167,15 @@ class CM2Wrapper:
         :returns: -1 if problem occured, 0 if all went smoothly,
                    1 if nothing needed to be done.
         """
+        mass_stripped = str(masses).replace("(", "").replace(")", "")
+        mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
+        self.instanceName = f"{self.analyses}_{mass_stripped}"
         print ( f"[cm2Wrapper] this is checkmate {self.ver}, lets rock!" )
         self.checkInstallation()
         if not os.path.exists ( self.outputfile() ):
             self.createConfigFile ( masses, hepmcfile )
             self.executeCheckMate()
         effs = self.extractEfficiencies()
-        mass_stripped = str(masses).replace("(", "").replace(")", "")
-        mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
         effi_file = self._get_embaked_name ( self.analyses, self.topo, mass_stripped )
         self.writeEmbaked ( effs, effi_file, masses )
         self.clean()
@@ -215,6 +216,7 @@ class CM2Wrapper:
         f.close()
         self.tempFiles.append ( self.outputfile() )
         self.tempFiles.append ( lockfile )
+        self.tempFiles.append ( "f{self.cm2results}/{self.instanceName}" )
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
