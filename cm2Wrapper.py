@@ -11,6 +11,7 @@ import os, sys, colorama, subprocess, shutil, tempfile, time, io
 import multiprocessing
 import bakeryHelpers
 import locker
+from os import PathLike
 
 class CM2Wrapper:
     def __init__ ( self, topo, njets, rerun, analyses, keep=False,
@@ -36,13 +37,16 @@ class CM2Wrapper:
         self.cm2results = "%s/cm2results/" % self.basedir
         bakeryHelpers.mkdir ( self.cm2results )
         self.cm2install = "%s/cm2/" % self.basedir
-        self.executable = "checkmate2/bin/CheckMATE"
+        self.executable = f"{self.cm2install}/checkmate2/bin/CheckMATE"
         if abs ( sqrts - 8 ) < .1:
             self.cm2install = "%s/cm2.8tev/" % self.basedir
         self.ver = ver
-        if os.path.isdir ( self.cm2install ) and not os.path.exists ( self.cm2install + self.executable ):
+        if os.path.isdir ( self.cm2install ) and not os.path.exists ( self.executable ):
             ## some crooked cm2 install, remove it all
             subprocess.getoutput ( f"rm -rf {self.cm2install}" )
+            # print ( f"rm -rf {self.cm2install}" )
+            # sys.exit()
+
         if not os.path.isdir ( self.cm2install ):
             self.error ( "cm2 install is missing??" )
             backupdir = "/groups/hephy/pheno/ww/cm2"
@@ -112,15 +116,62 @@ class CM2Wrapper:
         import bakeryHelpers
         bakeryHelpers.listAnalysesCheckMATE()
 
+    def gunzipHepmcFile ( self, hepmcfile : PathLike ) -> PathLike:
+        """ given a zipped hepmc file, gunzip it, return path
+        to gunzipped file """
+        import gzip
+        import shutil
+        outfile = hepmcfile.replace(".gz","").replace("mg5results","temp")
+        if os.path.exists ( outfile ):
+            self.info ( f"skipping gunzip: {outfile} exists" )
+            return outfile
+        with gzip.open( hepmcfile, 'rb') as f_in:
+            with open( outfile, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        self.info ( f"gunzipped hepmc file to {outfile}" )
+        return outfile
+        
+    def createConfigFile ( self, masses, hepmcfile ):
+        templatefile = os.path.join ( self.basedir, "templates", "checkmate_template.ini" )
+        f = open ( templatefile, "rt" )
+        lines = f.readlines()
+        f.close()
+
+        self.configfile = os.path.join ( self.basedir, "temp", "checkmate.ini" )
+        f = open ( self.configfile, "wt" )
+        outfile = self.gunzipHepmcFile ( hepmcfile )
+        for line in lines:
+            line = line.replace("@@NAME@@","emcreator1" )
+            line = line.replace("@@ANALYSES@@", self.analyses )
+            line = line.replace("@@HEPMCFILE@@", outfile )
+            line = line.replace("@@MAXEVENTS@@", "-1" )
+            line = line.replace("@@XSEC@@", '912*fb' )
+            f.write ( line )
+        f.close()
+
     def run( self, masses, hepmcfile, pid=None ):
         """ Run cm2 over an hepmcfile, specifying the process
-        :param pid: process id, for debugging
+        :param pid: unix process id, for debugging
         :param hepmcfile: the hepcmfile name
         :returns: -1 if problem occured, 0 if all went smoothly,
                    1 if nothing needed to be done.
         """
+        print ( "this is checkmate, lets rock!" )
         self.checkInstallation()
+        self.createConfigFile ( masses, hepmcfile )
+        self.executeCheckMate()
+        # self.clean()
         return -1
+
+    def executeCheckMate ( self ):
+        """ run checkmate! """
+        run = subprocess.Popen( f'{self.executable} {self.configfile}',
+                shell=True, stdout=subprocess.PIPE,stderr=subprocess.PIPE)# ,cwd=checkmateBin)
+        output,errorMsg= run.communicate()
+        errorMsg = errorMsg.decode("UTF-8")
+        self.info( f'CheckMATE error: {errorMsg}' )
+        output = output.decode("UTF-8")
+        self.info( f'CheckMATE output:\n {output}\n' )
 
     def exe ( self, cmd, maxLength=100 ):
         """ execute cmd in shell
@@ -145,7 +196,10 @@ class CM2Wrapper:
         self.msg ( " `- %s" % ( ret[-maxLength:] ) )
 
     def clean ( self ):
+        if os.path.exists ( self.configfile ):
+            os.unlink ( self.configfile )
         return
+
     def clean_all ( self ):
         return
 

@@ -85,7 +85,7 @@ class MG5Wrapper:
 
         self.correctPythia8CfgFile()
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
-        self.info ( "initialised" )
+        self.info ( f"initialised MG5 {self.ver}" )
 
     def checkHost ( self ):
         """ check which host and environment we are in. Warn against running
@@ -115,7 +115,7 @@ class MG5Wrapper:
         if not ver.startswith ( "v" ):
             self.msg ( "I dont understand the version id %s" % ver )
             return
-        self.msg ( f"this is MG5 {ver}" )
+        self.debug ( f"this is MG5 {ver}" )
         if ver.startswith ( "v" ):
             self.ver = ver
         if "py3" in ver:
@@ -262,6 +262,8 @@ class MG5Wrapper:
                 which  = "MA5"
                 if self.cutlang:
                     which = "cutlang"
+                if self.checkmate:
+                    which = "checkmate"
                 self.info ( "hepmc file for %s[%s] exists. go directly to %s." % \
                             ( str(masses), self.topo, which ) )
                 self.runRecasting ( masses, analyses, pid )
@@ -427,7 +429,7 @@ class MG5Wrapper:
         """
         path = os.path.join ( self.mg5install, "HEPTools", "bin" )
         pythiaconfig = os.path.join ( path, "pythia8-config" )
-        print ( f"checking in {path}" )
+        # print ( f"[mg5Wrapper] checking in {path}" )
         if not os.path.exists ( pythiaconfig ):
             raise Exception ( f"cannot find pythia8-config: {pythiaconfig}" ) 
         cmd = f"{pythiaconfig} --with-hepmc2"
