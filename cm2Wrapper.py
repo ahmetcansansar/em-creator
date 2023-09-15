@@ -23,9 +23,10 @@ class CM2Wrapper:
         :param ver: version of cm2
         :param keephepmc: keep mg5 hepmc file (typically in mg5results/)
         """
-        self.instanceName = "emcreator1"
+        self.instanceName = f"emcreator_{analyses}"
         self.topo = topo
         self.sqrts = sqrts
+        self.configfile = None
         self.njets = njets
         analyses = analyses.lower().replace("-","_")
         self.analyses = analyses
@@ -145,8 +146,10 @@ class CM2Wrapper:
         f = open ( templatefile, "rt" )
         lines = f.readlines()
         f.close()
+        mass_stripped = str(masses).replace("(", "").replace(")", "")
+        mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
 
-        self.configfile = os.path.join ( self.basedir, "temp", "checkmate.ini" )
+        self.configfile = os.path.join ( self.basedir, "temp", self.instanceName + "_" mass_stripped+".ini" )
         f = open ( self.configfile, "wt" )
         outfile = self.gunzipHepmcFile ( hepmcfile )
         for line in lines:
@@ -174,13 +177,27 @@ class CM2Wrapper:
         mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
         effi_file = self._get_embaked_name ( self.analyses, self.topo, mass_stripped )
         self.writeEmbaked ( effs, effi_file, masses )
-
-        # self.clean()
+        self.clean()
+        # self.unlock()
         return -1
+
+    def lock ( self, lockfile ):
+        """ lock me """
+        ctr=0
+        while os.path.exists ( lockfile ):
+            ctr+=1
+            if ctr>100:
+                os.unlink ( lockfile )
+            time.sleep ( .2 )
+        f = open ( lockfile, "wt" )
+        f.write ( f"# locked {time.asctime()}\n" )
+        f.close()
 
     def writeEmbaked ( self, effs : dict, effi_file : PathLike, masses ):
         """ write our new efficiencies to the embaked file """
-        self.info ( f"writing effs to  {effi_file}" )
+        lockfile = effi_file+".lock"
+        self.lock ( lockfile )
+        self.info ( f"adding point {masses} to {effi_file}" )
         previousEffs = {}
         if os.path.exists ( effi_file ):
             g = open ( effi_file, "rt" )
@@ -196,12 +213,14 @@ class CM2Wrapper:
             f.write(str(m)+":"+str(v)+",\n")
         f.write ( "}\n" )
         f.close()
-
+        self.tempFiles.append ( self.outputfile() )
+        self.tempFiles.append ( lockfile )
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
         if not os.path.exists ( self.outputfile() ):
             self.error ( f"{self.outputfile()} not found, cannot extract any efficiencies" )
+            return {}
         inSignalRegions = False
         effs = {}
         with open ( self.outputfile() ) as f:
@@ -263,7 +282,7 @@ class CM2Wrapper:
         self.msg ( " `- %s" % ( ret[-maxLength:] ) )
 
     def clean ( self ):
-        if os.path.exists ( self.configfile ):
+        if self.configfile != None and os.path.exists ( self.configfile ):
             os.unlink ( self.configfile )
         for t in self.tempFiles:
             if os.path.exists( t ):
