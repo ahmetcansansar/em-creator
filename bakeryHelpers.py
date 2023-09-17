@@ -269,7 +269,7 @@ def ma5AnaNameToSModelSName ( name ):
     name = name.replace("_","-")
     return name
 
-def cm2AnaNameToSModelSName ( name ):
+def cm2AnaNameToSModelSName ( name : str ) -> str:
     """ translate an analysis name from checkmate2 naming to
         SModelS naming (looking up arxiv ids) """
     transD = loadCM2DictionaryFile()
@@ -280,6 +280,17 @@ def cm2AnaNameToSModelSName ( name ):
         f = f.upper().replace("_","-")
     return f
 
+def sModelsName2cm2AnaName ( name : str ) -> str:
+    """ translate an analysis name from SModelS naming to
+        checkmate2 naming (looking up arxiv ids) """
+    transD = loadCM2DictionaryFile()
+    inverted = { v:k for k,v in transD.items() }
+    if name in inverted.values():
+        return inverted[name]
+    f = name
+    if "SUS" in f or "EXO" in f or "SMP" in f or "CONF" in f or "HIGG" in f:
+        f = f.lower().replace("-","_")
+    return f
 
 def listAnalysesCutLang( ):
     """ list the analyses that are available in cutlang """
