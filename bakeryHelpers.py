@@ -311,6 +311,8 @@ def listAnalysesCutLang( ):
     """ list the analyses that are available in cutlang """
     dirname = "CutLang/ADLLHCanalyses/"
     files = glob.glob ( "%s*" % dirname )
+    print ( "List of ADL analyses:" )
+    print ( "=====================" )
     for f in files:
         f = f.replace(dirname,"")
         if "README" in f:
@@ -338,8 +340,8 @@ def listAnalysesMA5( ):
         files += glob.glob ( "%s/*.cpp" % d )
     files = list ( set ( files ) )
     files.sort()
-    print ( "List of analyses:" )
-    print ( "=================" )
+    print ( "List of MA5 analyses:" )
+    print ( "=====================" )
     for f in files:
         f = f.replace(".saf","").replace(".cpp","")
         for d in dn:
@@ -363,9 +365,10 @@ def listAnalysesCheckMATE( ):
     files = list ( set ( files ) )
     files.sort()
     transD = loadCM2DictionaryFile()
-    print ( "List of analyses:" )
-    print ( "=================" )
+    print ( "List of cm2 analyses:" )
+    print ( "=====================" )
     cleaned = {}
+    cm2Names = {}
     for f in files:
         f = f.replace(".h","")
         f = f.replace( path, "" )
@@ -376,12 +379,23 @@ def listAnalysesCheckMATE( ):
         nr = nr.replace( "higg", "" ).replace ("pas","").replace("pub_","")
         nr = nr.replace("_","").replace("smp","").replace("susy","")
         nr = nr.replace("atl","").replace("sus","").replace("-","")
-        f = cm2AnaNameToSModelSName ( f )
-        cleaned[nr]=f
+        newf = cm2AnaNameToSModelSName ( f )
+        cm2Names[nr] = f
+        cleaned[nr]=newf
     cleanedkeys = list ( cleaned.keys() )
     cleanedkeys.sort()
+    import colorama
     for k in cleanedkeys:
-        print  ( f" * {cleaned[k]}" )
+        cName = cleaned[k]
+        oldName = ""
+        if cm2Names[k] != cName:
+            oldName = " ("+cm2Names[k]+")"
+        col,res = "", ""
+        if "SUS" in cName or "EXO" in cName:
+            col,res = colorama.Fore.GREEN, colorama.Fore.RESET
+        if "atlas" in cName:
+            col,res = colorama.Fore.RED, colorama.Fore.RESET
+        print  ( f"{col} * {cName}{res}{oldName}" )
 
 def nJobs ( nproc, npoints ):
     """ determine the number of jobs we should run, given nproc is
