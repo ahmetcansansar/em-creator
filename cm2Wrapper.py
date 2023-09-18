@@ -59,6 +59,8 @@ class CM2Wrapper:
                 if os.path.isdir ( f"{self.basedir}/hepmc2.template" ):
                     self.exe ( f"cp -r {self.basedir}/hepmc2.template {self.basedir}/hepmc2" )
                     self.exe ( "cd hepmc2; ./make.py" )
+
+        bakeryHelpers.checkDelphesInstall()
         if os.path.isdir ( self.cm2install ) and not os.path.exists ( f"{self.executable}" ):
             self.exe ( f"rm -rf {self.cm2install}" )
 

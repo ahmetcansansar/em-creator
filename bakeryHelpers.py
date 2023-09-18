@@ -8,6 +8,8 @@
 """
 
 import numpy, sys, os, time, subprocess, glob
+from os import PathLike
+from typing import List
 sys.path.insert(0,"../../smodels" )
 
 def nCPUs():
@@ -36,16 +38,16 @@ def nCPUs():
         pass
     return None
 
-def yesno ( boolean ):
+def yesno ( boolean : bool ) -> str:
     if boolean:
         return "yes"
     return "no"
 
-def mkdir ( dirname ):
+def mkdir ( dirname : PathLike ):
     if not os.path.exists ( dirname ):
         os.mkdir ( dirname )
 
-def getAge ( f ):
+def getAge ( f : PathLike ) -> float:
     """ get the age of file in hours. age goes by last modification """
     if not os.path.exists ( f ):
         return 0.
@@ -54,7 +56,7 @@ def getAge ( f ):
     dt = ( t0 - mt ) / 60. / 60. ## hours
     return dt
 
-def safFile ( dirname, topo, masses, sqrts ):
+def safFile ( dirname : PathLike, topo : str, masses, sqrts ) -> str:
     """ return saf file name """
     smass = "_".join ( map ( str, masses ) )
     ret = "%s/%s_%s.%d.saf" % ( dirname, topo, smass, sqrts )
@@ -548,7 +550,81 @@ def rmLocksOlderThan ( hours=8 ):
                 subprocess.getoutput ( "rm -f %s" % f )
         except:
             pass
+def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
+             exit_on_fail=False ):
+    """ execute cmd in shell
+    :param maxLength: maximum length of output to be printed,
+                      if == -1 then all output will be printed
+    :param cmd       List of strings that make the command
+                     e.g. ["cp", "foo", "bar"]
+    :param logfile   File where command and its output will be written
+    :param cwd       Directory where the command should be executed
+    :param exit_on_fail  Whether to invoke sys.exit() on nonzero return value
+    :return return value of the command
+    """
+    if cwd is None:
+        directory = os.getcwd()
+    else:
+        directory = cwd
+    print(f'[helpers] exec: {directory} $$ {" ".join(cmd)}')
+    ctr=0
+    while ctr < 5:
+        try:
+            proc = subprocess.Popen( cmd, cwd=cwd, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE )
+            out, err = proc.communicate()
+            print(out.decode('utf-8'))
+            print(err.decode('utf-8'))
+            proc.wait()
+            if logfile is not None:
+                with open(logfile, "a") as log:
+                    log.write(f'exec: {directory} $$ {" ".join(cmd)}')
+                    log.write(out.decode('utf-8'))
+                    log.write(err.decode('utf-8'))
+            if not (proc.returncode == 0):
+                print(f"[helpers] Executed process: \n{' '.join(cmd)}\n\nin"
+                            f" directory:\n{directory}\n\nproduced an error\n\n"
+                            f"value {proc.returncode}.")
+                if exit_on_fail is True:
+                    sys.exit()
+            return proc.returncode
+        except BlockingIOError as e:
+            print( "[helpers] ran into blocking io error. wait a bit then try again." )
+            time.sleep ( random.uniform(1,10)+ctr*30 )
+            ctr += 1
+        sys.exit()
 
+def checkDelphesInstall( installdir : PathLike = "delphes" ) -> bool:
+    """ check if we have a functioning delphes installation at 
+    installdir 
+    :returns: True, if all is ok
+    """
+    if not os.path.isdir( installdir ):
+        print("[delphesInstaller] Delphes directory missing, download from github?")
+        if True: # self._confirmation("Download from github?"):
+            args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
+            #args = ['git', 'clone', 'https://github.com/delphes/delphes']
+            execute(args, exit_on_fail=True)
+            args = [ 'cp', 'templates/delphes_card_CMS.tcl', 'delphes/cards/' ]
+            execute(args, exit_on_fail=True)
+        else:
+            print("[delphesInstaller] ERROR: No Delphes dir. Exiting.")
+    # if there is no executable, compile it
+    delphes_exe = os.path.abspath( installdir + "DelphesHepMC2")
+    if not os.path.exists( delphes_exe):
+        print("[delphesInstaller] Cannot find delphes installation at {installdir}" )
+        compile_path = os.path.abspath(installdir)
+        # Check for existence of makefile, if not present exit, else make
+        makefile_path = os.path.join(compile_path, "Makefile")
+        if not os.path.isfile(makefile_path):
+            print("[delphesInstaller] No executable and no Makefile. Bailing out.")
+            sys.exit()
+        print("[delphesInstaller] Compiling Delphes...")
+        args = ['make']
+        execute(args, cwd=compile_path, exit_on_fail=True )
+    print("[delphesInstaller] Delphes initialised.")
+    print("[delphesInstaller] Initialisation complete.")
+    return delphes_exe
 
 if __name__ == "__main__":
     import argparse

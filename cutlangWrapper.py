@@ -56,6 +56,7 @@ from colorama import Fore
 
 # local imports
 import bakeryHelpers       # For dirnames
+from bakeryHelpers import execute
 
 
 class CutLangWrapper:
@@ -125,32 +126,7 @@ class CutLangWrapper:
         #      Delphes Init
         # ====================
         # Check if Delphes dir is present and if not, attempt to clone it from github
-        if not os.path.isdir(self.delphesinstall):
-            self._info("Delphes directory missing, download from github?")
-            if self._confirmation("Download from github?"):
-                args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
-                #args = ['git', 'clone', 'https://github.com/delphes/delphes']
-                self.exe(args, exit_on_fail=True, logfile=self.initlog)
-                args = [ 'cp', 'templates/delphes_card_CMS.tcl', 'delphes/cards/' ]
-                self.exe(args, exit_on_fail=True, logfile=self.initlog)
-            else:
-                self._error("No Delphes dir. Exiting.")
-        # if there is no executable, compile it
-        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC2")
-        if not os.path.exists(self.delphes_exe):
-            self._info("Cannot find delphes installation at %s" % self.delphesinstall)
-            compile_path = os.path.abspath(self.delphesinstall)
-            # Check for existence of makefile, if not present exit, else make
-            makefile_path = os.path.join(compile_path, "Makefile")
-            if not os.path.isfile(makefile_path):
-                self._error("No executable and no Makefile. Bailin' it.")
-                sys.exit()
-            self._info("Compiling Delphes...")
-            args = ['make']
-            self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
-        self._info("Delphes initialised.")
-        self._info("Initialisation complete.")
-
+        self.delphes_exe = bakeryHelpers.checkDelphesInstall ( self.delphesinstall )
 
         # =====================
         #      Cutlang Init
@@ -164,7 +140,7 @@ class CutLangWrapper:
                 #v = 'v2.9.10'
                 #args = ['git', 'clone', '-b', v, 'https://github.com/unelg/CutLang']
                 # args = ['git', 'clone', 'https://github.com/unelg/CutLang']
-                self.exe(args, exit_on_fail=True, logfile=self.initlog)
+                execute(args, exit_on_fail=True, logfile=self.initlog)
             else:
                 self._error("No CutLang dir. Exiting.")
                 sys.exit()
@@ -181,7 +157,7 @@ class CutLangWrapper:
             # disable warnings for compilation to declutter output
             compile_path = os.path.abspath(self.cutlanginstall + "CLA/")
             args = ['sed', '-i', 's/ -Wall//g', os.path.join(compile_path, "Makefile")]
-            self.exe(args)
+            execute(args)
 
             self._info("Compiling CutLang...")
             ncpus = 4
@@ -191,7 +167,7 @@ class CutLangWrapper:
             except ImportError:
                 pass
             args = [ 'make', '-j', str(ncpus) ]
-            self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
+            execute(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
         self._info("CutLang initialisation finished.")
 
         # ==============================
@@ -206,9 +182,9 @@ class CutLangWrapper:
         dirname = os.path.dirname(self.adllhcanalyses)
         if len(os.listdir(self.adllhcanalyses)) == 0:
             args = ["rm", "-rf", self.adllhcanalyses]
-            self.exe(args)
+            execute(args)
             args = ["git", "clone", "https://github.com/ADL4HEP/ADLLHCanalyses"]
-            self.exe( args, cwd=dirname, exit_on_fail=True, 
+            execute( args, cwd=dirname, exit_on_fail=True, 
                       logfile=self.initlog)
         allowDraftAnas = True
         if allowDraftAnas:
@@ -217,10 +193,10 @@ class CutLangWrapper:
             if os.path.exists ( fulldraft ):
                 pass
             #    args = ["rm", "-rf", fulldraft ]
-            #    self.exe(args)
+            #    execute(args)
             else:
                 args = ["git", "clone", f"https://github.com/ADL4HEP/{draftname}"]
-                self.exe(args, cwd=dirname,
+                execute(args, cwd=dirname,
                          exit_on_fail=True, logfile=self.initlog)
             import shutil
             for x in glob.glob ( f"{dirname}/ADLAnalysisDrafts/*" ):
@@ -387,13 +363,13 @@ class CutLangWrapper:
         if os.path.exists(delph_out):
             self._info(f"Removing {delph_out}.")
             args = ["rm", delph_out]
-            self.exe(args, logfile=logfile)
+            execute(args, logfile=logfile)
 
 
         # run delphes
         self._debug("Running delphes.")
         args = [self.delphes_exe, delphes_card, delph_out, hepmcfile]
-        self.exe(args, logfile=logfile)
+        execute(args, logfile=logfile)
         self._debug("Delphes finished.")
 
         ## possibly we need to filter the delphes output
@@ -421,7 +397,7 @@ class CutLangWrapper:
         # run CutLang
         cmd = [self.cutlang_script, cla_input, "DELPHES", "-i", cutlangfile]
         self._debug("Running CLA")
-        self.exe(cmd, cwd=cla_run_dir, logfile=logfile)
+        execute(cmd, cwd=cla_run_dir, logfile=logfile)
         self._debug("CLA finished.")
 
         ## now that we ran cutlang, mark the delphes root file as to-be-deleted
@@ -744,51 +720,6 @@ class CutLangWrapper:
                     with open(filename, "r") as g:
                         f.write(g.read() + ",\n")
             f.write("}")
-    """
-
-    def exe(self, cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
-            exit_on_fail=False):
-        """ execute cmd in shell
-        :param maxLength: maximum length of output to be printed,
-                          if == -1 then all output will be printed
-        :param cmd       List of strings that make the command
-                         e.g. ["cp", "foo", "bar"]
-        :param logfile   File where command and its output will be written
-        :param cwd       Directory where the command should be executed
-        :param exit_on_fail  Whether to invoke sys.exit() on nonzero return value
-        :return return value of the command
-        """
-        if cwd is None:
-            directory = os.getcwd()
-        else:
-            directory = cwd
-        self._msg(f'exec: {directory} $$ {" ".join(cmd)}')
-        ctr=0
-        while ctr < 5:
-            try:
-                proc = subprocess.Popen( cmd, cwd=cwd, stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE )
-                out, err = proc.communicate()
-                print(out.decode('utf-8'))
-                print(err.decode('utf-8'))
-                proc.wait()
-                if logfile is not None:
-                    with open(logfile, "a") as log:
-                        log.write(f'exec: {directory} $$ {" ".join(cmd)}')
-                        log.write(out.decode('utf-8'))
-                        log.write(err.decode('utf-8'))
-                if not (proc.returncode == 0):
-                    self._error(f"Executed process: \n{' '.join(cmd)}\n\nin"
-                                f" directory:\n{directory}\n\nproduced an error\n\n"
-                                f"value {proc.returncode}.")
-                    if exit_on_fail is True:
-                        sys.exit()
-                return proc.returncode
-            except BlockingIOError as e:
-                self._error( "ran into blocking io error. wait a bit then try again." )
-                time.sleep ( random.uniform(1,10)+ctr*30 )
-                ctr += 1
-            sys.exit()
 
     def clean(self):
         """ Deletes the output directory
@@ -820,7 +751,7 @@ class CutLangWrapper:
         partlist = map(lambda x: os.path.join(self.cutlanginstall, x), partlist)
         for part in partlist:
             cmd = ['cp', '-r', part, where]
-            if self.exe(cmd, logfile=logfile) != 0:
+            if execute(cmd, logfile=logfile) != 0:
                 return False
         # To prevent redefinitions we have to replace all the shared libraries
         # in the tmp directory with links to the original ones
@@ -831,7 +762,7 @@ class CutLangWrapper:
                 link_name = os.path.join(where, 'analysis_core', filename)
                 origin_name = os.path.abspath(os.path.join(core_dir, filename))
                 cmd = ['ln', '-sf', origin_name, link_name]
-                if self.exe(cmd, logfile=logfile) != 0:
+                if execute(cmd, logfile=logfile) != 0:
                     return False
         return True
 
