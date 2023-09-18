@@ -23,6 +23,7 @@ class MG5Wrapper:
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
         """
+        self.nevents = nevents
         self.checkHost()
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
@@ -56,17 +57,22 @@ class MG5Wrapper:
             self.info ( "cannot find mg5 installation at %s" % self.mg5install )
             if os.path.exists ( self.mg5install ):
                 subprocess.getoutput ( f"rm -rf {self.mg5install}" )
-            self.info ( "cannot even find directory. copy from template!" )
+            self.info ( "cannot even find mg5/ directory." )
             localbackup = f"{self.basedir}/mg5.backup/"
-            backupdir = "/groups/hephy/pheno/ww/git/mg5"
+            backupdir = "/groups/hephy/pheno/ww/mg5"
             templatedir = f"{self.basedir}/mg5.template"
             destdir = f"{self.basedir}/mg5"
             if os.path.exists ( localbackup ):
+                self.info ( f"local backup found at {localbackup}" )
                 self.exe ( f"cp -r {localbackup} {destdir}" )
             elif os.path.exists ( backupdir ):
+                self.info ( f"NO local backup found at {localbackup}" )
                 self.exe ( f"cp -r {backupdir} {destdir}" )
+                self.info ( f"clip backup found at {backupdir}" )
             elif os.path.exists ( templatedir ):
+                self.info ( f"NO clip backup found at {backupdir}" )
                 self.exe ( f"cp -r {templatedir} {destdir}" )
+                self.info ( f"template backup found at {templatedir}" )
                 self.exe ( "mg5/make.py" )
         if not os.path.exists ( f"{self.mg5install}/idm" ):
             subprocess.getoutput ( f"cp -r idm {self.mg5install}" )
@@ -94,7 +100,7 @@ class MG5Wrapper:
         hostname = socket.gethostname()
         if "clip-login-1" in hostname:
             self.msg ( "WARNING: running on the login node!" )
-            if nevents > 200:
+            if self.nevents > 200:
                 sys.exit()
         if "clip" in hostname:
             try:

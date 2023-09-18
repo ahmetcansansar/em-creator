@@ -321,7 +321,7 @@ def listAnalyses ( cutlang : bool, checkmate : bool ):
     else:
         listAnalysesMA5( )
 
-def listAnalysesMA5( sqrts ):
+def listAnalysesMA5( ):
     """ list the analyses that are available in MA5 """
     import glob
     # dname = "ma5/tools/PAD/Build/"

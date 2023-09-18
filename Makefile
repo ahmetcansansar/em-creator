@@ -4,16 +4,18 @@ du-h: .PHONY
 	du -h --max-depth=1 | tee du-h
 
 install_mg5:
-	$(shell [ -x "mg5.tar.gz" ] || {wget http://www.hephy.at/user/wwaltenberger/dist/mg5.tar.gz; }; )
-	rm -rf mg5.old
-	$(shell [ -x "mg5" ] && { mv -f mg5 mg5.old; } )
-	tar xzvf mg5.tar.gz 
+	test -e mg5 || cp -r mg5.template mg5
+	cd mg5; make.py
 
 install_ma5:
-	$(shell [ -x "ma5.tar.gz" ] || { wget https://smodels.github.io/downloads/tarballs/ma5.tar.gz; }; )
-	rm -rf ma5.old
-	$(shell [ -x "ma5" ] && { mv -f ma5.template ma5.old; } )
-	tar xzvf ma5.tar.gz 
+	test -e ma5 || cp -r ma5.template ma5
+	cd ma5; make.py
+
+install_cm2:
+	test -e hepmc2 || cp -r hepmc2.template hepmc2
+	cd hepmc2; make.py
+	test -e cm2 || cp -r cm2.template cm2
+	cd cm2; make.py
 
 pull_from_clip:
 	mkdir -p embaked

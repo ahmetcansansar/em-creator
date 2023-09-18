@@ -13,6 +13,17 @@ def installHepMC2():
         cmd = "cp -r ../hepmc2.template ../hepmc2"
         subprocess.getoutput ( cmd )
 
+def exe ( cmd ):
+    """ execute cmd on the command line """
+    print ( f"[cm2make.py] exe:: {cmd}" )
+    run = subprocess.Popen ( cmd, shell=True, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE )
+    out,err = run.communicate()
+    err = err.decode ( "UTF-8" )
+    out = out.decode ( "UTF-8" )
+    print ( f"[cm2make.py] err:: {err}" )
+    print ( f"[cm2make.py] out:: {out}" )
+
 def install():
     installHepMC2()
     if os.path.exists ( "checkmate2/bin/CheckMATE" ):
@@ -37,9 +48,8 @@ def install():
     hepmcpath = os.path.abspath ( "../hepmc2/HepMC-2.06.11/" )
     madgrafpath = os.path.abspath ( "../mg5/" )
     # pythiapath = "../../mg5/HEPTools/pythia8/"
-    cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath} -I {delphespath}'; ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
-    o = subprocess.getoutput ( cmd )
-    print ( f"configure: {cmd} {o}" )
+    cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath} -I {delphespath}' ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
+    exe ( cmd )
     cmd = "cd checkmate2 ; cp /bin/libtool ."
     o = subprocess.getoutput ( cmd )
     print ( f"use correct libtool: {cmd} {o}" )
