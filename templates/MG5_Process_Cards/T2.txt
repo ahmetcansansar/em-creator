@@ -1,2 +1,4 @@
-define Q = dl dr dl~ dr~ ul ur ul~ ur~
-generate p p > Q Q
+generate p p > ul ul~
+generate p p > dl dl~
+generate p p > ur ur~
+generate p p > dr dr~

@@ -29,7 +29,6 @@ class CM2Wrapper:
         self.configfile = None
         self.njets = njets
         self.analyses = bakeryHelpers.sModelsName2cm2AnaName ( analyses )
-        self.info ( f"initialise for {self.analyses}" )
         self.rerun = rerun
         self.keep = keep
         self.keephepmc = keephepmc
@@ -131,6 +130,8 @@ class CM2Wrapper:
         import gzip
         import shutil
         outfile = hepmcfile.replace(".gz","").replace("mg5results","temp")
+        self.tempFiles.append ( hepmcfile )
+        self.tempFiles.append ( outfile )
         if os.path.exists ( outfile ):
             self.info ( f"skipping gunzip: {outfile} exists" )
             return outfile
@@ -138,7 +139,6 @@ class CM2Wrapper:
             with open( outfile, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
         self.info ( f"gunzipped hepmc file to {outfile}" )
-        self.tempFiles.append ( outfile )
         return outfile
         
     def createConfigFile ( self, masses, hepmcfile ):
@@ -171,7 +171,7 @@ class CM2Wrapper:
         mass_stripped = str(masses).replace("(", "").replace(")", "")
         mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
         self.instanceName = f"{self.analyses}_{mass_stripped}"
-        print ( f"[cm2Wrapper] this is checkmate {self.ver}, lets rock!" )
+        print ( f"[cm2Wrapper] initialse checkmate {self.ver} for {self.analyses}" )
         self.checkInstallation()
         if not os.path.exists ( self.outputfile() ):
             self.createConfigFile ( masses, hepmcfile )
@@ -181,7 +181,7 @@ class CM2Wrapper:
         self.writeEmbaked ( effs, effi_file, masses )
         self.clean()
         # self.unlock()
-        return -1
+        return 0
 
     def lock ( self, lockfile ):
         """ lock me """
@@ -219,7 +219,7 @@ class CM2Wrapper:
         f.close()
         self.tempFiles.append ( self.outputfile() )
         self.tempFiles.append ( lockfile )
-        self.tempFiles.append ( "f{self.cm2results}/{self.instanceName}" )
+        self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
@@ -287,11 +287,17 @@ class CM2Wrapper:
         self.msg ( " `- %s" % ( ret[-maxLength:] ) )
 
     def clean ( self ):
+        if self.keep:
+            return
         if self.configfile != None and os.path.exists ( self.configfile ):
             os.unlink ( self.configfile )
         for t in self.tempFiles:
+            self.debug ( f"unlinking {t}" )
             if os.path.exists( t ):
-                os.unlink ( t )
+                if os.path.isdir ( t ):
+                    shutil.rmtree ( t )
+                else:
+                    os.unlink ( t )
         return
 
     def _delete_dir(self, f):

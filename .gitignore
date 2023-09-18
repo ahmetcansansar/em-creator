@@ -32,7 +32,7 @@ summary_T*.dat
 ME5_debug
 MG5_debug
 logs/
-mg5.good/
+mg5.backup/
 mg5.v2/
 mg5/
 py.py
@@ -46,6 +46,8 @@ statsEM.py
 # checkmate2 output
 cm2results
 cm2
+cm2.backup
 
 # hepmc2 (used for cm2)
 hepmc2
+hepmc2.backup

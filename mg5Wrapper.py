@@ -497,9 +497,7 @@ class MG5Wrapper:
             shutil.rmtree(Dir+'/Events/run_01')
         self.logfile2 = tempfile.mktemp ()
         cmd = f"python{self.pyver} {self.executable} {Dir}/mg5cmd 2>&1 | tee {self.logfile2}"
-        print ( "A" )
         self.exe ( cmd, masses )
-        print ( "B" )
         hepmcfile = self.orighepmcFileName( masses )
         if self.hasorigHEPMC ( masses ):
             dest = self.locker.hepmcFileName ( masses )
