@@ -42,3 +42,10 @@ temp/
 
 # another file produced by the baker
 statsEM.py
+
+# checkmate2 output
+cm2results
+cm2
+
+# hepmc2 (used for cm2)
+hepmc2

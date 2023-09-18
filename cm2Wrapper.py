@@ -294,7 +294,14 @@ class CM2Wrapper:
                 os.unlink ( t )
         return
 
+    def _delete_dir(self, f):
+        if os.path.exists(f):
+            subprocess.getoutput("rm -rf %s" % f)
+
     def clean_all ( self ):
+        """ clean everything related to checkmate2 """
+        self._delete_dir ( "cm2" )
+        self._delete_dir ( "hepmc2" )
         return
 
 if __name__ == "__main__":
