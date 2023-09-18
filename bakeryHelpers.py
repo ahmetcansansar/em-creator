@@ -299,6 +299,9 @@ def sModelsName2cm2AnaName ( name : str ) -> str:
     inverted["ATLAS-SUSY-2018-22"] = 'atlas_2010_14293'
     if name in inverted.keys():
         return inverted[name]
+    mname = name.upper().replace("_","-")
+    if mname in inverted.keys():
+        return inverted[mname]
     f = name
     if "SUS" in f or "EXO" in f or "SMP" in f or "CONF" in f or "HIGG" in f:
         f = f.lower().replace("-","_")
