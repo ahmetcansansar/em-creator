@@ -121,6 +121,37 @@ class CutLangWrapper:
         # Delphes vars
         self.delphesinstall = "./delphes/"
 
+        # ====================
+        #      Delphes Init
+        # ====================
+        # Check if Delphes dir is present and if not, attempt to clone it from github
+        if not os.path.isdir(self.delphesinstall):
+            self._info("Delphes directory missing, download from github?")
+            if self._confirmation("Download from github?"):
+                args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
+                #args = ['git', 'clone', 'https://github.com/delphes/delphes']
+                self.exe(args, exit_on_fail=True, logfile=self.initlog)
+                args = [ 'cp', 'templates/delphes_card_CMS.tcl', 'delphes/cards/' ]
+                self.exe(args, exit_on_fail=True, logfile=self.initlog)
+            else:
+                self._error("No Delphes dir. Exiting.")
+        # if there is no executable, compile it
+        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC2")
+        if not os.path.exists(self.delphes_exe):
+            self._info("Cannot find delphes installation at %s" % self.delphesinstall)
+            compile_path = os.path.abspath(self.delphesinstall)
+            # Check for existence of makefile, if not present exit, else make
+            makefile_path = os.path.join(compile_path, "Makefile")
+            if not os.path.isfile(makefile_path):
+                self._error("No executable and no Makefile. Bailin' it.")
+                sys.exit()
+            self._info("Compiling Delphes...")
+            args = ['make']
+            self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
+        self._info("Delphes initialised.")
+        self._info("Initialisation complete.")
+
+
         # =====================
         #      Cutlang Init
         # =====================
@@ -200,36 +231,6 @@ class CutLangWrapper:
                     shutil.copytree ( f"{dirname}/ADLAnalysisDrafts/{fname}", f"{dirname}/ADLLHCanalyses/{fname}" )
 
         self._info("ADLLHC Analyses initialisation finished.")
-
-        # ====================
-        #      Delphes Init
-        # ====================
-        # Check if Delphes dir is present and if not, attempt to clone it from github
-        if not os.path.isdir(self.delphesinstall):
-            self._info("Delphes directory missing, download from github?")
-            if self._confirmation("Download from github?"):
-                args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
-                #args = ['git', 'clone', 'https://github.com/delphes/delphes']
-                self.exe(args, exit_on_fail=True, logfile=self.initlog)
-                args = [ 'cp', 'templates/delphes_card_CMS.tcl', 'delphes/cards/' ]
-                self.exe(args, exit_on_fail=True, logfile=self.initlog)
-            else:
-                self._error("No Delphes dir. Exiting.")
-        # if there is no executable, compile it
-        self.delphes_exe = os.path.abspath(self.delphesinstall + "DelphesHepMC2")
-        if not os.path.exists(self.delphes_exe):
-            self._info("Cannot find delphes installation at %s" % self.delphesinstall)
-            compile_path = os.path.abspath(self.delphesinstall)
-            # Check for existence of makefile, if not present exit, else make
-            makefile_path = os.path.join(compile_path, "Makefile")
-            if not os.path.isfile(makefile_path):
-                self._error("No executable and no Makefile. Bailin' it.")
-                sys.exit()
-            self._info("Compiling Delphes...")
-            args = ['make']
-            self.exe(args, cwd=compile_path, exit_on_fail=True, logfile=self.initlog)
-        self._info("Delphes initialised.")
-        self._info("Initialisation complete.")
 
     def getEventCondition ( self, event_condition ):
         pids = { "gamma": 22, "Z": 23, "higgs": 25 }
