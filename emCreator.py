@@ -311,7 +311,7 @@ def massesInEmbakedFile ( masses, analysis, topo, cutlang, checkmate ):
         lines = f.read()
         f.close()
         D = eval(lines)
-        if masses in D.keys():
+        if masses in D.keys() and D[masses]!={}:
             return True
     return False
 
