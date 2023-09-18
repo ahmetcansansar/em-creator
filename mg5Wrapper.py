@@ -379,7 +379,7 @@ class MG5Wrapper:
         sm = ""
         if masses != "":
             sm="[%s]" % str(masses)
-        self.msg ( "now execute for %s%s: %s" % (self.topo, sm, cmd[:] ) )
+        self.msg ( "exec %s%s:: %s" % (self.topo, sm, cmd[:] ) )
         pipe = subprocess.Popen ( cmd, shell=True,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE )
@@ -484,10 +484,10 @@ class MG5Wrapper:
         self.exe ( cmd, masses )
         ## copy slha file
         if not os.path.exists ( Dir+"/Cards" ):
-            cmd = "rm -rf %s" % Dir
+            cmd = f"rm -rf {Dir}"
             o = subprocess.getoutput ( cmd )
-            o = subprocess.getoutput ( "cat %s" % self.logfile )
-            self.error ( "%s/Cards does not exist! Skipping! %s" % ( Dir, o ) )
+            o = subprocess.getoutput ( f"cat {self.logfile}" )
+            self.error ( f"{Dir}/Cards does not exist! Skipping! {o}" )
             self.exe ( cmd, masses )
             return False
         shutil.move(slhaFile, Dir+'/Cards/param_card.dat' )
@@ -496,9 +496,10 @@ class MG5Wrapper:
         if (os.path.isdir(Dir+'/Events/run_01')):
             shutil.rmtree(Dir+'/Events/run_01')
         self.logfile2 = tempfile.mktemp ()
-        cmd = "python%d %s %s/mg5cmd 2>&1 | tee %s" % \
-               ( self.pyver, self.executable, Dir, self.logfile2 )
+        cmd = f"python{self.pyver} {self.executable} {Dir}/mg5cmd 2>&1 | tee {self.logfile2}"
+        print ( "A" )
         self.exe ( cmd, masses )
+        print ( "B" )
         hepmcfile = self.orighepmcFileName( masses )
         if self.hasorigHEPMC ( masses ):
             dest = self.locker.hepmcFileName ( masses )

@@ -28,8 +28,8 @@ class CM2Wrapper:
         self.sqrts = sqrts
         self.configfile = None
         self.njets = njets
-        analyses = analyses.lower().replace("-","_")
-        self.analyses = analyses
+        self.analyses = bakeryHelpers.sModelsName2cm2AnaName ( analyses )
+        self.info ( f"initialise for {self.analyses}" )
         self.rerun = rerun
         self.keep = keep
         self.keephepmc = keephepmc
@@ -152,6 +152,7 @@ class CM2Wrapper:
         self.configfile = os.path.join ( self.basedir, "temp", "cm2_" + self.instanceName + "_" + mass_stripped+".ini" )
         f = open ( self.configfile, "wt" )
         outfile = self.gunzipHepmcFile ( hepmcfile )
+
         for line in lines:
             line = line.replace("@@NAME@@", self.instanceName )
             line = line.replace("@@ANALYSES@@", self.analyses )
@@ -196,6 +197,8 @@ class CM2Wrapper:
 
     def writeEmbaked ( self, effs : dict, effi_file : PathLike, masses ):
         """ write our new efficiencies to the embaked file """
+        if not os.path.exists ( "embaked" ):
+            os.mkdir ( "embaked" )
         lockfile = effi_file+".lock"
         self.lock ( lockfile )
         self.info ( f"adding point {masses} to {effi_file}" )
@@ -208,7 +211,7 @@ class CM2Wrapper:
         nregions = len(effs)
         npoints = len(previousEffs)
         f = open ( effi_file, "wt" )
-        f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate\n" )
+        f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2\n" )
         f.write( "{" )
         for m,v in previousEffs.items():
             f.write(str(m)+":"+str(v)+",\n")
@@ -242,7 +245,7 @@ class CM2Wrapper:
         #retval = "_".join([analysis.lower().replace("-", "_"), topo, "mass", mass])
         #retval = ".".join([retval, "embaked"])
         from bakeryHelpers import cm2AnaNameToSModelSName
-        retval = cm2AnaNameToSModelSName ( analysis ) + ".embaked"
+        retval = f"{cm2AnaNameToSModelSName ( analysis )}.{topo}.embaked"
         retval = os.path.join ( "embaked", retval )
         return retval
 

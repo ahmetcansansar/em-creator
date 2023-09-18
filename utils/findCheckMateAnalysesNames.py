@@ -10,15 +10,34 @@
 
 """
 
-import sys
+import sys, os
+ourpath  = os.path.dirname ( __file__ ).replace ( "/utils", "" ).replace("/.","/")
 sys.path.insert(0,"../")
 from smodels.experiment.databaseObj import Database
 
+def retrieveOldDictionary ( filename : str = "./cm2names.dict" ) -> dict:
+    """ see if there is an old dictionary lying around. 
+        we would start with it, and overwrite entries """
+    filename = standardizePaths ( filename )
+    ret = {}
+    if not os.path.exists ( filename ):
+        return ret
+    f = open (  filename, "rt" )
+    ret = eval ( f.read() )
+    f.close()
+    return ret
+
+def standardizePaths ( path ):
+    """ make sure relative paths work also """
+    if not "." in path:
+        return os.path.abspath ( path )
+    path = os.path.abspath ( os.path.join ( ourpath, path ) )
+    return path
 
 def findNames( dbpath ):
-    database = Database( dbpath )
+    database = Database( standardizePaths ( dbpath ) )
     expResults = database.expResultList
-    D = {}
+    D = retrieveOldDictionary ( )
     for er in expResults:
         Id = er.globalInfo.id
         collab = "cms" if "CMS" in Id else "atlas"
@@ -42,7 +61,8 @@ def findNames( dbpath ):
         print ( f"{k} :: {v}" )
     return D
 
-def writeToFile ( D : dict, filename : str = "../cm2names.dict" ):
+def writeToFile ( D : dict, filename : str = "./cm2names.dict" ):
+    filename = standardizePaths ( filename )
     f = open ( filename, "wt" )
     f.write ( f"# dictionary for analyses names: checkmate2 <-> SModelS\n" )
     import time
@@ -54,5 +74,5 @@ def writeToFile ( D : dict, filename : str = "../cm2names.dict" ):
     f.close()
 
 if __name__ == "__main__":
-    D = findNames( "../../smodels-database" )
+    D = findNames( "../smodels-database" )
     writeToFile ( D )

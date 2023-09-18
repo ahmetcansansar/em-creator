@@ -272,6 +272,10 @@ def ma5AnaNameToSModelSName ( name ):
 def cm2AnaNameToSModelSName ( name : str ) -> str:
     """ translate an analysis name from checkmate2 naming to
         SModelS naming (looking up arxiv ids) """
+    if "," in name:
+        names = name.split(",")
+        allnames = [ self.cm2AnaNameToSModelSName(n) for n in names ]
+        return ",".join(allnames)
     transD = loadCM2DictionaryFile()
     if name in transD.keys():
         return transD[name]
@@ -283,9 +287,15 @@ def cm2AnaNameToSModelSName ( name : str ) -> str:
 def sModelsName2cm2AnaName ( name : str ) -> str:
     """ translate an analysis name from SModelS naming to
         checkmate2 naming (looking up arxiv ids) """
+    if "," in name:
+        names = name.split(",")
+        allnames = [ self.sModelsName2cm2AnaName(n) for n in names ]
+        return ",".join(allnames)
     transD = loadCM2DictionaryFile()
     inverted = { v:k for k,v in transD.items() }
-    if name in inverted.values():
+    """ additional entries, hand-written """
+    inverted["ATLAS-SUSY-2018-22"] = 'atlas_2010_14293'
+    if name in inverted.keys():
         return inverted[name]
     f = name
     if "SUS" in f or "EXO" in f or "SMP" in f or "CONF" in f or "HIGG" in f:
