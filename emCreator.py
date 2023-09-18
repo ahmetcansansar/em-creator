@@ -482,9 +482,18 @@ def getAllCutlangTopos():
         ret.add(t)
     return ret
 
-def getAllTopos ( cutlang ):
-    if cutlang:
-        return getAllCutlangTopos ()
+def getAllTopos ( recaster ):
+    ret = []
+    if "adl" in recaster:
+        ret += getAllCutlangTopos()
+    if "MA5" in recaster:
+        ret += getAllMA5Topos()
+    if "cm2" in recaster:
+        print ( "FIXME need to get cm2 topos" )
+        ret += [ "T1", "T2" ]
+    return ret
+
+def getAllMA5Topos():
     import glob
     dirname="ma5results/"
     files = glob.glob ( "%s/T*.dat" % dirname )
@@ -526,6 +535,26 @@ def getMA5ListOfAnalyses():
     ret = ",".join ( tokens )
     return ret
 
+def getCheckmateListOfAnalyses():
+    """ compile list of checkmate2 analyses """
+    ret = "cms_sus_16_048"
+    # cm2results/atlas_2010_14293_*/analysis
+    files = glob.glob("cm2results/*/analysis/*.dat" )
+    tokens = set()
+    for f in files:
+        with open ( f, "rt" ) as handle:
+            lines = handle.readlines()
+            for l in lines:
+                if not "cms" in l and not "atlas" in l:
+                    continue
+                tmp = l.split( " " )
+                for t in tmp:
+                    if "cms_" in t or "atlas_" in t:
+                        tokens.add ( t )
+    ret = ",".join ( tokens )
+    return ret
+
+
 def embakedFile ( ana, topo, cutlang, checkmate ):
     """ return the content of the embaked file """
     fname = embakedFileName ( ana, topo, cutlang, checkmate )
@@ -540,11 +569,13 @@ def embakedFile ( ana, topo, cutlang, checkmate ):
 
 def run ( args ):
     analyses = args.analyses
-    cutlangs = [ False, True ]
+    recaster = [ "MA5", "cm2", "adl" ]
     if args.cutlang:
-        cutlangs = [ True ]
+        recaster = [ "adl" ]
     if args.ma5:
-        cutlangs = [ False ]
+        recaster = [ "MA5" ]
+    if args.checkmate:
+        recaster = [ "cm2" ]
     ntot, ntotembaked = 0, 0
     files = glob.glob ( "embaked/*embaked" )
     for fname in files:
@@ -561,22 +592,26 @@ def run ( args ):
         ntotembaked+=nplus
     #if ntotembaked > 0:
     #    print ( f"[emCreator] in embaked files I found {ntotembaked} points before adding" )
-    for cutlang in cutlangs:
+    for recast in recaster:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
-            if cutlang:
+            if recast == "adl":
                 analyses = getCutlangListOfAnalyses()
-            else:
+                analyses = analyses.replace("_","-").upper()
+            if recast == "MA5":
                 analyses = getMA5ListOfAnalyses()
+            if recast == "cm2":
+                analyses = getCheckmateListOfAnalyses()
 
-        if cutlang:
-           analyses = analyses.replace("_","-").upper()
         if args.topo == "all":
-            topos = getAllTopos ( cutlang )
+            topos = getAllTopos ( recaster )
             topos = list(topos)
             topos.sort()
             for topo in topos:
                 for ana in analyses.split(","):
+                    cutlang = False
+                    if "adl" in topo:
+                        cutlang = True
                     ntot += runForTopo ( topo, args.njets, args.masses, ana,
                         args.verbose, args.copy, args.keep, args.sqrts,
                         cutlang, args.stats, args.cleanup )
@@ -617,6 +652,8 @@ def main():
     argparser.add_argument ( '-C', '--cleanup', help='cleanup most temporary files after running, like the saf and dat files of ma5',
                              action="store_true" )
     argparser.add_argument ( '-l', '--cutlang', help='cutlang only results',
+                             action="store_true" )
+    argparser.add_argument ( '--checkmate', help='checkmate2 only results',
                              action="store_true" )
     argparser.add_argument ( '-5', '--ma5', help='ma5 only results',
                              action="store_true" )
