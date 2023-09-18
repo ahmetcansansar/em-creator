@@ -2,4 +2,3 @@ colorama
 numpy
 smodels
 ROOT
-configparser<=4.0.2
