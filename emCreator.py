@@ -275,31 +275,35 @@ class emCreator:
         f.close()
         print ( "[emCreator] wrote stats to %s" % statsfile )
 
-def recaster ( cutlang ):
-    """ get the name of the recaster """
+def recaster ( cutlang, checkmate ):
+    """ get the name of the recaster: MA5, ADL, or cm2 """
     ma5orcutlang = "MA5"
     if cutlang:
         ma5orcutlang = "ADL"
+    if checkmate:
+        ma5orcutlang = "cm2"
     return ma5orcutlang
 
-def embakedFileName ( analysis, topo, cutlang ):
+def embakedFileName ( analysis, topo, cutlang, checkmate ):
     """ get the file name of the .embaked file
     :param analysis: e.g. CMS-SUS-16-039
     :param topo: e.g. T2
     :param cutlang: true if cutlang, false if ma5
+    :param checkmate: true if checkmate, false if ma5
     """
     ana_smodels = analysis.upper().replace("_","-")
-    fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, recaster ( cutlang ) )
+    fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, recaster ( cutlang, checkmate ) )
     return fname
 
-def massesInEmbakedFile ( masses, analysis, topo, cutlang ):
+def massesInEmbakedFile ( masses, analysis, topo, cutlang, checkmate ):
     """ are the masses in the embaked file?
     :param masses: e.g. (800,200)
     :param analysis: e.g. CMS-SUS-16-039
     :param topo: e.g. T2
     :param cutlang: true if cutlang, false if ma5
+    :param checkmate: true if checkmate, false if ma5
     """
-    fname = embakedFileName ( analysis, topo, cutlang )
+    fname = embakedFileName ( analysis, topo, cutlang, checkmate )
     if not os.path.exists ( fname ):
         # if we dont even have an embaked file, for sure the masses are not in.
         return False
@@ -522,9 +526,9 @@ def getMA5ListOfAnalyses():
     ret = ",".join ( tokens )
     return ret
 
-def embakedFile ( ana, topo, cutlang ):
+def embakedFile ( ana, topo, cutlang, checkmate ):
     """ return the content of the embaked file """
-    fname = embakedFileName ( ana, topo, cutlang )
+    fname = embakedFileName ( ana, topo, cutlang, checkmate )
     if not os.path.exists ( fname ):
         return {}
     with open ( fname, "rt" ) as f:

@@ -244,7 +244,9 @@ class MG5Wrapper:
         self.checkInstallation()
         import emCreator
         isIn = emCreator.massesInEmbakedFile ( masses, analyses, self.topo, \
-                                               self.cutlang )
+                                               self.cutlang, self.checkmate )
+        # print ( f"is the point {masses} for {analyses} in embakedfile? {isIn} rerun: {self.rerun}" )
+        # sys.exit()
         if isIn and not self.rerun:
             return
         if not self.cutlang and self.locker.hasMA5Files ( masses ) and not self.rerun:
@@ -610,14 +612,18 @@ def main():
                              type=str, default=mdefault )
     args = argparser.parse_args()
     if args.topo in [ "T1", "T2", "T1bbbb", "T2bb", "T2ttoff", "T1ttttoff", "TGQ" ] and args.mingap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
-        print ( "[mg5Wrapper] for topo %s we set mingap1 to 1." % args.topo )
+        if "(" in args.masses:
+            print ( f"[mg5Wrapper] for topo {args.topo} we set mingap1 to 1." )
         args.mingap1 = 1.
     if args.topo in [ "T1tttt", "T2tt" ] and args.mingap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
+        if "(" in args.masses:
+            print ( f"[mg5Wrapper] for topo {args.topo} we set mingap1 to 1." )
         ## also for these we set to 1. because usually this is also used for offshell
-        print ( "[mg5Wrapper] for topo %s we set mingap1 to 1." % args.topo )
+            print ( f"[mg5Wrapper] for topo {args.topo} we set mingap1 to 1." )
         args.mingap1 = 1. # 170.
     if args.topo in [ "T1ttttoff", "T2ttoff" ] and args.maxgap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
-        print ( "[mg5Wrapper] for topo %s we set maxgap1 to 180." % args.topo )
+        if "(" in args.masses:
+            print ( f"[mg5Wrapper] for topo {args.topo} we set maxgap1 to 180." )
         args.maxgap1 = 180.
     if args.list_analyses:
         bakeryHelpers.listAnalyses( args.cutlang, args.checkmate )

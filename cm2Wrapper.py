@@ -7,7 +7,7 @@
 .. moduleauthor:: Wolfgang Waltenberger <wolfgang.waltenberger@gmail.com>
 """
 
-import os, sys, colorama, subprocess, shutil, tempfile, time, io
+import os, sys, colorama, subprocess, shutil, tempfile, time, io, glob
 import multiprocessing
 import bakeryHelpers
 import locker
@@ -48,6 +48,19 @@ class CM2Wrapper:
             subprocess.getoutput ( f"rm -rf {self.cm2install}" )
             # print ( f"rm -rf {self.cm2install}" )
             # sys.exit()
+        if os.path.isdir ( f"{self.basedir}/hepmc2" ) and len ( glob.glob ( f"{self.basedir}/hepmc2/HepMC-*/fio/libHepMCfio.la" ) ) == 0:
+            self.exe ( f"rm -r {self.basedir}/hepmc2" )
+            
+        if not os.path.isdir ( f"{self.basedir}/hepmc2" ):
+            self.error ( "hepmc2 install is missing??" )
+            if os.path.isdir ( f"{self.basedir}/hepmc2.backup" ):
+                self.exe ( f"cp -r {self.basedir}/hepmc2.backup {self.basedir}/hepmc2" )
+            else:
+                if os.path.isdir ( f"{self.basedir}/hepmc2.template" ):
+                    self.exe ( f"cp -r {self.basedir}/hepmc2.template {self.basedir}/hepmc2" )
+                    self.exe ( "cd hepmc2; ./make.py" )
+        if os.path.isdir ( self.cm2install ) and not os.path.exists ( f"{self.executable}" ):
+            self.exe ( f"rm -rf {self.cm2install}" )
 
         if not os.path.isdir ( self.cm2install ):
             self.error ( "cm2 install is missing??" )
@@ -245,7 +258,7 @@ class CM2Wrapper:
         #retval = "_".join([analysis.lower().replace("-", "_"), topo, "mass", mass])
         #retval = ".".join([retval, "embaked"])
         from bakeryHelpers import cm2AnaNameToSModelSName
-        retval = f"{cm2AnaNameToSModelSName ( analysis )}.{topo}.embaked"
+        retval = f"{cm2AnaNameToSModelSName ( analysis )}.{topo}.cm2.embaked"
         retval = os.path.join ( "embaked", retval )
         return retval
 

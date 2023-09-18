@@ -14,7 +14,7 @@ def fetchTarball():
     """ fetch the hepmc2.06.11.tgz tarball """
     if not os.path.exists ( tarball ):
         cmd = f"wget https://smodels.github.io/downloads/tarballs/{tarball}"
-        o = subprocess.getoutput ( tarball )
+        o = subprocess.getoutput ( cmd )
         print ( f"[hepmc2make] {cmd}: {o}" )
 
 def explodeTarball():
