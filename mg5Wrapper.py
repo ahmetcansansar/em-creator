@@ -17,7 +17,7 @@ import locker
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
                    ignore_locks, sqrts=13, recaster=["MA5"], ver="3_4_2",
-                   keephepmc = True, adl_file = None, event_condition = None )
+                   keephepmc = True, adl_file = None, event_condition = None ):
         """
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
