@@ -587,6 +587,7 @@ def rmLocksOlderThan ( hours=8 ):
                 subprocess.getoutput ( "rm -f %s" % f )
         except:
             pass
+
 def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
              exit_on_fail=False ):
     """ execute cmd in shell
@@ -608,10 +609,13 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
     while ctr < 5:
         try:
             proc = subprocess.Popen( cmd, cwd=cwd, stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE )
-            out, err = proc.communicate()
-            print(out.decode('utf-8'))
-            print(err.decode('utf-8'))
+                                     stderr=subprocess.STDOUT )
+            for c in iter(lambda: proc.stdout.read(1), b""):
+                sys.stdout.buffer.write(c)
+            #    # f.buffer.write(c)
+            #out, err = proc.communicate()
+            #print(out.decode('utf-8'))
+            #print(err.decode('utf-8'))
             proc.wait()
             if logfile is not None:
                 with open(logfile, "a") as log:
@@ -637,7 +641,7 @@ def checkDelphesInstall( installdir : PathLike = "delphes" ) -> bool:
     :returns: True, if all is ok
     """
     if not os.path.isdir( installdir ):
-        print("[delphesInstaller] Delphes directory missing, download from github?")
+        print("[delphesInstaller] Delphes directory missing, download from github!")
         if True: # self._confirmation("Download from github?"):
             args = ['git', 'clone', '-b', '3.5.0', 'https://github.com/delphes/delphes']
             #args = ['git', 'clone', 'https://github.com/delphes/delphes']
@@ -649,7 +653,7 @@ def checkDelphesInstall( installdir : PathLike = "delphes" ) -> bool:
     # if there is no executable, compile it
     delphes_exe = os.path.abspath( installdir + "DelphesHepMC2")
     if not os.path.exists( delphes_exe):
-        print("[delphesInstaller] Cannot find delphes installation at {installdir}" )
+        print(f"[delphesInstaller] Cannot find delphes installation at {installdir}" )
         compile_path = os.path.abspath(installdir)
         # Check for existence of makefile, if not present exit, else make
         makefile_path = os.path.join(compile_path, "Makefile")
