@@ -230,7 +230,7 @@ class CM2Wrapper:
             f = open ( effi_file, "wt" )
             f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2(direct)\n" )
             f.write( "{" )
-            masses = previousEffs.keys()
+            masses = list ( previousEffs.keys() )
             masses.sort()
             for m in masses:
                 v = previousEffs[m]
@@ -240,7 +240,7 @@ class CM2Wrapper:
             self.tempFiles.append ( self.outputfile() )
             self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
         except Exception as e:
-            self.error ( "Exception {e}" )
+            self.error ( f"Exception {e}" )
         if os.path.exists ( lockfile ):
             os.unlink ( lockfile )
 
