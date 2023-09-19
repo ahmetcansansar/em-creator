@@ -620,8 +620,6 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
             if logfile is not None:
                 with open(logfile, "a") as log:
                     log.write(f'exec: {directory} $$ {" ".join(cmd)}')
-                    log.write(out.decode('utf-8'))
-                    log.write(err.decode('utf-8'))
             if not (proc.returncode == 0):
                 print(f"[helpers] Executed process: \n{' '.join(cmd)}\n\nin"
                             f" directory:\n{directory}\n\nproduced an error\n\n"
