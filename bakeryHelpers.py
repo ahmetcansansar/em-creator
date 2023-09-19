@@ -588,6 +588,23 @@ def rmLocksOlderThan ( hours=8 ):
         except:
             pass
 
+def nCPUs():
+    """ obtain the number of *available* CPU cores on the machine, for several
+        platforms and python versions. """
+    try:
+        # next few lines taken from
+        # https://stackoverflow.comhttps//stackoverflow.com/questions/1006289/how-to-find-out-the-number-of-cpus-using-python/questions/1006289/how-to-find-out-the-number-of-cpus-using-python
+        import re
+        with open('/proc/self/status') as f:
+            m = re.search(r'(?m)^Cpus_allowed:\s*(.*)$', f.read())
+        if m:
+            res = bin(int(m.group(1).replace(',', ''), 16)).count('1')
+            if res > 0:
+                return res
+    except IOError:
+        pass
+
+
 def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
              exit_on_fail=False ):
     """ execute cmd in shell
@@ -600,6 +617,8 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
     :param exit_on_fail  Whether to invoke sys.exit() on nonzero return value
     :return return value of the command
     """
+    if type(cmd)==str:
+        cmd = cmd.split(" ")
     if cwd is None:
         directory = os.getcwd()
     else:

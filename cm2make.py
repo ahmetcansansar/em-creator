@@ -4,6 +4,8 @@
 """
 
 import subprocess, os, sys
+sys.path.insert(0,"../")
+from bakeryHelpers import execute, nCPUs
     
 ver="2.0.37"
 
@@ -12,17 +14,6 @@ def installHepMC2():
     if not os.path.exists ( path ):
         cmd = "cp -r ../hepmc2.template ../hepmc2"
         subprocess.getoutput ( cmd )
-
-def exe ( cmd ):
-    """ execute cmd on the command line """
-    print ( f"[cm2make.py] exe:: {cmd}" )
-    run = subprocess.Popen ( cmd, shell=True, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE )
-    out,err = run.communicate()
-    err = err.decode ( "UTF-8" )
-    out = out.decode ( "UTF-8" )
-    print ( f"[cm2make.py] err:: {err}" )
-    print ( f"[cm2make.py] out:: {out}" )
 
 def install():
     installHepMC2()
@@ -35,27 +26,23 @@ def install():
     print ( "installing cm2 ..." )
     url = "git@github.com:CheckMATE2/checkmate2.git"
     cmd = f"git clone {url}"
-    o = subprocess.getoutput ( cmd )
-    print ( f"git clone: {o}" )
+    execute ( cmd )
     #cmd = "cd checkmate2 ; mv aclocal.m4 aclocal.old ; aclocal && libtoolize --force && autoreconf"
     cmd = "cd checkmate2 ; autoreconf"
-    o = subprocess.getoutput ( cmd )
-    print ( f"autoreconf: {o}" )
+    execute ( cmd )
     cmd = "cd checkmate2 ; cp /bin/libtool ."
-    o = subprocess.getoutput ( cmd )
-    print ( f"use correct libtool: {cmd} {o}" )
+    execute ( cmd )
     delphespath = os.path.abspath ( "../delphes/" )
     hepmcpath = os.path.abspath ( "../hepmc2/HepMC-2.06.11/" )
     madgrafpath = os.path.abspath ( "../mg5/" )
     # pythiapath = "../../mg5/HEPTools/pythia8/"
     cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath} -I {delphespath}' ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
-    exe ( cmd )
+    execute ( cmd )
     cmd = "cd checkmate2 ; cp /bin/libtool ."
-    o = subprocess.getoutput ( cmd )
-    print ( f"use correct libtool: {cmd} {o}" )
-    cmd = f"cd checkmate2 ; make -j 2" 
-    o = subprocess.getoutput ( cmd )
-    print ( f"make: {cmd} {o}" )
+    execute ( cmd )
+    ncpus = max ( nCPUs() / 2 - 1, 1 )
+    cmd = f"cd checkmate2 ; make -j {ncpus}" 
+    execute ( cmd )
 
 def clean():
     import glob
