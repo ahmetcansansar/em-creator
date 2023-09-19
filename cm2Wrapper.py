@@ -145,7 +145,8 @@ class CM2Wrapper:
         import gzip
         import shutil
         outfile = hepmcfile.replace(".gz","").replace("mg5results","temp")
-        self.tempFiles.append ( hepmcfile )
+        if not self.keephepmc:
+            self.tempFiles.append ( hepmcfile )
         self.tempFiles.append ( outfile )
         if os.path.exists ( outfile ):
             self.info ( f"skipping gunzip: {outfile} exists" )
