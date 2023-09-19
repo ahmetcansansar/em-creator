@@ -548,12 +548,11 @@ def getAllCm2Topos():
         h.close()
         for line in lines:
             if line.startswith("file = "):
-                p = h.rfind("/")
-                name = line[p:]
+                p = line.rfind("/")
+                name = line[p+1:]
                 p = name.find("_")
                 name = name[:p]
                 ret.add(name)
-    #print ( "ret", ret )
     return ret
 
 def getCutlangListOfAnalyses():
