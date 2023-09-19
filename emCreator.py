@@ -261,6 +261,9 @@ class emCreator:
         files = glob.glob ( "%s_*jet*" % ( self.topo ) )
         return len(files)
 
+    def countRunningCm2 ( self ):
+        return 0
+
     def countRunningCutlang ( self ):
         """ count the number of cutlang directories """
         basedir = "cutlang_results"
@@ -337,7 +340,8 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     else:
         masses = bakeryHelpers.parseMasses ( masses )
     if masses == []:
-        return 0
+        pass 
+        # return 0
     adl_ma5 = "MA5"
     if "adl" in recaster:
         adl_ma5 = "ADL"
@@ -359,24 +363,20 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     seffs_smodels = seffs.upper().replace("_","-")
     nrmg5 = creator.countRunningMG5 ()
     nmg5 = creator.countMG5 ( )
+    nrecasts = {}
     if "adl" in recaster:
-        nrma5 = creator.countRunningCutlang ( )
-        if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
-            return 0
-        print ( )
-        if seffs_smodels != "NO ANALYSIS":
-            print ( "[emCreator] For %s%s:%s:%s%s I have efficiencies." % \
-                 ( colorama.Fore.RED, seffs_smodels, topo, adl_ma5, colorama.Fore.RESET ) )
-        print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running cutlang jobs." % ( nmg5, nrmg5, nrma5 ) )
-    else:
-        nrma5 = creator.countRunningMA5 ( )
-        if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
-            return 0
-        print ( )
-        if seffs_smodels != "NO ANALYSIS":
-           print ( "[emCreator] For %s%s:%s:%s%s I have efficiencies." % \
-                 ( colorama.Fore.RED, seffs_smodels, topo, adl_ma5, colorama.Fore.RESET ) )
-        print ( "[emCreator] I see %d mg5 points and %d running mg5 and %d running ma5 jobs." % ( nmg5, nrmg5, nrma5 ) )
+        nrecasts["adl"] = creator.countRunningCutlang ( )
+    if "ma5" in recaster:
+        nrecasts["ma5"] = creator.countRunningMA5 ( )
+    if "cm2" in recaster:
+        nrecasts["cm2"] = creator.countRunningCm2 ( )
+    nall = nmg5 + nrmg5 + sum ( nrecasts.values() )
+    line = f"for {topo} I see {nmg5} mg5 points and {nrmg5} running mg5 jobs"
+    for name,number in nrecasts.items():
+        if number>0:
+            line += f" and {number} running {name} jobs"
+    if nall > 0:
+        print ( f"[emCreator] {line}" )
     ntot = 0
     bakeryHelpers.mkdir ( "embaked/" )
     for ana,values in effs.items():
@@ -633,18 +633,16 @@ def run ( args ):
 
         if args.topo == "all":
             topos = getAllTopos ( recaster )
-            topos = list(topos)
+            topos = list(set(topos))
             topos.sort()
-            for topo in topos:
-                for ana in analyses.split(","):
-                    ntot += runForTopo ( topo, args.njets, args.masses, ana,
-                        args.verbose, args.copy, args.keep, args.sqrts,
-                        recaster, args.stats, args.cleanup )
         else:
-            for ana in analyses.split(","):
-                ntot += runForTopo ( args.topo, args.njets, args.masses, ana,
-                                     args.verbose, args.copy, args.keep, args.sqrts,
-                                     recaster, args.stats, args.cleanup )
+            topos = args.topo
+    for topo in topos:
+        anas = set(analyses.split(","))
+        for ana in anas:
+            ntot += runForTopo ( topo, args.njets, args.masses, ana,
+                args.verbose, args.copy, args.keep, args.sqrts,
+                recaster, args.stats, args.cleanup )
     print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
@@ -658,6 +656,8 @@ def run ( args ):
         f.close()
 
 def main():
+    import bakeryHelpers
+    bakeryHelpers.createSlurmLink()
     import argparse
     argparser = argparse.ArgumentParser(description='efficiency map extractor.')
     argparser.add_argument ( '-j', '--njets', help='number of ISR jets [1]',

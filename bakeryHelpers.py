@@ -444,6 +444,14 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, recaster=[], ana=None ):
     if "cm2" in recaster:
         return getListOfCm2Masses ( topo, sqrts, ana )
 
+def createSlurmLink():
+    """ simple convenience method to create a symlink to slurm.py """
+    if os.path.exists ( "slurm.py" ):
+        return
+    if os.path.exists ( "/users/wolfgan.waltenberger/slurm.py" ):
+        cmd = "ln -s /users/wolfgan.waltenberger/slurm.py ."
+        subprocess.getoutput ( cmd )
+
 def getListOfMA5Masses ( topo, sqrts, ana ):
     import glob
     ret=[]
