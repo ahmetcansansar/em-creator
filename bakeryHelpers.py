@@ -446,11 +446,11 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, recaster=[], ana=None ):
 
 def createSlurmLink():
     """ simple convenience method to create a symlink to slurm.py """
-    if os.path.exists ( "slurm.py" ):
-        return
-    if os.path.exists ( "/users/wolfgan.waltenberger/slurm.py" ):
-        cmd = "ln -s /users/wolfgan.waltenberger/slurm.py ."
-        subprocess.getoutput ( cmd )
+    for f in [ "slurm.py", "cancel_jobs.py" ]:
+        if not os.path.exists ( f ):
+            if os.path.exists ( f"/users/wolfgan.waltenberger/{f}" ):
+                cmd = f"ln -s /users/wolfgan.waltenberger/{f} ."
+                subprocess.getoutput ( cmd )
 
 def getListOfMA5Masses ( topo, sqrts, ana ):
     import glob

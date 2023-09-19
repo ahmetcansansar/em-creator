@@ -471,11 +471,12 @@ class MG5Wrapper:
         Dir = bakeryHelpers.dirName ( self.process, masses )
         f.write ( "output %s\n" % Dir )
         f.close()
-        if os.path.exists ( Dir ):
-            subprocess.getoutput ( "rm -rf %s" % Dir )
         self.info ( "run mg5 for %s[%s]: %s" % ( masses, self.topo, self.tempf ) )
         self.logfile = tempfile.mktemp ()
+        if os.path.exists ( Dir ):
+            subprocess.getoutput ( f"rm -rf {Dir}" )
         os.mkdir ( Dir )
+
         if self.keep:
             self.mkdir ( "keep/" )
             shutil.copy ( self.tempf, "keep/" + Dir + "mg5proc" )

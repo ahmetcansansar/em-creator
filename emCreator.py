@@ -262,7 +262,8 @@ class emCreator:
         return len(files)
 
     def countRunningCm2 ( self ):
-        return 0
+        files = glob.glob ( "cm2results/*" )
+        return len(files)
 
     def countRunningCutlang ( self ):
         """ count the number of cutlang directories """
@@ -286,7 +287,7 @@ class emCreator:
         #    f.write ( "%s\n" % stats )
         f.write ( "}\n" )
         f.close()
-        print ( "[emCreator] wrote stats to %s" % statsfile )
+        print ( f"[emCreator] wrote stats to {statsfile}" )
 
 def recaster ( cutlang, checkmate ):
     """ get the name of the recaster: MA5, ADL, or cm2 """
@@ -325,6 +326,105 @@ def massesInEmbakedFile ( masses, analysis, topo, recaster : list ):
         if masses in D.keys() and D[masses] not in [ {}, None ]:
             return True
     return False
+
+def createEmbakedFile( effs ):
+    """ not sure, it creates embaked file but also statsEM.py file,
+    also copies to database etc """
+    ntot = 0
+    bakeryHelpers.mkdir ( "embaked/" )
+    for ana,values in effs.items():
+        if len(values.keys()) == 0:
+            continue
+        fname = embakedFileName ( ana, topo, recaster[0] )
+        ## read in the old stuff
+        if os.path.exists ( fname ):
+            f = open ( fname, "rt" )
+            D = eval ( f.read() )
+            f.close()
+            for k,v in D.items():
+                if not k in values:
+                    values[k]=v
+        ts = {}
+        if ana in tstamps:
+            ts = tstamps[ana]
+        print ( "%s[emCreator] baking %s: %d points.%s" % \
+                ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
+        ntot += len(values)
+        SRs = set()
+        for k,v in values.items():
+            for sr in v.keys():
+                SRs.add(sr)
+        # nSRs = len ( SRs )
+        nSRs = 0
+        for x in SRs:
+            if not x.startswith ( "__" ):
+                nSRs += 1
+        
+        if False:
+            f=open(fname,"w")
+            f.write ( f"# EM-Baked {time.asctime()}. {len(values.keys())} points, {nSRs} signal regions, {recaster}(emCreator1)\n" )
+            # f.write ( "%s\n" % values )
+            f.write ( "{" )
+            for k,v in values.items():
+                t=None
+                if k in ts:
+                    t = ts[k]
+                if t== None:
+                    # print ( f"[emCreator] key {k} not in timestamps" )
+                    t = time.time()
+                v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
+                    # v["__t__"]="?"
+                if not cutlang and not "__nevents__" in v:
+                    v["__nevents__"]=creator.getNEvents ( k )
+                f.write ( "%s: %s, \n" % ( k,v ) )
+            f.write ( "}\n" )
+            f.close()
+        sqrts = 13
+        experiment = "CMS"
+        if "atlas" in ana.lower():
+            experiment = "ATLAS"
+        sana = bakeryHelpers.ma5AnaNameToSModelSName ( ana )
+        Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
+        if not "adl" in recaster:
+            Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
+        stats = creator.getStatistics ( ana, SRs )
+        # print ( "[emCreator] obtained statistics for", ana, "in", fname )
+        if copy:
+            extensions = [ "ma5", "eff", "adl" ]
+            foundExtension = None
+            for e in extensions:
+                Dirname = f"../smodels-database/{sqrts}TeV/{experiment}/{sana}-{e}/orig/"
+                if os.path.exists ( Dirname ):
+                    foundExtension = e
+                    break
+            if not foundExtension:
+                print ( f"[emCreator] asked to copy to e.g. {Dirname} but no extension found" )
+            else:
+                print ( f"[emCreator] found {Dirname}" )
+
+        if create_stats:
+            statsfile = "./statsEM.py"
+            creator.writeStatsFile ( statsfile, stats )
+        if copy and os.path.exists (Dirname):
+            dest = "%s/%s.embaked" % ( Dirname, topo )
+            prevN = 0
+            if os.path.exists (dest ):
+                f=open(dest,"r")
+                try:
+                    g=eval(f.read())
+                    f.close()
+                    prevN=len(g.keys())
+                except:
+                    pass
+            print ( "[emCreator] previous number of data points: %d" % prevN )
+            print ( "[emCreator] copying embaked to %s" % dest )
+            cmd = "cp %s %s" % ( fname, dest )
+            subprocess.getoutput ( cmd )
+            if create_stats:
+                cmd = "cp statsEM.py %s" % ( Dirname )
+                o = subprocess.getoutput ( cmd )
+                print ( f"[emCreator] {cmd} {o}" )
+    return ntot
 
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, recaster,
                  create_stats, cleanup ):
@@ -377,99 +477,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
             line += f" and {number} running {name} jobs"
     if nall > 0:
         print ( f"[emCreator] {line}" )
-    ntot = 0
-    bakeryHelpers.mkdir ( "embaked/" )
-    for ana,values in effs.items():
-        if len(values.keys()) == 0:
-            continue
-        fname = embakedFileName ( ana, topo, recaster[0] )
-        ## read in the old stuff
-        if os.path.exists ( fname ):
-            f = open ( fname, "rt" )
-            D = eval ( f.read() )
-            f.close()
-            for k,v in D.items():
-                if not k in values:
-                    values[k]=v
-        ts = {}
-        if ana in tstamps:
-            ts = tstamps[ana]
-        print ( "%s[emCreator] baking %s: %d points.%s" % \
-                ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
-        ntot += len(values)
-        SRs = set()
-        for k,v in values.items():
-            for sr in v.keys():
-                SRs.add(sr)
-        # nSRs = len ( SRs )
-        nSRs = 0
-        for x in SRs:
-            if not x.startswith ( "__" ):
-                nSRs += 1
-        f=open(fname,"w")
-        f.write ( "# EM-Baked %s. %d points, %d signal regions, %s\n" % \
-                   ( time.asctime(), len(values.keys()), nSRs, recaster ( cutlang ) ) )
-        # f.write ( "%s\n" % values )
-        f.write ( "{" )
-        for k,v in values.items():
-            t=None
-            if k in ts:
-                t = ts[k]
-            if t== None:
-                # print ( f"[emCreator] key {k} not in timestamps" )
-                t = time.time()
-            v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
-                # v["__t__"]="?"
-            if not cutlang and not "__nevents__" in v:
-                v["__nevents__"]=creator.getNEvents ( k )
-            f.write ( "%s: %s, \n" % ( k,v ) )
-        f.write ( "}\n" )
-        f.close()
-        sqrts = 13
-        experiment = "CMS"
-        if "atlas" in ana.lower():
-            experiment = "ATLAS"
-        sana = bakeryHelpers.ma5AnaNameToSModelSName ( ana )
-        Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
-        if not cutlang:
-            Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
-        stats = creator.getStatistics ( ana, SRs )
-        # print ( "[emCreator] obtained statistics for", ana, "in", fname )
-        if copy:
-            extensions = [ "ma5", "eff", "adl" ]
-            foundExtension = None
-            for e in extensions:
-                Dirname = f"../smodels-database/{sqrts}TeV/{experiment}/{sana}-{e}/orig/"
-                if os.path.exists ( Dirname ):
-                    foundExtension = e
-                    break
-            if not foundExtension:
-                print ( f"[emCreator] asked to copy to e.g. {Dirname} but no extension found" )
-            else:
-                print ( f"[emCreator] found {Dirname}" )
-
-        if create_stats:
-            statsfile = "./statsEM.py"
-            creator.writeStatsFile ( statsfile, stats )
-        if copy and os.path.exists (Dirname):
-            dest = "%s/%s.embaked" % ( Dirname, topo )
-            prevN = 0
-            if os.path.exists (dest ):
-                f=open(dest,"r")
-                try:
-                    g=eval(f.read())
-                    f.close()
-                    prevN=len(g.keys())
-                except:
-                    pass
-            print ( "[emCreator] previous number of data points: %d" % prevN )
-            print ( "[emCreator] copying embaked to %s" % dest )
-            cmd = "cp %s %s" % ( fname, dest )
-            subprocess.getoutput ( cmd )
-            if create_stats:
-                cmd = "cp statsEM.py %s" % ( Dirname )
-                o = subprocess.getoutput ( cmd )
-                print ( f"[emCreator] {cmd} {o}" )
+        ntot = createEmbakedFile( effs )
     if not keep and cleanup:
         for i in creator.toDelete:
             print ( f"[emCreator] deleting {i}" )
@@ -491,17 +499,27 @@ def getAllCutlangTopos():
     return ret
 
 def getAllTopos ( recaster ):
-    ret = []
+    ret = getAllMG5Topos()
     if "adl" in recaster:
         ret += getAllCutlangTopos()
     if "MA5" in recaster:
         ret += getAllMA5Topos()
     if "cm2" in recaster:
         ret += getAllCm2Topos()
+    ret = list(set(ret))
     return ret
 
+def getAllMG5Topos():
+    dirname="mg5results/"
+    files = glob.glob ( f"{dirname}/*.hepmc.gz" )
+    topos = set()
+    for f in files:
+        topo = f.replace(dirname,"")
+        p = topo.find("_")
+        topos.add ( topo[:p] )
+    return list(topos)
+
 def getAllMA5Topos():
-    import glob
     dirname="ma5results/"
     files = glob.glob ( "%s/T*.dat" % dirname )
     ret = set()
@@ -514,8 +532,7 @@ def getAllMA5Topos():
 
 def getAllCm2Topos():
     print ( "FIXME emCreator.getAllCm2Topos need to get cm2 topos" )
-    return [ "T1", "T2" ]
-    import glob
+    return []
     dirname="cm2results/"
     files = glob.glob ( "%s/T*.dat" % dirname )
     ret = set()
@@ -612,7 +629,7 @@ def run ( args ):
         try:
             D=eval(txt)
         except Exception as e:
-            print ( f"xxx {fname}: {e} {txt:20}" )
+            print ( f"[emCreator] error with {fname}: {e} {txt:20}" )
         f.close()
         nplus = len(D.keys())
         if True: # args.verbose:

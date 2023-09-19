@@ -192,8 +192,9 @@ class CM2Wrapper:
             self.createConfigFile ( masses, hepmcfile )
             self.executeCheckMate()
         effs = self.extractEfficiencies()
-        effi_file = self._get_embaked_name ( self.analyses, self.topo, mass_stripped )
-        self.writeEmbaked ( effs, effi_file, masses )
+        if len(effs)>0:
+            effi_file = self._get_embaked_name ( self.analyses, self.topo, mass_stripped )
+            self.writeEmbaked ( effs, effi_file, masses )
         self.clean()
         # self.unlock()
         return 0
@@ -215,29 +216,33 @@ class CM2Wrapper:
         if not os.path.exists ( "embaked" ):
             os.mkdir ( "embaked" )
         lockfile = effi_file+".lock"
-        self.lock ( lockfile )
-        self.info ( f"adding point {masses} to {effi_file}" )
-        previousEffs = {}
-        if os.path.exists ( effi_file ):
-            g = open ( effi_file, "rt" )
-            previousEffs = eval(g.read())
-            g.close()
-        previousEffs[masses]=effs
-        nregions = len(effs)
-        npoints = len(previousEffs)
-        f = open ( effi_file, "wt" )
-        f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2\n" )
-        f.write( "{" )
-        masses = previousEffs.keys()
-        masses.sort()
-        for m in masses:
-            v = previousEffs[m]
-            f.write(str(m)+":"+str(v)+",\n")
-        f.write ( "}\n" )
-        f.close()
-        self.tempFiles.append ( self.outputfile() )
-        self.tempFiles.append ( lockfile )
-        self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
+        try:
+            self.lock ( lockfile )
+            self.info ( f"adding point {masses} to {effi_file}" )
+            previousEffs = {}
+            if os.path.exists ( effi_file ):
+                g = open ( effi_file, "rt" )
+                previousEffs = eval(g.read())
+                g.close()
+            previousEffs[masses]=effs
+            nregions = len(effs)
+            npoints = len(previousEffs)
+            f = open ( effi_file, "wt" )
+            f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2(direct)\n" )
+            f.write( "{" )
+            masses = previousEffs.keys()
+            masses.sort()
+            for m in masses:
+                v = previousEffs[m]
+                f.write(str(m)+":"+str(v)+",\n")
+            f.write ( "}\n" )
+            f.close()
+            self.tempFiles.append ( self.outputfile() )
+            self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
+        except Exception as e:
+            self.error ( "Exception {e}" )
+        if os.path.exists ( lockfile ):
+            os.unlink ( lockfile )
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
