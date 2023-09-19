@@ -262,6 +262,11 @@ class emCreator:
 
     def countRunningCm2 ( self ):
         files = glob.glob ( "cm2results/*" )
+        c = 0
+        for f in files:
+            if self.topo in f:
+                c+=1
+        return c
         return len(files)
 
     def countRunningCutlang ( self ):
