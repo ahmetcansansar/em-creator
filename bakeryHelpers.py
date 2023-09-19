@@ -443,6 +443,7 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, recaster=[], ana=None ):
         return getListOfMA5Masses ( topo, sqrts, ana )
     if "cm2" in recaster:
         return getListOfCm2Masses ( topo, sqrts, ana )
+    return []
 
 def createSlurmLink():
     """ simple convenience method to create a symlink to slurm.py """
