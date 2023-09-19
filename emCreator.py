@@ -474,8 +474,11 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
         nrecasts["ma5"] = creator.countRunningMA5 ( )
     if "cm2" in recaster:
         nrecasts["cm2"] = creator.countRunningCm2 ( )
-    nall = nmg5 + nrmg5 + sum ( nrecasts.values() )
-    line = f"for {topo} I see {nmg5} mg5 points and {nrmg5} running mg5 jobs"
+    nre = sum ( nrecasts.values() )
+    nall = nmg5 + nrmg5 + nre
+    line = f"for {topo} I see {nmg5} mg5 points, {nrmg5} running mg5 jobs"
+    if nre > 0:
+        line += f"\n           "
     for name,number in nrecasts.items():
         if number>0:
             line += f" and {number} running {name} jobs"
