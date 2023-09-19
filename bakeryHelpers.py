@@ -651,9 +651,9 @@ def checkDelphesInstall( installdir : PathLike = "delphes" ) -> bool:
         else:
             print("[delphesInstaller] ERROR: No Delphes dir. Exiting.")
     # if there is no executable, compile it
-    delphes_exe = os.path.abspath( installdir + "DelphesHepMC2")
+    delphes_exe = os.path.abspath( installdir + "/DelphesHepMC2")
     if not os.path.exists( delphes_exe):
-        print(f"[delphesInstaller] Cannot find delphes installation at {installdir}" )
+        print(f"[delphesInstaller] Cannot find delphes installation at {delphes_exe}" )
         compile_path = os.path.abspath(installdir)
         # Check for existence of makefile, if not present exit, else make
         makefile_path = os.path.join(compile_path, "Makefile")

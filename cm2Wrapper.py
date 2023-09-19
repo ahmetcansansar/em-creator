@@ -23,7 +23,7 @@ class CM2Wrapper:
         :param ver: version of cm2
         :param keephepmc: keep mg5 hepmc file (typically in mg5results/)
         """
-        self.instanceName = f"{analyses}"
+        self.instanceName = f"{analyses}_{topo}"
         self.topo = topo
         self.sqrts = sqrts
         self.configfile = None
@@ -154,7 +154,7 @@ class CM2Wrapper:
         with gzip.open( hepmcfile, 'rb') as f_in:
             with open( outfile, 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
-        self.info ( f"gunzipped hepmc file to {outfile}" )
+        self.info ( f"gunzip tarred hepmc file to {outfile}" )
         return outfile
         
     def createConfigFile ( self, masses, hepmcfile ):
@@ -285,8 +285,8 @@ class CM2Wrapper:
         errorMsg = errorMsg.decode("UTF-8")
         if len(errorMsg)>0:
             self.info( f'CheckMATE error: {errorMsg}' )
-        #output = output.decode("UTF-8")
-        #self.debug( f'CheckMATE output:\n {output}\n' )
+            output = output.decode("UTF-8")
+            self.info( f'CheckMATE output:\n {output}\n' )
 
     def exe ( self, cmd, maxLength=100 ):
         """ execute cmd in shell
