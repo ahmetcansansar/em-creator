@@ -431,14 +431,20 @@ def getListOfCutlangMasses( topo, sqrts=13, ana=None ):
             ret.append ( tokens )
     return ret
 
-def getListOfMasses(topo, postMA5=False, sqrts=13, cutlang=False, ana=None ):
+def getListOfMasses(topo, postMA5=False, sqrts=13, recaster=[], ana=None ):
     """ get a list of the masses of an mg5 scan. to be used for e.g. ma5.
     :param postMA5: query the ma5 output, not mg5 output.
-    :param cutlang: query the cutlang output, not the mg5 output
+    :param recaster: which recaster do we consider
     :param ana: analysis, if None, then all analyses
     """
-    if cutlang:
+    if "adl" in recaster:
         return getListOfCutlangMasses ( topo, sqrts, ana )
+    if "MA5" in recaster:
+        return getListOfMA5Masses ( topo, sqrts, ana )
+    if "cm2" in recaster:
+        return getListOfCm2Masses ( topo, sqrts, ana )
+
+def getListOfMA5Masses ( topo, sqrts, ana ):
     import glob
     ret=[]
     # fname = "%s_%djet.*" % ( topo, njets )
@@ -472,6 +478,12 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, cutlang=False, ana=None ):
         f = f[:p1]
         masses = tuple(map(int,map(float,f.split("_"))))
         ret.append ( masses )
+    return ret
+
+def getListOfCm2Masses ( topo, sqrts, ana ):
+    """ FIXME need to get list of cm2 masses, from cm2results.
+    for now lets just list the ones in the embaked files """
+    ret = []
     return ret
 
 def nRequiredMasses(topo):

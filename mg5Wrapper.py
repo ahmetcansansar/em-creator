@@ -16,9 +16,8 @@ import locker
 
 class MG5Wrapper:
     def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
-                   ignore_locks, sqrts=13, cutlang=False, ver="3_4_2",
-                   keephepmc = True, adl_file = None, event_condition = None,
-                   checkmate = False ):
+                   ignore_locks, sqrts=13, recaster=["MA5"], ver="3_4_2",
+                   keephepmc = True, adl_file = None, event_condition = None )
         """
         :param ver: version of mg5
         :param recast: perform recasting (ma5 or cutlang)
@@ -29,8 +28,7 @@ class MG5Wrapper:
         os.chdir ( self.basedir )
         self.tempdir = bakeryHelpers.tempDir()
         self.resultsdir = os.path.join(self.basedir, "mg5results")
-        self.cutlang = cutlang
-        self.checkmate = checkmate
+        self.recaster = recaster
         self.adl_file = adl_file
         self.event_condition = event_condition
         self.mkdir ( self.resultsdir )
@@ -249,15 +247,14 @@ class MG5Wrapper:
         """
         self.checkInstallation()
         import emCreator
-        isIn = emCreator.massesInEmbakedFile ( masses, analyses, self.topo, \
-                                               self.cutlang, self.checkmate )
+        isIn = emCreator.massesInEmbakedFile ( masses, analyses, self.topo, self.recaster )
         # print ( f"is the point {masses} for {analyses} in embakedfile? {isIn} rerun: {self.rerun}" )
         # sys.exit()
         if isIn and not self.rerun:
             return
-        if not self.cutlang and self.locker.hasMA5Files ( masses ) and not self.rerun:
+        if not "adl" in self.recaster and self.locker.hasMA5Files ( masses ) and not self.rerun:
             return
-        if self.cutlang and self.locker.hasCutlangFiles ( masses ) and not self.rerun:
+        if "adl" in self.recaster and self.locker.hasCutlangFiles ( masses ) and not self.rerun:
             return
         locked = self.locker.lock ( masses )
         if locked:
@@ -267,11 +264,7 @@ class MG5Wrapper:
         self.process = "%s_%djet" % ( self.topo, self.njets )
         if self.locker.hasHEPMC ( masses ):
             if not self.rerun:
-                which  = "MA5"
-                if self.cutlang:
-                    which = "cutlang"
-                if self.checkmate:
-                    which = "checkmate"
+                which  = self.recaster[0]
                 self.info ( "hepmc file for %s[%s] exists. go directly to %s." % \
                             ( str(masses), self.topo, which ) )
                 self.runRecasting ( masses, analyses, pid )
@@ -297,11 +290,11 @@ class MG5Wrapper:
         """ run the recasting. cutlang or ma5 """
         if not self.recast:
             return
-        if self.cutlang:
+        if "adl" in self.recaster:
             self.runCutlang ( masses, analyses, pid )
-        elif self.checkmate:
+        if "cm2" in self.recaster:
             self.runCheckmate ( masses, analyses, pid )
-        else:
+        if "MA5" in self.recaster:
             self.runMA5 ( masses, analyses, pid )
 
     def runMA5 ( self, masses, analyses, pid ):
@@ -693,17 +686,20 @@ def main():
                 ( len(masses[0]), nReqM, args.topo ) )
         sys.exit()
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )
+    recaster = [ "MA5" ]
     if args.cutlang or args.checkmate:
+        recaster = [ "adl" ]
+        if args.checkmate:
+            recaster = [ "cm2" ]
         args.recast = True
     if args.checkmate and args.cutlang:
         print ( "[mg5Wrapper] both checkmate and cutlang have been asked for. please choose!" )
         sys.exit()
 
     mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun,
-                      args.recast, args.ignore_locks, args.sqrts, args.cutlang,
+                      args.recast, args.ignore_locks, args.sqrts, recaster,
                       keephepmc = args.keephepmc, adl_file = args.adl_file,
-                      event_condition = args.event_condition, 
-                      checkmate = args.checkmate )
+                      event_condition = args.event_condition )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 

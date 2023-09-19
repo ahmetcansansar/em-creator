@@ -15,10 +15,11 @@ import bakeryHelpers
 hasWarned = { "cutlangstats": False }
 
 class emCreator:
-    def __init__ ( self, analyses, topo, njets, keep, sqrts, cutlang ):
+    def __init__ ( self, analyses : str, topo : str, njets : int, 
+                   keep : bool, sqrts : float, recaster : dict ):
         """ the efficiency map creator.
         :param keep: if true, keep all files
-        :param cutlang: is it a cutlang result
+        :param recaster: which recaster do we consider
         """
         self.basedir = bakeryHelpers.baseDir()
         self.resultsdir = ( self.basedir + "/ma5results/" ).replace("//","/")
@@ -27,7 +28,7 @@ class emCreator:
         self.njets = njets
         self.keep = keep
         self.sqrts = sqrts
-        self.cutlang = cutlang
+        self.recaster = recaster
         self.toDelete = [] # collect all that is ok to delete
 
     def info ( self, *msg ):
@@ -96,8 +97,12 @@ class emCreator:
     def getStatistics ( self, ana = "atlas_susy_2016_07", SRs = {} ):
         ### obtain nobs, nb, etc from the PAD info files, e.g.
         ### ma5/tools/PAD/Build/SampleAnalyzer/User/Analyzer/atlas_susy_2016_07.info
-        if self.cutlang:
+        if "adl" in self.recaster:
             return self.getCutlangStatistics ( ana, SRs )
+        if "MA5" in self.recaster:
+            return self.getMA5Statistics ( ana, SRs )
+
+    def getMA5Statistics ( self, ana : str, SR : dict = {} ):
         import xml.etree.ElementTree as ET
         Dir = "ma5/tools/PAD/Build/SampleAnalyzer/User/Analyzer/"
         filename = "%s/%s.info" % ( Dir, ana )
@@ -141,7 +146,7 @@ class emCreator:
         # ma5/ANA_T6WW_1jet.400_375_350/Output/
         return -1
 
-    def cutlangExtract ( self, masses ):
+    def extractCutlang ( self, masses ):
         """ extract the efficiencies from cutlang """
         topo = self.topo
         #summaryfile = f"clsum_{self.topo}_{self.analyses}.dat"
@@ -170,9 +175,14 @@ class emCreator:
         return effs,timestamp
 
     def extract ( self, masses ):
+        """ extract the efficiencies from recaster """
+        if "adl" in self.recaster:
+            return self.extractCutlang ( masses )
+        if "MA5" in self.recaster:
+            return self.extractMA5 ( masses )
+
+    def extractMA5 ( self, masses ):
         """ extract the efficiencies from MA5 """
-        if self.cutlang:
-            return self.cutlangExtract ( masses )
         topo = self.topo
         njets = self.njets
         process = "%s_%djet" % ( topo, njets )
@@ -182,7 +192,7 @@ class emCreator:
         saffile = bakeryHelpers.safFile ( self.resultsdir, topo, masses, \
                                           self.sqrts )
         if not os.path.exists ( summaryfile):
-            # self.info ( "could not find ma5 summary file %s. Skipping." % summaryfile )
+            # self.info(f"could not find ma5 summary file {summaryfile}. Skipping.")
             ret = {}
             return ret,0.
         timestamp = os.stat ( summaryfile ).st_mtime
@@ -229,17 +239,17 @@ class emCreator:
         self.toDelete.append ( saffile )
         return effs,timestamp
 
-    def exe ( self, cmd ):
-        self.msg ( "now execute: %s" % cmd )
+    def exe ( self, cmd : str ):
+        self.msg ( f"now execute: {cmd}" )
         ret = subprocess.getoutput ( cmd )
         if len(ret)==0:
             return
         # maxLength=60
         maxLength=560
         if len(ret)<maxLength:
-            self.msg ( " `- %s" % ret )
+            self.msg ( f" `- {ret}" )
             return
-        self.msg ( " `- %s" % ( ret[-maxLength:] ) )
+        self.msg ( f" `- {ret[-maxLength:]}" )
 
     def countMG5 ( self ):
         """ count the number of mg5 directories """
@@ -284,26 +294,24 @@ def recaster ( cutlang, checkmate ):
         ma5orcutlang = "cm2"
     return ma5orcutlang
 
-def embakedFileName ( analysis, topo, cutlang, checkmate ):
+def embakedFileName ( analysis : str, topo : str, recast : str ):
     """ get the file name of the .embaked file
     :param analysis: e.g. CMS-SUS-16-039
     :param topo: e.g. T2
-    :param cutlang: true if cutlang, false if ma5
-    :param checkmate: true if checkmate, false if ma5
+    :param recaster: which recast to consider
     """
     ana_smodels = analysis.upper().replace("_","-")
-    fname = "embaked/%s.%s.%s.embaked" % (ana_smodels, topo, recaster ( cutlang, checkmate ) )
+    fname = f"embaked/{ana_smodels}.{topo}.{recast}.embaked"
     return fname
 
-def massesInEmbakedFile ( masses, analysis, topo, cutlang, checkmate ):
+def massesInEmbakedFile ( masses, analysis, topo, recaster : list ):
     """ are the masses in the embaked file?
     :param masses: e.g. (800,200)
     :param analysis: e.g. CMS-SUS-16-039
     :param topo: e.g. T2
-    :param cutlang: true if cutlang, false if ma5
-    :param checkmate: true if checkmate, false if ma5
+    :param recaster: which recaster to consider
     """
-    fname = embakedFileName ( analysis, topo, cutlang, checkmate )
+    fname = embakedFileName ( analysis, topo, recaster[0] )
     if not os.path.exists ( fname ):
         # if we dont even have an embaked file, for sure the masses are not in.
         return False
@@ -315,25 +323,25 @@ def massesInEmbakedFile ( masses, analysis, topo, cutlang, checkmate ):
             return True
     return False
 
-def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutlang,
+def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, recaster,
                  create_stats, cleanup ):
     """
     :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
     :param keep: keep the cruft files
-    :param cutlang: is it a cutlang result?
+    :param recaster: which recaster do we consider?
     :param create_stats: create also stats file
     :param cleanup: if true, remove a few more temporary files
     """
     if masses == "all":
-        masses = bakeryHelpers.getListOfMasses ( topo, True, sqrts, cutlang, analyses )
+        masses = bakeryHelpers.getListOfMasses(topo, True, sqrts, recaster, analyses)
     else:
         masses = bakeryHelpers.parseMasses ( masses )
     if masses == []:
         return 0
     adl_ma5 = "MA5"
-    if cutlang:
+    if "adl" in recaster:
         adl_ma5 = "ADL"
-    creator = emCreator( analyses, topo, njets, keep, sqrts, cutlang )
+    creator = emCreator( analyses, topo, njets, keep, sqrts, recaster )
     effs,tstamps={},{}
     if verbose:
         print ( "[emCreator] topo %s: %d mass points considered" % ( topo, len(masses) ) )
@@ -351,7 +359,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     seffs_smodels = seffs.upper().replace("_","-")
     nrmg5 = creator.countRunningMG5 ()
     nmg5 = creator.countMG5 ( )
-    if cutlang:
+    if "adl" in recaster:
         nrma5 = creator.countRunningCutlang ( )
         if False and nrmg5 == 0 and nmg5 == 0 and nrma5 == 0:
             return 0
@@ -374,7 +382,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, cutl
     for ana,values in effs.items():
         if len(values.keys()) == 0:
             continue
-        fname = embakedFileName ( ana, topo, cutlang )
+        fname = embakedFileName ( ana, topo, recaster[0] )
         ## read in the old stuff
         if os.path.exists ( fname ):
             f = open ( fname, "rt" )
@@ -489,13 +497,26 @@ def getAllTopos ( recaster ):
     if "MA5" in recaster:
         ret += getAllMA5Topos()
     if "cm2" in recaster:
-        print ( "FIXME need to get cm2 topos" )
-        ret += [ "T1", "T2" ]
+        ret += getAllCm2Topos()
     return ret
 
 def getAllMA5Topos():
     import glob
     dirname="ma5results/"
+    files = glob.glob ( "%s/T*.dat" % dirname )
+    ret = set()
+    for f in files:
+        tokens = f.split("_")
+        ret.add( tokens[0].replace(dirname,"") )
+    ret = list(ret)
+    ret.sort()
+    return ret
+
+def getAllCm2Topos():
+    print ( "FIXME emCreator.getAllCm2Topos need to get cm2 topos" )
+    return [ "T1", "T2" ]
+    import glob
+    dirname="cm2results/"
     files = glob.glob ( "%s/T*.dat" % dirname )
     ret = set()
     for f in files:
@@ -535,7 +556,7 @@ def getMA5ListOfAnalyses():
     ret = ",".join ( tokens )
     return ret
 
-def getCheckmateListOfAnalyses():
+def getCm2ListOfAnalyses():
     """ compile list of checkmate2 analyses """
     ret = "cms_sus_16_048"
     # cm2results/atlas_2010_14293_*/analysis
@@ -551,13 +572,20 @@ def getCheckmateListOfAnalyses():
                 for t in tmp:
                     if "cms_" in t or "atlas_" in t:
                         tokens.add ( t )
+    addAnasFromEmbaked = True
+    if addAnasFromEmbaked:
+        embakedones = glob.glob ( "embaked/*.cm2.embaked" )
+        for embaked in embakedones:
+            embaked = embaked.replace("embaked/","")
+            t = embaked.find(".")
+            tokens.add ( embaked[:t] )
     ret = ",".join ( tokens )
     return ret
 
 
-def embakedFile ( ana, topo, cutlang, checkmate ):
+def embakedFile ( ana : str, topo : str, recaster: list ):
     """ return the content of the embaked file """
-    fname = embakedFileName ( ana, topo, cutlang, checkmate )
+    fname = embakedFileName ( ana, topo, recaster[0] )
     if not os.path.exists ( fname ):
         return {}
     with open ( fname, "rt" ) as f:
@@ -587,11 +615,11 @@ def run ( args ):
             print ( f"xxx {fname}: {e} {txt:20}" )
         f.close()
         nplus = len(D.keys())
-        if args.verbose:
+        if True: # args.verbose:
             print ( f"[emCreator] in {fname}: {nplus} points" )
         ntotembaked+=nplus
-    #if ntotembaked > 0:
-    #    print ( f"[emCreator] in embaked files I found {ntotembaked} points before adding" )
+        ntot+=nplus
+
     for recast in recaster:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
@@ -601,7 +629,7 @@ def run ( args ):
             if recast == "MA5":
                 analyses = getMA5ListOfAnalyses()
             if recast == "cm2":
-                analyses = getCheckmateListOfAnalyses()
+                analyses = getCm2ListOfAnalyses()
 
         if args.topo == "all":
             topos = getAllTopos ( recaster )
@@ -609,17 +637,14 @@ def run ( args ):
             topos.sort()
             for topo in topos:
                 for ana in analyses.split(","):
-                    cutlang = False
-                    if "adl" in topo:
-                        cutlang = True
                     ntot += runForTopo ( topo, args.njets, args.masses, ana,
                         args.verbose, args.copy, args.keep, args.sqrts,
-                        cutlang, args.stats, args.cleanup )
+                        recaster, args.stats, args.cleanup )
         else:
             for ana in analyses.split(","):
                 ntot += runForTopo ( args.topo, args.njets, args.masses, ana,
                                      args.verbose, args.copy, args.keep, args.sqrts,
-                                     cutlang, args.stats, args.cleanup )
+                                     recaster, args.stats, args.cleanup )
     print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
