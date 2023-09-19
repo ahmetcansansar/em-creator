@@ -453,32 +453,16 @@ def createSlurmLink():
                 subprocess.getoutput ( cmd )
 
 def getListOfMA5Masses ( topo, sqrts, ana ):
-    import glob
-    ret=[]
-    # fname = "%s_%djet.*" % ( topo, njets )
-    dirname = "mg5results/"
-    extension = "%d.hepmc.gz" % sqrts
-    if postMA5:
-        dirname = "ma5results/"
-        extension = "dat"
-        fname="%s/%s_*.%s" % ( dirname, topo, extension )
-        files = glob.glob( fname )
-        for f in files:
-            with open ( f ) as handle:
-                txt= handle.read()
-                if not ana in txt:
-                    continue
-            f = f.replace( dirname, "" )
-            f = f.replace( topo+"_", "" )
-            f = f.replace( "."+extension, "" )
-            p1 = f.find(".")
-            f = f[:p1]
-            masses = tuple(map(int,map(float,f.split("_"))))
-            ret.append ( masses )
-        return ret
+    dirname = "ma5results/"
+    extension = "dat"
     fname="%s/%s_*.%s" % ( dirname, topo, extension )
     files = glob.glob( fname )
+    ret=[]
     for f in files:
+        with open ( f ) as handle:
+            txt= handle.read()
+            if not ana in txt:
+                continue
         f = f.replace( dirname, "" )
         f = f.replace( topo+"_", "" )
         f = f.replace( "."+extension, "" )
