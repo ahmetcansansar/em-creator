@@ -12,7 +12,7 @@ import os, sys, colorama, subprocess, shutil, time, glob
 from datetime import datetime
 import bakeryHelpers
 
-hasWarned = { "cutlangstats": False }
+hasWarned = { "cutlangstats": False, "cm2getalltopos": False }
 
 class emCreator:
     def __init__ ( self, analyses : str, topo : str, njets : int, 
@@ -532,16 +532,28 @@ def getAllMA5Topos():
     return ret
 
 def getAllCm2Topos():
-    print ( "FIXME emCreator.getAllCm2Topos need to get cm2 topos" )
+    """
+    if not hasWarned["cm2getalltopos"]:
+        print ( "FIXME emCreator.getAllCm2Topos need to get cm2 topos" )
+        hasWarned["cm2getalltopos"]=True
     return []
-    dirname="cm2results/"
-    files = glob.glob ( "%s/T*.dat" % dirname )
+    """
+    filenames="cm2results/*/fritz/myprocess.ini"
+    files = glob.glob ( filenames )
     ret = set()
+    #print ( "files", files )
     for f in files:
-        tokens = f.split("_")
-        ret.add( tokens[0].replace(dirname,"") )
-    ret = list(ret)
-    ret.sort()
+        h = open ( f, "rt" )
+        lines = h.readlines()
+        h.close()
+        for line in lines:
+            if line.startswith("file = "):
+                p = h.rfind("/")
+                name = line[p:]
+                p = name.find("_")
+                name = name[:p]
+                ret.add(name)
+    #print ( "ret", ret )
     return ret
 
 def getCutlangListOfAnalyses():
