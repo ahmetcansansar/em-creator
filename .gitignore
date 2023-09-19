@@ -51,3 +51,7 @@ cm2.backup
 # hepmc2 (used for cm2)
 hepmc2
 hepmc2.backup
+
+slurm.py
+cancel_jobs.py
+du-h
