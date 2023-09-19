@@ -9,7 +9,7 @@
 
 import numpy, sys, os, time, subprocess, glob
 from os import PathLike
-from typing import List
+from typing import List, Union
 sys.path.insert(0,"../../smodels" )
 
 def nCPUs():
@@ -617,18 +617,21 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
     :param exit_on_fail  Whether to invoke sys.exit() on nonzero return value
     :return return value of the command
     """
+    shell=False
+    scmd = " ".join(cmd)
     if type(cmd)==str:
-        cmd = cmd.split(" ")
+        shell=True
+        scmd=cmd
     if cwd is None:
         directory = os.getcwd()
     else:
         directory = cwd
-    print(f'[helpers] exec: {directory} $$ {" ".join(cmd)}')
+    print(f'[helpers] exec: {directory} $$ {scmd}')
     ctr=0
     while ctr < 5:
         try:
             proc = subprocess.Popen( cmd, cwd=cwd, stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT )
+                               stderr=subprocess.STDOUT, shell=shell )
             for c in iter(lambda: proc.stdout.read(1), b""):
                 sys.stdout.buffer.write(c)
             #    # f.buffer.write(c)

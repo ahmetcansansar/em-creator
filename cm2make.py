@@ -28,21 +28,23 @@ def install():
     cmd = f"git clone {url}"
     execute ( cmd )
     #cmd = "cd checkmate2 ; mv aclocal.m4 aclocal.old ; aclocal && libtoolize --force && autoreconf"
-    cmd = "cd checkmate2 ; autoreconf"
-    execute ( cmd )
-    cmd = "cd checkmate2 ; cp /bin/libtool ."
-    execute ( cmd )
+    cmd = "autoreconf"
+    execute ( cmd, cwd = "checkmate2" )
+    cmd = "cp /bin/libtool ."
+    execute ( cmd, cwd = "checkmate2" )
     delphespath = os.path.abspath ( "../delphes/" )
     hepmcpath = os.path.abspath ( "../hepmc2/HepMC-2.06.11/" )
     madgrafpath = os.path.abspath ( "../mg5/" )
     # pythiapath = "../../mg5/HEPTools/pythia8/"
-    cmd = f"cd checkmate2 ; CPPFLAGS='-I {hepmcpath} -I {delphespath}' ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
-    execute ( cmd )
-    cmd = "cd checkmate2 ; cp /bin/libtool ."
-    execute ( cmd )
-    ncpus = max ( nCPUs() / 2 - 1, 1 )
-    cmd = f"cd checkmate2 ; make -j {ncpus}" 
-    execute ( cmd )
+    cmd = f"CPPFLAGS='-I {hepmcpath} -I {delphespath}' ./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
+    #env = { "CPPFLAGS": f"-I {hepmcpath} -I {delphespath}"}
+    # cmd = f"./configure --with-delphes={delphespath} --with-hepmc={hepmcpath} --with-madgraph={madgrafpath}"
+    execute ( cmd, cwd = "checkmate2" )
+    cmd = "cp /bin/libtool ."
+    execute ( cmd, cwd = "checkmate2" )
+    ncpus = int ( max ( nCPUs() / 2 - 1, 1 ) )
+    cmd = f"make -j {ncpus}" 
+    execute ( cmd, cwd = "checkmate2" )
 
 def clean():
     import glob
