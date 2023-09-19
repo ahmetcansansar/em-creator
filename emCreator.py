@@ -11,8 +11,9 @@
 import os, sys, colorama, subprocess, shutil, time, glob
 from datetime import datetime
 import bakeryHelpers
+from colorama import Fore
 
-hasWarned = { "cutlangstats": False, "cm2getalltopos": False }
+hasWarned = { "cutlangstats": False }
 
 class emCreator:
     def __init__ ( self, analyses : str, topo : str, njets : int, 
@@ -32,8 +33,7 @@ class emCreator:
         self.toDelete = [] # collect all that is ok to delete
 
     def info ( self, *msg ):
-        print ( "%s[emCreator] %s%s" % ( colorama.Fore.YELLOW, " ".join ( msg ), \
-                   colorama.Fore.RESET ) )
+        print ( f"{Fore.YELLOW}[emCreator] {' '.join(msg)}{Fore.RESET}" )
 
     def debug( self, *msg ):
         pass
@@ -42,8 +42,7 @@ class emCreator:
         print ( "[emCreator] %s" % " ".join ( msg ) )
 
     def error ( self, *msg ):
-        print ( "%s[emCreator] %s%s" % ( colorama.Fore.RED, " ".join ( msg ), \
-                   colorama.Fore.RESET ) )
+        print ( f"{Fore.RED}[emCreator] {' '.join(msg)}{Fore.RESET}" )
 
     def getCutlangStatistics ( self, ana, SRs ):
         """ obtain nobs, nb, etc from the ADL file
@@ -347,8 +346,7 @@ def createEmbakedFile( effs ):
         ts = {}
         if ana in tstamps:
             ts = tstamps[ana]
-        print ( "%s[emCreator] baking %s: %d points.%s" % \
-                ( colorama.Fore.GREEN, fname, len(values), colorama.Fore.RESET ) )
+        print ( f"{Fore.GREEN}[emCreator] baking {fname}: {len(values)} points.{Fore.RESET}" )
         ntot += len(values)
         SRs = set()
         for k,v in values.items():
@@ -532,12 +530,6 @@ def getAllMA5Topos():
     return ret
 
 def getAllCm2Topos():
-    """
-    if not hasWarned["cm2getalltopos"]:
-        print ( "FIXME emCreator.getAllCm2Topos need to get cm2 topos" )
-        hasWarned["cm2getalltopos"]=True
-    return []
-    """
     filenames="cm2results/*/fritz/myprocess.ini"
     files = glob.glob ( filenames )
     ret = set()
@@ -672,7 +664,7 @@ def run ( args ):
             ntot += runForTopo ( topo, args.njets, args.masses, ana,
                 args.verbose, args.copy, args.keep, args.sqrts,
                 recaster, args.stats, args.cleanup )
-    print ( f"[emCreator] I found a total of {ntot} points at {time.asctime()}." )
+    print ( f"[emCreator] I found a total of {Fore.GREEN}{ntot} points{Fore.RESET} at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
         lines = f.readlines()
