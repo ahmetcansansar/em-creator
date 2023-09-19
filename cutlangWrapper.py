@@ -707,20 +707,6 @@ class CutLangWrapper:
         mass_stripped = str(mass).replace("(", "").replace(")", "")
         return os.path.join(cls.out_dir.get(), cls._get_embaked_name(cls.analyses, cls.topo, mass_stripped))
 
-    """
-    @staticmethod
-    def join_embaked(cls, out_dir, effi_name, time):
-        effi_file = os.path.join(out_dir, effi_name)
-        with open(effi_file, "w") as f:
-            cls.info(f"Writing joint efficiencies into {effi_file}")
-            f.write("{ # EM-Baked %s.\n" % time)
-            for filename in os.listdir(out_dir):
-                if filename.endswith(".embaked"):
-                    filename = os.path.join(cls.out_dir, filename)
-                    with open(filename, "r") as g:
-                        f.write(g.read() + ",\n")
-            f.write("}")
-
     def clean(self):
         """ Deletes the output directory
         """
