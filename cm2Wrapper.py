@@ -186,7 +186,7 @@ class CM2Wrapper:
         """
         mass_stripped = str(masses).replace("(", "").replace(")", "")
         mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
-        self.instanceName = f"{self.analyses}_{mass_stripped}"
+        self.instanceName = f"{self.analyses}_{self.topo}_{mass_stripped}"
         print ( f"[cm2Wrapper] initialse checkmate {self.ver} for {self.analyses}" )
         self.checkInstallation()
         if not os.path.exists ( self.outputfile() ):
