@@ -392,6 +392,8 @@ if __name__ == "__main__":
         masses = bakeryHelpers.getListOfMasses ( args.topo )
     else:
         masses = bakeryHelpers.parseMasses ( args.masses )
+    if masses == None:
+        masses=[]
     nm = len(masses)
     nprocesses = bakeryHelpers.nJobs ( args.nprocesses, nm )
     if nprocesses == 0:
