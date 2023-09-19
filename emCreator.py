@@ -463,6 +463,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     seffs_smodels = seffs.upper().replace("_","-")
     nrmg5 = creator.countRunningMG5 ()
     nmg5 = creator.countMG5 ( )
+    ntot = 0
     nrecasts = {}
     if "adl" in recaster:
         nrecasts["adl"] = creator.countRunningCutlang ( )
