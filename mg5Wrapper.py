@@ -359,7 +359,7 @@ class MG5Wrapper:
             self.debug ( f"now call cutlangWrapper for {ana}" )
             hepmcfile = self.locker.hepmcFileName ( masses )
             ret = cl.run ( masses, hepmcfile, pid )
-            msg = "finished MG5+Cutlang: "
+            msg = "finished MG5+Checkmate: "
             if ret > 0:
                 msg += "nothing needed to be done"
             if ret < 0:
