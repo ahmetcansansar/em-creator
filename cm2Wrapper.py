@@ -228,7 +228,10 @@ class CM2Wrapper:
         f = open ( effi_file, "wt" )
         f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2\n" )
         f.write( "{" )
-        for m,v in previousEffs.items():
+        masses = previousEffs.keys()
+        masses.sort()
+        for m in masses:
+            v = previousEffs[m]
             f.write(str(m)+":"+str(v)+",\n")
         f.write ( "}\n" )
         f.close()
