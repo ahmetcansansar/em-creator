@@ -463,6 +463,7 @@ def getEmbakedName(analysisId : str, topo : str, recaster : str ) -> str:
     """
     retval = ".".join([analysisId.upper().replace("_", "-"), topo ])
     retval = ".".join([retval, recaster, "embaked"])
+    retval = f"embaked/{retval}"
     return retval
 
 def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):

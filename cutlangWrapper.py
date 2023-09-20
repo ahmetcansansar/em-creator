@@ -337,6 +337,12 @@ class CutLangWrapper:
         mass_stripped = str(mass).replace("(", "").replace(")", "")
         mass_stripped = mass_stripped.replace(",", "_").replace(" ", "")
 
+        # embaked file name
+        local_embaked_file = os.path.join(self.out_dir.get(),
+                                 self._get_embaked_name(self.analysis,
+                                                        self.topo,
+                                                        mass_stripped))
+
         self._info(f"Writing output into directory {self.ana_dir.get()} .")
         self._info(f"Masses are {mass}")
 
@@ -406,12 +412,7 @@ class CutLangWrapper:
         # ====================
         #  Postprocessing
         # ====================
-        # efficiency file name
-        effi_file = os.path.join(self.out_dir.get(),
-                                 self._get_embaked_name(self.analysis,
-                                                        self.topo,
-                                                        mass_stripped))
-        self._info(f"Writing partial efficiencies into file: {os.getcwd()}/{effi_file}")
+        self._info(f"Writing partial efficiencies into file: {os.getcwd()}/{local_embaked_file}")
         # to store intermediate results
         nevents = []
         entries = ""
@@ -439,17 +440,22 @@ class CutLangWrapper:
         if len(nevents) > 0:
             # write efficiencies to .embaked file
             self._add_output_summary ( mass )
-            self._msg(f"Writing efficiency values for masses {mass} to file:\n {effi_file}")
-            with open(effi_file, "wt") as f:
+            self._msg(f"Writing efficiency values for masses {mass} to file:\n {local_embaked_file}")
+            with open(local_embaked_file, "wt") as f:
                 f.write(str(mass) + ": {")
                 f.write(entries)
                 f.write(f"'__t__':'{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}', ")
                 nev = nevents[0]
                 if nev == int(nev):
-                    nev = int(nev)
+                    nev = str(int(nev))
                 f.write(f"'__nevents__':{nev}")
                 f.write("}")
-            self._msg(f"done writing into {effi_file}")
+                f.close()
+            with open(local_embaked_file,"rt") as f:
+                effs = eval("{"+f.read()+"}")
+                f.close()
+            self._msg(f"done writing into {local_embaked_file}")
+            self.addToEmbakedFile ( list(effs.keys())[0], list(effs.values())[0] )
             ## now that we have an embaked file, mark also the CLA dir as removable
             self.tempFiles.append ( f"{cla_temp_name}" )
             self.removeTempFiles()
@@ -459,6 +465,13 @@ class CutLangWrapper:
             # self.error(f"directory reads {os.listdir(cla_run_dir)}" )
             self.removeTempFiles()
             return -4
+
+    def addToEmbakedFile ( self, mass, efficiencies ):
+        global_embaked_file = bakeryHelpers.getEmbakedName ( self.analysis,
+                self.topo, "adl" )
+        bakeryHelpers.writeEmbaked ( efficiencies, global_embaked_file, mass, "adl" )
+        print ( f"lets update {global_embaked_file}" )
+
     def error ( self, *args ):
         print ( "[cutlangWrapper]", " ".join(map(str,args)) )
 
