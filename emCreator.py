@@ -293,15 +293,6 @@ class emCreator:
         f.close()
         print ( f"[emCreator] wrote stats to {statsfile}" )
 
-def recaster ( cutlang, checkmate ):
-    """ get the name of the recaster: MA5, ADL, or cm2 """
-    ma5orcutlang = "MA5"
-    if cutlang:
-        ma5orcutlang = "ADL"
-    if checkmate:
-        ma5orcutlang = "cm2"
-    return ma5orcutlang
-
 def embakedFileName ( analysis : str, topo : str, recast : str ):
     """ get the file name of the .embaked file
     :param analysis: e.g. CMS-SUS-16-039
@@ -331,7 +322,8 @@ def massesInEmbakedFile ( masses, analysis, topo, recaster : list ):
             return True
     return False
 
-def createEmbakedFile( effs ):
+def createEmbakedFile( effs, topo, recast : str, tstamps, creator, copy,
+                       create_stats ):
     """ not sure, it creates embaked file but also statsEM.py file,
     also copies to database etc """
     ntot = 0
@@ -339,7 +331,7 @@ def createEmbakedFile( effs ):
     for ana,values in effs.items():
         if len(values.keys()) == 0:
             continue
-        fname = embakedFileName ( ana, topo, recaster[0] )
+        fname = embakedFileName ( ana, topo, recast )
         ## read in the old stuff
         if os.path.exists ( fname ):
             f = open ( fname, "rt" )
@@ -363,9 +355,9 @@ def createEmbakedFile( effs ):
             if not x.startswith ( "__" ):
                 nSRs += 1
         
-        if False:
+        if True:
             f=open(fname,"w")
-            f.write ( f"# EM-Baked {time.asctime()}. {len(values.keys())} points, {nSRs} signal regions, {recaster}(emCreator1)\n" )
+            f.write ( f"# EM-Baked {time.asctime()}. {len(values.keys())} points, {nSRs} signal regions, {recast}(emCreator)\n" )
             # f.write ( "%s\n" % values )
             f.write ( "{" )
             for k,v in values.items():
@@ -377,7 +369,7 @@ def createEmbakedFile( effs ):
                     t = time.time()
                 v["__t__"]=datetime.fromtimestamp(t).strftime('%Y-%m-%d_%H:%M:%S')
                     # v["__t__"]="?"
-                if not cutlang and not "__nevents__" in v:
+                if not recast == "adl" and not "__nevents__" in v:
                     v["__nevents__"]=creator.getNEvents ( k )
                 f.write ( "%s: %s, \n" % ( k,v ) )
             f.write ( "}\n" )
@@ -388,7 +380,7 @@ def createEmbakedFile( effs ):
             experiment = "ATLAS"
         sana = bakeryHelpers.ma5AnaNameToSModelSName ( ana )
         Dirname = "../smodels-database/%dTeV/%s/%s-eff/orig/" % ( sqrts, experiment, sana )
-        if not "adl" in recaster:
+        if recast == "MA5":
             Dirname = "../smodels-database/%dTeV/%s/%s-ma5/orig/" % ( sqrts, experiment, sana )
         stats = creator.getStatistics ( ana, SRs )
         # print ( "[emCreator] obtained statistics for", ana, "in", fname )
@@ -483,8 +475,8 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
         if number>0:
             line += f" and {number} running {name} jobs"
     if nall > 0:
-        print ( f"[emCreator] {line}" )
-        ntot = createEmbakedFile( effs )
+        ntot = createEmbakedFile( effs, topo, recaster[0], tstamps, creator, copy,
+                                  create_stats )
     if not keep and cleanup:
         for i in creator.toDelete:
             print ( f"[emCreator] deleting {i}" )
