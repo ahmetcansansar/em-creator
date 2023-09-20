@@ -485,14 +485,16 @@ def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
         f.write ( f"# locked {time.asctime()}\n" )
         f.close()
 
+    lockfile = effi_file+".lock"
     if recaster not in [ "adl", "cm2", "MA5" ]:
         print ( "[bakeryHelpers] error in {__line__} recaster {recaster} unknown." )
         print ( "[bakeryHelpers] we only know: adl, cm2, MA5" )
+        if os.path.exists ( lockfile ):
+            os.unlink ( lockfile )
         sys.exit()
         
     if not os.path.exists ( "embaked" ):
         os.mkdir ( "embaked" )
-    lockfile = effi_file+".lock"
     try:
         lock ( lockfile )
         print ( f"[bakeryHelpers] adding point {masses} to {effi_file}" )
