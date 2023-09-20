@@ -453,15 +453,16 @@ def createSlurmLink():
                 cmd = f"ln -s /users/wolfgan.waltenberger/{f} ."
                 subprocess.getoutput ( cmd )
 
-def getEmbakedName(analysisId : str, topo : str ) -> str:
+def getEmbakedName(analysisId : str, topo : str, recaster : str ) -> str:
     """ Given analysis name, topology name, and the mass string,
     construct the name of the embaked file
     :param analysisId: the analysis name, e.g. ATLAS-SUSY-2018-22
     :param topo: the topology name, e.g. T1
+    :param recaster: the recaster, either of MA5, adl, cm2
     :returns: e.g. ATLAS-SUSY-2018-22.T5WW.cm2.embaked
     """
-    retval = "_".join([analysisId.upper().replace("_", "-"), topo, "mass", mass])
-    retval = ".".join([retval, "embaked"])
+    retval = ".".join([analysisId.upper().replace("_", "-"), topo ])
+    retval = ".".join([retval, recaster, "embaked"])
     return retval
 
 def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
@@ -471,6 +472,18 @@ def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
     :param masses: the mass tuple, e.g. (500,200)
     :param recaster: the name of the recaster, MA5, adl, or cm2
     """
+    def lock ( lockfile ):
+        """ lock me """
+        ctr=0
+        while os.path.exists ( lockfile ):
+            ctr+=1
+            if ctr>100:
+                os.unlink ( lockfile )
+            time.sleep ( .2 )
+        f = open ( lockfile, "wt" )
+        f.write ( f"# locked {time.asctime()}\n" )
+        f.close()
+
     if recaster not in [ "adl", "cm2", "MA5" ]:
         print ( "[bakeryHelpers] error in {__line__} recaster {recaster} unknown." )
         print ( "[bakeryHelpers] we only know: adl, cm2, MA5" )
@@ -480,8 +493,8 @@ def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
         os.mkdir ( "embaked" )
     lockfile = effi_file+".lock"
     try:
-        self.lock ( lockfile )
-        self.info ( f"adding point {masses} to {effi_file}" )
+        lock ( lockfile )
+        print ( f"[bakeryHelpers] adding point {masses} to {effi_file}" )
         previousEffs = {}
         if os.path.exists ( effi_file ):
             g = open ( effi_file, "rt" )
@@ -500,10 +513,8 @@ def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
             f.write(str(m)+":"+str(v)+",\n")
         f.write ( "}\n" )
         f.close()
-        self.tempFiles.append ( self.outputfile() )
-        self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
     except Exception as e:
-        self.error ( f"Exception {e}" )
+        print ( f"[bakeryHelpers] Exception {e}" )
     if os.path.exists ( lockfile ):
         os.unlink ( lockfile )
 
@@ -665,7 +676,7 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
         directory = os.getcwd()
     else:
         directory = cwd
-    print(f'[helpers] exec: {directory} $$ {scmd}')
+    print(f'[helpers:{directory}] {scmd}')
     ctr=0
     while ctr < 5:
         try:
@@ -680,9 +691,9 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
             proc.wait()
             if logfile is not None:
                 with open(logfile, "a") as log:
-                    log.write(f'exec: {directory} $$ {" ".join(cmd)}')
+                    log.write(f'exec: {directory} $$ {scmd}')
             if not (proc.returncode == 0):
-                print(f"[helpers] Executed process: \n{' '.join(cmd)}\n\nin"
+                print(f"[helpers] Executed process: \n{scmd}\n\nin"
                             f" directory:\n{directory}\n\nproduced an error\n\n"
                             f"value {proc.returncode}.")
                 if exit_on_fail is True:
