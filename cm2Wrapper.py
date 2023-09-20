@@ -194,23 +194,14 @@ class CM2Wrapper:
             self.executeCheckMate()
         effs = self.extractEfficiencies()
         if len(effs)>0:
-            effi_file = bakeryHelpers.getEmbakedName ( self.analyses, self.topo )
+            ananame = bakeryHelpers.cm2AnaNameToSModelSName ( self.analyses )
+            effi_file = bakeryHelpers.getEmbakedName ( ananame, self.topo, "cm2" )
             bakeryHelpers.writeEmbaked ( effs, effi_file, masses, "cm2" )
+            self.tempFiles.append ( self.outputfile() )
+            self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
         self.clean()
         # self.unlock()
         return 0
-
-    def lock ( self, lockfile ):
-        """ lock me """
-        ctr=0
-        while os.path.exists ( lockfile ):
-            ctr+=1
-            if ctr>100:
-                os.unlink ( lockfile )
-            time.sleep ( .2 )
-        f = open ( lockfile, "wt" )
-        f.write ( f"# locked {time.asctime()}\n" )
-        f.close()
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
@@ -231,14 +222,6 @@ class CM2Wrapper:
 
             f.close()
         return effs
-
-    def _get_embaked_name(self, analysis, topo, mass):        
-        #retval = "_".join([analysis.lower().replace("-", "_"), topo, "mass", mass])
-        #retval = ".".join([retval, "embaked"])
-        from bakeryHelpers import cm2AnaNameToSModelSName
-        retval = f"{cm2AnaNameToSModelSName ( analysis )}.{topo}.cm2.embaked"
-        retval = os.path.join ( "embaked", retval )
-        return retval
 
     def outputfile ( self ):
         # "cm2output/emcreator1/analysis/myprocess_cms_sus_16_048_signal.dat"

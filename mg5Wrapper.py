@@ -648,16 +648,22 @@ def main():
     hname = socket.gethostname()
     if hname.find(".")>0:
         hname=hname[:hname.find(".")]
-    with open("baking.log","a") as f:
-        cmd = ""
-        for i,a in enumerate(sys.argv):
-            if i>0 and sys.argv[i-1] in [ "-m", "--masses" ]:
-                a='"%s"' % a
-            if i>0 and sys.argv[i-1] in [ "--analyses" ]:
-                a='"%s"' % a
-            cmd += a + " "
-        cmd = cmd[:-1]
-        f.write ( "[%s] %s:\n%s\n" % ( hname, time.asctime(), cmd ) )
+    logfile = "baking.log"
+    f=open( logfile,"rt")
+    lines = f.readlines()
+    f.close()
+    lastline = lines[-1].strip()
+    cmd = ""
+    for i,a in enumerate(sys.argv):
+        if i>0 and sys.argv[i-1] in [ "-m", "--masses" ]:
+            a='"%s"' % a
+        if i>0 and sys.argv[i-1] in [ "--analyses" ]:
+            a='"%s"' % a
+        cmd += a + " "
+    cmd = cmd[:-1]
+    if lastline != cmd:
+        with open(logfile,"a") as f:
+            f.write ( "[%s] %s:\n%s\n" % ( hname, time.asctime(), cmd ) )
     nReqM = bakeryHelpers.nRequiredMasses ( args.topo )
     keepOrder=True
     if args.topo == "TGQ":
@@ -730,7 +736,8 @@ def main():
                 verbose=False, ma5=not args.cutlang, cutlang=args.cutlang, stats=True,
                 cleanup = False, checkmate=args.checkmate )
         emCreator.run ( args )
-    with open("baking.log","a") as f:
+    """
+    with open(logfile,"a") as f:
         cmd = ""
         for i,a in enumerate(sys.argv):
             if i>0 and sys.argv[i-1] in [ "-m", "--masses" ]:
@@ -738,6 +745,7 @@ def main():
             cmd += a + " "
         cmd = cmd[:-1]
         # f.write ( "[%s] %s: ended: %s\n" % ( hname, time.asctime(), cmd ) )
+    """
 
 if __name__ == "__main__":
     main()
