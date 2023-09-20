@@ -162,6 +162,7 @@ class MA5Wrapper:
         for i in anas:
             if not i.strip() in noGlobalLikelihoodNeeded:
                 needsLLhd = True
+        needsLlhd = False # FIXME we try turning this always off!
         self.info ( f"do we need a global likelihood for {self.analyses}: {bakeryHelpers.yesno(needsLLhd)}" )
         if not needsLLhd:
             f.write('set main.recast.global_likelihoods = off\n' )
