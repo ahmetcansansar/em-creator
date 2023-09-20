@@ -453,6 +453,60 @@ def createSlurmLink():
                 cmd = f"ln -s /users/wolfgan.waltenberger/{f} ."
                 subprocess.getoutput ( cmd )
 
+def getEmbakedName(analysisId : str, topo : str ) -> str:
+    """ Given analysis name, topology name, and the mass string,
+    construct the name of the embaked file
+    :param analysisId: the analysis name, e.g. ATLAS-SUSY-2018-22
+    :param topo: the topology name, e.g. T1
+    :returns: e.g. ATLAS-SUSY-2018-22.T5WW.cm2.embaked
+    """
+    retval = "_".join([analysisId.upper().replace("_", "-"), topo, "mass", mass])
+    retval = ".".join([retval, "embaked"])
+    return retval
+
+def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
+    """ write our new efficiencies to the embaked file 
+    :param effs: the efficiencies, e.g. {"SR1":.5,"SR2":.25}
+    :param effi_file: the embaked file, e.g. ATLAS-SUSY-2018-22.T5WW.cm2.embaked
+    :param masses: the mass tuple, e.g. (500,200)
+    :param recaster: the name of the recaster, MA5, adl, or cm2
+    """
+    if recaster not in [ "adl", "cm2", "MA5" ]:
+        print ( "[bakeryHelpers] error in {__line__} recaster {recaster} unknown." )
+        print ( "[bakeryHelpers] we only know: adl, cm2, MA5" )
+        sys.exit()
+        
+    if not os.path.exists ( "embaked" ):
+        os.mkdir ( "embaked" )
+    lockfile = effi_file+".lock"
+    try:
+        self.lock ( lockfile )
+        self.info ( f"adding point {masses} to {effi_file}" )
+        previousEffs = {}
+        if os.path.exists ( effi_file ):
+            g = open ( effi_file, "rt" )
+            previousEffs = eval(g.read())
+            g.close()
+        previousEffs[masses]=effs
+        nregions = len(effs)
+        npoints = len(previousEffs)
+        f = open ( effi_file, "wt" )
+        f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2(direct)\n" )
+        f.write( "{" )
+        masses = list ( previousEffs.keys() )
+        masses.sort()
+        for m in masses:
+            v = previousEffs[m]
+            f.write(str(m)+":"+str(v)+",\n")
+        f.write ( "}\n" )
+        f.close()
+        self.tempFiles.append ( self.outputfile() )
+        self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
+    except Exception as e:
+        self.error ( f"Exception {e}" )
+    if os.path.exists ( lockfile ):
+        os.unlink ( lockfile )
+
 def getListOfMA5Masses ( topo, sqrts, ana ):
     dirname = "ma5results/"
     extension = "dat"

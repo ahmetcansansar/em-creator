@@ -194,8 +194,8 @@ class CM2Wrapper:
             self.executeCheckMate()
         effs = self.extractEfficiencies()
         if len(effs)>0:
-            effi_file = self._get_embaked_name ( self.analyses, self.topo, mass_stripped )
-            self.writeEmbaked ( effs, effi_file, masses )
+            effi_file = bakeryHelpers.getEmbakedName ( self.analyses, self.topo )
+            bakeryHelpers.writeEmbaked ( effs, effi_file, masses, "cm2" )
         self.clean()
         # self.unlock()
         return 0
@@ -211,39 +211,6 @@ class CM2Wrapper:
         f = open ( lockfile, "wt" )
         f.write ( f"# locked {time.asctime()}\n" )
         f.close()
-
-    def writeEmbaked ( self, effs : dict, effi_file : PathLike, masses ):
-        """ write our new efficiencies to the embaked file """
-        if not os.path.exists ( "embaked" ):
-            os.mkdir ( "embaked" )
-        lockfile = effi_file+".lock"
-        try:
-            self.lock ( lockfile )
-            self.info ( f"adding point {masses} to {effi_file}" )
-            previousEffs = {}
-            if os.path.exists ( effi_file ):
-                g = open ( effi_file, "rt" )
-                previousEffs = eval(g.read())
-                g.close()
-            previousEffs[masses]=effs
-            nregions = len(effs)
-            npoints = len(previousEffs)
-            f = open ( effi_file, "wt" )
-            f.write ( f"# EM-Baked {time.asctime()}. {npoints} points, {nregions} signal regions, checkmate2(direct)\n" )
-            f.write( "{" )
-            masses = list ( previousEffs.keys() )
-            masses.sort()
-            for m in masses:
-                v = previousEffs[m]
-                f.write(str(m)+":"+str(v)+",\n")
-            f.write ( "}\n" )
-            f.close()
-            self.tempFiles.append ( self.outputfile() )
-            self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
-        except Exception as e:
-            self.error ( f"Exception {e}" )
-        if os.path.exists ( lockfile ):
-            os.unlink ( lockfile )
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
