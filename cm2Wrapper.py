@@ -213,9 +213,13 @@ class CM2Wrapper:
             return {}
         inSignalRegions = False
         effs = {}
+        nevents = -1
         with open ( self.outputfile() ) as f:
             lines = f.readlines()
             for line in lines:
+                if line.startswith("MCEvents:"):
+                    line = line.replace("MCEvents:","").strip()
+                    nevents = int ( line )
                 if inSignalRegions:
                     tokens = line.split()
                     effs[tokens[0]] = float(tokens[3])
@@ -224,6 +228,7 @@ class CM2Wrapper:
                 inSignalRegions = True
 
             f.close()
+        effs["__nevents__"]= nevents
         return effs
 
     def outputfile ( self ):
