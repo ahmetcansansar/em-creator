@@ -36,8 +36,9 @@ class CM2Wrapper:
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
         self.locker = locker.Locker ( sqrts, topo, False )
+        self.cm2tempdir = f"{self.basedir}/cm2tempdir/"
         self.cm2results = f"{self.basedir}/cm2results/"
-        bakeryHelpers.mkdir ( self.cm2results )
+        bakeryHelpers.mkdir ( self.cm2tempdir )
         self.cm2install = f"{self.basedir}/cm2/" 
         self.executable = f"{self.cm2install}/checkmate2/bin/CheckMATE"
         self.tempFiles = []
@@ -161,6 +162,7 @@ class CM2Wrapper:
         return outfile
         
     def createConfigFile ( self, masses, hepmcfile ):
+        """ create the checkmate.ini configuration file """
         templatefile = os.path.join ( self.basedir, "templates", "checkmate_template.ini" )
         f = open ( templatefile, "rt" )
         lines = f.readlines()
@@ -176,7 +178,7 @@ class CM2Wrapper:
             line = line.replace("@@NAME@@", self.instanceName )
             line = line.replace("@@ANALYSES@@", self.analyses )
             line = line.replace("@@HEPMCFILE@@", outfile )
-            line = line.replace("@@OUTPUTDIR@@", self.cm2results )
+            line = line.replace("@@OUTPUTDIR@@", self.cm2tempdir )
             f.write ( line )
         f.close()
 
@@ -200,16 +202,21 @@ class CM2Wrapper:
             ananame = bakeryHelpers.cm2AnaNameToSModelSName ( self.analyses )
             effi_file = bakeryHelpers.getEmbakedName ( ananame, self.topo, "cm2" )
             bakeryHelpers.writeEmbaked ( effs, effi_file, masses, "cm2" )
-            self.tempFiles.append ( self.outputfile() )
-            self.tempFiles.append ( f"{self.cm2results}/{self.instanceName}" )
+            self.tempFiles.append ( self.outputfile( final=True ) )
+            self.tempFiles.append ( self.cm2tempdir )
+            self.tempFiles.append ( self.cm2results )
+            self.tempFiles.append ( f"{self.cm2tempdir}/{self.instanceName}" )
         self.clean()
         # self.unlock()
         return 0
 
     def extractEfficiencies ( self ):
         """ extract the efficiencies from outputfile """
-        if not os.path.exists ( self.outputfile() ):
-            self.error ( f"{self.outputfile()} not found, cannot extract any efficiencies" )
+        if not os.path.exists ( self.outputfile( final=True ) ):
+            if os.path.exists ( self.outputfile() ): ## need to move
+                shutil.copyfile ( self.outputfile(), self.outputfile ( final=True ) )
+            else:
+                self.error ( f"{self.outputfile( final=True )} not found, cannot extract any efficiencies" )
             return {}
         inSignalRegions = False
         effs = {}
@@ -231,9 +238,14 @@ class CM2Wrapper:
         effs["__nevents__"]= nevents
         return effs
 
-    def outputfile ( self ):
-        # "cm2output/emcreator1/analysis/myprocess_cms_sus_16_048_signal.dat"
-        return f"{self.cm2results}/{self.instanceName}/analysis/myprocess_{self.analyses}_signal.dat"
+    def outputfile ( self, final : bool = False ):
+        if final:
+            ret = f"{self.cm2results}/{self.instanceName}/{self.analyses}.dat"
+            bakeryHelpers.mkdir ( f"{self.cm2results}" )
+            bakeryHelpers.mkdir ( f"{self.cm2results}/{self.instanceName}" )
+        else:
+            ret = f"{self.cm2tempdir}/{self.instanceName}/analysis/myprocess_{self.analyses}_signal.dat"
+        return ret
 
     def executeCheckMate ( self ):
         """ run checkmate! """
@@ -245,6 +257,13 @@ class CM2Wrapper:
             self.info( f'CheckMATE error: {errorMsg}' )
             output = output.decode("UTF-8")
             self.info( f'CheckMATE output:\n {output}\n' )
+        # at this point we move the result from cm2tempdir to cm2results 
+        bakeryHelpers.mkdir ( self.cm2results )
+        if os.path.exists ( self.outputfile() ):
+            print ( f"@@@ copy {self.outputfile()}, {self.outputfile ( final=True )}" )
+            shutil.copyfile ( self.outputfile(), self.outputfile ( final=True ) )
+        self.tempFiles.append ( self.outputfile() )
+
 
     def exe ( self, cmd, maxLength=100 ):
         """ execute cmd in shell
