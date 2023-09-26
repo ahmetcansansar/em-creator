@@ -9,6 +9,7 @@ ver="2.06.11"
 tarball = f"hepmc{ver}.tgz"
 path = f"HepMC-{ver}"
 libraryname = f"{path}/fio/libHepMCfio.la"
+includename = f"{path}/HepMC/HepMCDefs.h"
 
 def fetchTarball():
     """ fetch the hepmc2.06.11.tgz tarball """
@@ -36,8 +37,8 @@ def makeHepmc2():
     print ( f"[hepmc2make] {cmd}: {o}" )
 
 def install():
-    if os.path.exists ( libraryname ):
-        print ( f"[hepmc2make] not installing hepmc2: {libraryname} exists" )
+    if os.path.exists ( libraryname ) and os.path.exists ( includename ):
+        print ( f"[hepmc2make] not installing hepmc2: {libraryname} and {includename} exist" )
         return
     if os.path.exists ( path ):
         ## so path exists, but not the library. clean!
