@@ -708,7 +708,8 @@ def execute( cmd:List[str], logfile:str=None, maxLength=100, cwd:str=None,
             ctr += 1
         sys.exit()
 
-def checkDelphesInstall( installdir : PathLike = "delphes" ) -> bool:
+def checkDelphesInstall( installdir : PathLike = "delphes",
+                         autocompile : bool = True ) -> bool:
     """ check if we have a functioning delphes installation at 
     installdir 
     :returns: True, if all is ok
@@ -735,7 +736,8 @@ def checkDelphesInstall( installdir : PathLike = "delphes" ) -> bool:
             sys.exit()
         print("[delphesInstaller] Compiling Delphes...")
         args = ['make']
-        execute(args, cwd=compile_path, exit_on_fail=True )
+        if autocompile:
+            execute(args, cwd=compile_path, exit_on_fail=True )
     print("[delphesInstaller] Delphes initialised.")
     print("[delphesInstaller] Initialisation complete.")
     return delphes_exe

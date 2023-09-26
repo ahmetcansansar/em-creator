@@ -23,6 +23,7 @@ class CM2Wrapper:
         :param ver: version of cm2
         :param keephepmc: keep mg5 hepmc file (typically in mg5results/)
         """
+        self.autocompile = False
         self.instanceName = f"{analyses}_{topo}"
         self.topo = topo
         self.sqrts = sqrts
@@ -58,9 +59,10 @@ class CM2Wrapper:
             else:
                 if os.path.isdir ( f"{self.basedir}/hepmc2.template" ):
                     self.exe ( f"cp -r {self.basedir}/hepmc2.template {self.basedir}/hepmc2" )
-                    self.exe ( "cd hepmc2; ./make.py" )
+                    if self.autocompile:
+                        self.exe ( "cd hepmc2; ./make.py" )
 
-        bakeryHelpers.checkDelphesInstall()
+        bakeryHelpers.checkDelphesInstall( autocompile = self.autocompile )
         if os.path.isdir ( self.cm2install ) and not os.path.exists ( f"{self.executable}" ):
             self.exe ( f"rm -rf {self.cm2install}" )
 
@@ -77,8 +79,9 @@ class CM2Wrapper:
             elif os.path.exists ( templatedir ):
                 self.exe ( f"cp -r {templatedir} {self.cm2install}" )
         if not os.path.exists ( self.executable ):
-            self.info ( "cannot find cm2 installation at %s" % self.cm2install )
-            self.exe ( "%s/make.py" % self.cm2install )
+            self.info ( f"cannot find cm2 installation at {self.cm2install}" )
+            if self.autocompile:
+                self.exe ( f"{self.cm2install}/make.py"  )
         self.templateDir = "%s/templates/" % self.basedir
         # self.info ( "initialised" )
 
