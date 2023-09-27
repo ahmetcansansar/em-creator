@@ -260,7 +260,7 @@ class CM2Wrapper:
         # at this point we move the result from cm2tempdir to cm2results 
         bakeryHelpers.mkdir ( self.cm2results )
         if os.path.exists ( self.outputfile() ):
-            print ( f"@@@ copy {self.outputfile()}, {self.outputfile ( final=True )}" )
+            # print ( f"@@@ copy {self.outputfile()}, {self.outputfile ( final=True )}" )
             shutil.copyfile ( self.outputfile(), self.outputfile ( final=True ) )
         self.tempFiles.append ( self.outputfile() )
 
