@@ -108,6 +108,9 @@ class CM2Wrapper:
         with open ( versionFile, "rt" ) as f:
             self.ver = f.read().strip()
             f.close()
+        atlas201822file = os.path.join ( self.cm2install, "checkmate2", "data", "atlas_2010_14293", "BDTxml", "ZeroLepton2018-SRBDT-GGd1_weight1.xml" )
+        if not os.path.exists ( atlas201822file ):
+            raise Exception ( f"data file {atlas201822file} not found" )
         return True
 
     def msg ( self, *msg):
