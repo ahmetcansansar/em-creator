@@ -229,7 +229,7 @@ class MG5Wrapper:
     def pluginMasses( self, slhaTemplate, masses ):
         """ take the template slha file and plug in
             masses """
-        f=open( self.basedir+"/"+slhaTemplate,"r")
+        f=open( self.templateDir+"/"+slhaTemplate,"r")
         lines=f.readlines()
         f.close()
         self.slhafile = tempfile.mktemp(suffix=".slha",dir=self.tempdir )

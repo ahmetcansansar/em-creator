@@ -550,7 +550,7 @@ def getListOfCm2Masses ( topo, sqrts, ana ):
 def nRequiredMasses(topo):
     """ find out how many masses a topology requires """
     M=set()
-    with open("slha/%s_template.slha" % topo, "r" ) as f:
+    with open( f"templates/slha/{topo}_template.slha", "r" ) as f:
         for line in f.readlines():
             if not "M" in line:
                 continue
