@@ -155,7 +155,8 @@ def parseMasses ( massstring, mingap1=None, maxgap1=None,
                 tmp.append ( mtuple )
                 lists.append ( tuple(tmp) )
                 continue
-            elif any(f"M0+{i}" in mtuple for i in range(5, 50, 1)) and ctr == 2:
+            # elif any(f"M0+{i}" in mtuple for i in range(5, 50, 1)) and ctr == 2:
+            elif mtuple.startswith("M0+") and ctr in [ 1, 2 ]:
                 tmp.append ( mtuple )
                 lists.append ( tuple(tmp) )
                 continue
@@ -751,9 +752,9 @@ if __name__ == "__main__":
                              type=float, default=None )
     argparser.add_argument ( '--mingap1', help='minimum mass gap between first and second, to force onshell or a mass hierarchy [None]',
                              type=float, default=None )
-    argparser.add_argument ( '--mingap2', help='minimum mass gap between second and third, to force onshell or a mass hierarchy [0.]',
-                             type=float, default=0. )
-    argparser.add_argument ( '--mingap13', help='minimum mass gap between first and third, to force onshell or a mass hierarchy [0.]',
+    argparser.add_argument ( '--mingap2', help='minimum mass gap between second and third, to force onshell or a mass hierarchy [None]',
+                             type=float, default=None )
+    argparser.add_argument ( '--mingap13', help='minimum mass gap between first and third, to force onshell or a mass hierarchy [None]',
                              type=float, default=None )
     argparser.add_argument ( '--maxgap13', help='maximum mass gap between first and third, to force offshell [None]',
                              type=float, default=None )

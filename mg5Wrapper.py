@@ -592,8 +592,8 @@ def main():
                              type=float, default=None )
     argparser.add_argument ( '--mingap1', help='minimum mass gap between first and second, to force onshell or a mass hierarchy [None]',
                              type=float, default=None )
-    argparser.add_argument ( '--mingap2', help='minimum mass gap between second and third, to force onshell or a mass hierarchy [0.]',
-                             type=float, default=0. )
+    argparser.add_argument ( '--mingap2', help='minimum mass gap between second and third, to force onshell or a mass hierarchy [None]',
+                             type=float, default=None )
     argparser.add_argument ( '--mingap13', help='minimum mass gap between first and third, to force onshell or a mass hierarchy [None]',
                              type=float, default=None )
     argparser.add_argument ( '--maxgap13', help='maximum mass gap between first and third, to force offshell [None]',
@@ -611,7 +611,7 @@ def main():
     argparser.add_argument ( '-m', '--masses', help='mass ranges, comma separated list of tuples. One tuple gives the range for one mass parameter, as (m_lowest, m_highest, delta_m). m_highest and delta_m may be omitted. Keywords "half" and "same" (add quotes) are accepted for intermediate masses. [%s]' % mdefault,
                              type=str, default=mdefault )
     args = argparser.parse_args()
-    if args.topo in [ "T1", "T2", "T1bbbb", "T2bb", "T2ttoff", "T1ttttoff", "TGQ" ] and args.mingap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
+    if args.topo in [ "T1", "T2", "T1bbbb", "T2bb", "T2ttoff", "T1ttttoff" ] and args.mingap1 == None and not args.list_analyses and not args.clean and not args.clean_all:
         if "(" in args.masses:
             print ( f"[mg5Wrapper] for topo {args.topo} we set mingap1 to 1." )
         args.mingap1 = 1.
@@ -687,6 +687,7 @@ def main():
         if args.mingap2 != None or args.maxgap2 != None:
             line += f" gap(2,3) not in [{args.mingap2},{args.maxgap2 if args.maxgap2 is not None else '+inf'}];"
         print ( f"{line}" )
+        self.locker.unlock ( masses )
         sys.exit()
     if nReqM != len(masses[0]):
         print ( "[mg5Wrapper] you gave %d masses, but %d are required for %s." % \
