@@ -594,7 +594,7 @@ def main():
                              type=float, default=None )
     argparser.add_argument ( '--mingap2', help='minimum mass gap between second and third, to force onshell or a mass hierarchy [0.]',
                              type=float, default=0. )
-    argparser.add_argument ( '--mingap13', help='minimum mass gap between first and third, to force onshell or a mass hierarchy [0.]',
+    argparser.add_argument ( '--mingap13', help='minimum mass gap between first and third, to force onshell or a mass hierarchy [None]',
                              type=float, default=None )
     argparser.add_argument ( '--maxgap13', help='maximum mass gap between first and third, to force offshell [None]',
                              type=float, default=None )
