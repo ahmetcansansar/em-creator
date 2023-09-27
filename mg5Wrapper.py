@@ -288,14 +288,18 @@ class MG5Wrapper:
 
     def runRecasting ( self, masses, analyses, pid ):
         """ run the recasting. cutlang or ma5 """
-        if not self.recast:
-            return
-        if "adl" in self.recaster:
-            self.runCutlang ( masses, analyses, pid )
-        if "cm2" in self.recaster:
-            self.runCheckmate ( masses, analyses, pid )
-        if "MA5" in self.recaster:
-            self.runMA5 ( masses, analyses, pid )
+        try:
+            if not self.recast:
+                return
+            if "adl" in self.recaster:
+                self.runCutlang ( masses, analyses, pid )
+            if "cm2" in self.recaster:
+                self.runCheckmate ( masses, analyses, pid )
+            if "MA5" in self.recaster:
+                self.runMA5 ( masses, analyses, pid )
+        except Exception as e:
+            self.locker.unlock ( masses )
+            raise e
 
     def runMA5 ( self, masses, analyses, pid ):
         """ run ma5, if desired """
