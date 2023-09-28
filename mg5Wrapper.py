@@ -180,11 +180,10 @@ class MG5Wrapper:
         """
         self.runcard = tempfile.mktemp ( prefix="run", suffix=".card",
                                          dir=self.tempdir )
-        # filename = "%s/Cards/run_card.dat" % process
-        self.debug ( "writing pythia run card %s" % self.runcard )
-        templatefile = self.templateDir+'/template_run_card.dat'
+        self.debug ( f"writing pythia run card {self.runcard}" )
+        templatefile = f"{self.templateDir}/template_run_card.dat"
         if not os.path.exists ( templatefile ):
-            self.error ( "cannot find %s" % templatefile )
+            self.error ( f"cannot find {templatefile}" )
             sys.exit()
         tfile = open( templatefile,'r')
         lines = tfile.readlines()
@@ -203,9 +202,15 @@ class MG5Wrapper:
                         v = str(eval (v ))
                     line = line.replace( f"@@{k}@@",v)
             g.write ( line )
+        if False and self.topo in [ "TChiQ" ]:
+            self.info( f"topo is {self.topo}: switch to new sde strategy (2)" )
+            g.write ( f"# for topos like {self.topo} we use the new sde strategy\n" )
+            g.write ( f"# see: https://indico.cern.ch/event/1041378/contributions/4374468/attachments/2258140/3832110/21_06_04_VBFSCAN_new_ps.pdf" )
+            g.write ( "\n" )
+            g.write ( " 2 = sde_strategy ! the new integration strategy\n" )
+            g.write ( " 2 = hard_survey ! not sure if this is needed, nor what it does\n" )
         g.close()
-        self.info ( "wrote run card %s for %s[%s]" % \
-                    ( self.runcard, str(masses), self.topo) )
+        self.info(f"wrote run card {self.runcard} for {str(masses)}[{self.topo}]")
 
     def writeCommandFile ( self, process = "", masses = None ):
         """ this method writes the commands file for mg5.
