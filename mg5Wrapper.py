@@ -201,7 +201,7 @@ class MG5Wrapper:
                             # m0 = min( masses[0], masses[1] )
                         v = v.replace("M[0]",str(m0))
                         v = str(eval (v ))
-                    line = line.replace("@@%s@@" % k,v)
+                    line = line.replace( f"@@{k}@@",v)
             g.write ( line )
         g.close()
         self.info ( "wrote run card %s for %s[%s]" % \
@@ -237,7 +237,25 @@ class MG5Wrapper:
         n=len(masses)
         for line in lines:
             for i in range(n):
-                line = line.replace ( "M%d" % (n-i-1), str(masses[i]) )
+                tokens = line.split()
+                repl = str(masses[i])
+                prev = f"M{n-i-1}"
+                if len(tokens)>1:
+                    mt = tokens[1]
+                    if "+" in mt and not "+" in repl:
+                        mt = mt.replace ( prev, str(masses[i]) )
+                        try:
+                            mt=str(eval(mt))
+                            repl=mt
+                        except Exception as e:
+                            pass
+                if "+2" in line and False:
+                    print ( "mt", mt )
+                    print ( f"replacing with {repl}" )
+                    print ( f"line is {line}" )
+                p1 = line.find("+")
+                p2 = line.find(" ",p1)
+                line = line.replace ( prev+line[p1:p2], repl )
             f.write ( line )
         f.close()
 
@@ -298,7 +316,8 @@ class MG5Wrapper:
             if "MA5" in self.recaster:
                 self.runMA5 ( masses, analyses, pid )
         except Exception as e:
-            self.locker.unlock ( masses )
+            if self.keep: # if keep is on, we remove the lock. seems like were debugging
+                self.locker.unlock ( masses )
             raise e
 
     def runMA5 ( self, masses, analyses, pid ):
