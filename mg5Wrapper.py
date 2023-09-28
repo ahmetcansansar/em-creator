@@ -203,7 +203,7 @@ class MG5Wrapper:
                         v = str(eval (v ))
                     line = line.replace( f"@@{k}@@",v)
             g.write ( line )
-        if True and self.topo in [ "TChiQ" ]:
+        if False and self.topo in [ "TChiQ" ]:
             self.info( f"topo is {self.topo}: switch to new sde strategy (2)" )
             g.write ( f"# for topos like {self.topo} we use the new sde strategy\n" )
             g.write ( f"# see: https://indico.cern.ch/event/1041378/contributions/4374468/attachments/2258140/3832110/21_06_04_VBFSCAN_new_ps.pdf" )
