@@ -80,7 +80,8 @@ class MG5Wrapper:
         self.mgParams = { 'EBEAM': ebeam, # Single Beam Energy expressed in GeV
                           'NEVENTS': str(nevents), 'MAXJETFLAVOR': '5',
             #              'PDFLABEL': "'lhapdf'", 'XQCUT': '20', 'QCUT': '10',
-                          'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4'
+                          'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4',
+                          'PTLUND': '-1', 'KTDURHAM': '-1',
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
         if "TChi" in self.topo or "THig" in self.topo:
@@ -202,13 +203,13 @@ class MG5Wrapper:
                         v = str(eval (v ))
                     line = line.replace( f"@@{k}@@",v)
             g.write ( line )
-        if False and self.topo in [ "TChiQ" ]:
+        if True and self.topo in [ "TChiQ" ]:
             self.info( f"topo is {self.topo}: switch to new sde strategy (2)" )
             g.write ( f"# for topos like {self.topo} we use the new sde strategy\n" )
             g.write ( f"# see: https://indico.cern.ch/event/1041378/contributions/4374468/attachments/2258140/3832110/21_06_04_VBFSCAN_new_ps.pdf" )
             g.write ( "\n" )
             g.write ( " 2 = sde_strategy ! the new integration strategy\n" )
-            g.write ( " 2 = hard_survey ! not sure if this is needed, nor what it does\n" )
+            # g.write ( " 2 = hard_survey ! not sure if this is needed, nor what it does\n" )
         g.close()
         self.info(f"wrote run card {self.runcard} for {str(masses)}[{self.topo}]")
 
