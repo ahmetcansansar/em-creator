@@ -77,11 +77,14 @@ class MG5Wrapper:
         self.determineMG5Version()
         self.templateDir = os.path.join(self.basedir, "templates/")
         ebeam = str(int(self.sqrts*1000/2))
+        ptlund = "-1"
+        ptlund = "2."
+        ktdurham = "-1."
         self.mgParams = { 'EBEAM': ebeam, # Single Beam Energy expressed in GeV
                           'NEVENTS': str(nevents), 'MAXJETFLAVOR': '5',
             #              'PDFLABEL': "'lhapdf'", 'XQCUT': '20', 'QCUT': '10',
                           'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4',
-                          'PTLUND': '-1', 'KTDURHAM': '-1',
+                          'PTLUND': ptlund, 'KTDURHAM': ktdurham,
                           ## xqcut for gluino-gluino production: mgluino/4
         }#,'qcut': '90'}
         if "TChi" in self.topo or "THig" in self.topo:
