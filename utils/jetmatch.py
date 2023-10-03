@@ -6,7 +6,7 @@ def match():
     import sys, subprocess, argparse, gzip, io, tempfile, os
     argparser = argparse.ArgumentParser(description='jetmatching runner.')
 
-    argparser.add_argument ( '-f', '--hepmc', help='path to hepmc file [default.hepmc]',
+    argparser.add_argument ( '-f', '--hepmc', help='path to hepmc or hepmc.gz file [default.hepmc]',
                              type=str, default="default.hepmc" )
 
     args = argparser.parse_args()
@@ -23,7 +23,9 @@ def match():
                 f_out.write(s)
             in_f.close()
 
-    f = open ( "jetmatching.template", "rt" )
+    templatefile = __file__.replace("jetmatch.py","jetmatching.template").replace("./","")
+    print ( f"[jetmatch.py] using template {templatefile}" )
+    f = open ( templatefile, "rt" )
     lines = f.readlines()
     f.close()
 
