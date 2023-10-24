@@ -681,18 +681,23 @@ def main():
     if hname.find(".")>0:
         hname=hname[:hname.find(".")]
     logfile = "baking.log"
+    if not os.path.exists ( logfile ):
+        from pathlib import Path
+        Path ( logfile ).touch()
     f=open( logfile,"rt")
     lines = f.readlines()
     f.close()
-    lastline = lines[-1].strip()
     cmd = ""
-    for i,a in enumerate(sys.argv):
-        if i>0 and sys.argv[i-1] in [ "-m", "--masses" ]:
-            a='"%s"' % a
-        if i>0 and sys.argv[i-1] in [ "--analyses" ]:
-            a='"%s"' % a
-        cmd += a + " "
-    cmd = cmd[:-1]
+    lastline = ""
+    if len(lines)>0:
+        lastline = lines[-1].strip()
+        for i,a in enumerate(sys.argv):
+            if i>0 and sys.argv[i-1] in [ "-m", "--masses" ]:
+                a='"%s"' % a
+            if i>0 and sys.argv[i-1] in [ "--analyses" ]:
+                a='"%s"' % a
+            cmd += a + " "
+        cmd = cmd[:-1]
     if lastline != cmd:
         with open(logfile,"a") as f:
             f.write ( "[%s] %s:\n%s\n" % ( hname, time.asctime(), cmd ) )
