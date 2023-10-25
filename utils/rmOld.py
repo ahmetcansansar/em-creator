@@ -85,6 +85,7 @@ def createStats():
             print ( f"[rmOld] exception {e}" )
     files = glob.glob("../smodels-utils/clip/temp/_B*sh" )
     files += glob.glob("../smodels-utils/clip/temp/_V*sh" )
+    files += glob.glob("../smodels-utils/clip/temp/_V*ini" )
     ctexceptions = 0
     for f in files:
         try:
