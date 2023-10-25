@@ -179,4 +179,5 @@ def main():
     ct += rmOldTempFiles ( args.hours, args.dry_run )
     print ( f"[rmOld] removed a total of {ct} files." )
 
-main()
+if __name__ == "__main__":
+    main()

@@ -92,7 +92,11 @@ class MG5Wrapper:
             self.mgParams["XQCUT"]="M[0]/6"
 
         self.correctPythia8CfgFile()
+        self.msg ( "remove potential old cruft" )
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
+        from utils import rmOld
+        stats = rmOld.createStats()
+        rmOld.rmOlderThan ( stats, 3, False )
         self.info ( f"initialised MG5 {self.ver}" )
 
     def checkHost ( self ):
