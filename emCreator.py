@@ -658,6 +658,8 @@ def run ( args ):
             topos.sort()
         else:
             topos = args.topo
+    if type(topos) in [ str ]:
+        topos = [ topos ]
     for topo in topos:
         anas = set(analyses.split(","))
         for ana in anas:
