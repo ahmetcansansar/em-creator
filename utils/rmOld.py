@@ -64,6 +64,7 @@ def createStats():
     t0=time.time()
     sdirs = {}
     files = glob.glob("T*")
+    files += glob.glob("ma5_T*")
     for f in files:
         if "TODO" in f:
             continue
