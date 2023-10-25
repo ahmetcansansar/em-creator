@@ -271,10 +271,29 @@ class MG5Wrapper:
             f.write ( line )
         f.close()
 
+    def sleep ( self ):
+        """ if a file called sleep exists with an integer number in it,
+        then sleep that long before starting the next point.
+        meant to be used to control the production on an HPC cluster """
+        sleepFile = f"{self.basedir}/sleep"
+        s = 0
+        if os.path.exists ( sleepFile ):
+            f = open(sleepFile,"rt")
+            txt = f.read()
+            f.close()
+            try:
+                s = int ( txt )
+            except Exception as e:
+                pass
+        if s > 0:
+            self.info ( f"sleeping for {s} seconds before next point" )
+            time.sleep ( s )
+
     def run( self, masses, analyses, pid=None ):
         """ Run MG5 for topo, with njets additional ISR jets, giving
         also the masses as a list.
         """
+        self.sleep()
         self.checkInstallation()
         import emCreator
         isIn = emCreator.massesInEmbakedFile ( masses, analyses, self.topo, self.recaster )
@@ -363,7 +382,7 @@ class MG5Wrapper:
         analist = analyses.split(",")
         for ana in analist:
             ana = ana.strip()
-            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana, 
+            cl = CutLangWrapper ( self.topo, self.njets, rerun, ana,
                     auto_confirm = True, keep = self.keep, adl_file = self.adl_file,
                     event_condition = self.event_condition )
             #                   self.sqrts )
@@ -459,7 +478,7 @@ class MG5Wrapper:
                 # can happen if many processses start at once
                 pass
     def checkInstallation ( self ):
-        """ check the mg5 installation, including plugins 
+        """ check the mg5 installation, including plugins
         :raises: Exception, if anything is wrong
         :returns: True, if all is ok
         """
@@ -467,16 +486,16 @@ class MG5Wrapper:
         pythiaconfig = os.path.join ( path, "pythia8-config" )
         # print ( f"[mg5Wrapper] checking in {path}" )
         if not os.path.exists ( pythiaconfig ):
-            raise Exception ( f"cannot find pythia8-config: {pythiaconfig}" ) 
+            raise Exception ( f"cannot find pythia8-config: {pythiaconfig}" )
         cmd = f"{pythiaconfig} --with-hepmc2"
         o = subprocess.getoutput ( cmd )
         if o == "false":
-            raise Exception ( f"pythia8 has no hepmc2 support" ) 
+            raise Exception ( f"pythia8 has no hepmc2 support" )
         if False:
             cmd = f"{pythiaconfig} --with-lhapdf6"
             o = subprocess.getoutput ( cmd )
             if o == "false":
-                raise Exception ( f"pythia8 has no lhapdf6 support" ) 
+                raise Exception ( f"pythia8 has no lhapdf6 support" )
         return True
 
     def execute ( self, slhaFile, masses ):
