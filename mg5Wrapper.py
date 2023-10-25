@@ -245,8 +245,8 @@ class MG5Wrapper:
         f=open( self.slhafile,"w")
         n=len(masses)
         for line in lines:
+            tokens = line.split()
             for i in range(n):
-                tokens = line.split()
                 repl = str(masses[i])
                 prev = f"M{n-i-1}"
                 if len(tokens)>1:
@@ -264,7 +264,10 @@ class MG5Wrapper:
                     print ( f"line is {line}" )
                 p1 = line.find("+")
                 p2 = line.find(" ",p1)
-                line = line.replace ( prev+line[p1:p2], repl )
+                addOn = line[p1:p2]
+                if addOn in [ "+00", "+" ]:
+                    addOn = ""
+                line = line.replace ( prev+addOn, repl )
             f.write ( line )
         f.close()
 
