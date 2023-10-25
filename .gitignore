@@ -23,6 +23,8 @@ __pycache__
 # (temporary) results
 T*_*jet.*/
 ma5/
+ma5results/
+ma5.backup
 ma5_T*_*jet.*/
 embaked/
 baking.log
@@ -47,6 +49,7 @@ statsEM.py
 
 # checkmate2 output
 cm2results
+cm2tempdir
 cm2
 cm2.backup
 
@@ -57,3 +60,4 @@ hepmc2.backup
 slurm.py
 cancel_jobs.py
 du-h
+du-h.temp
