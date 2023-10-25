@@ -1,7 +1,8 @@
 all: .PHONY
 
 du-h: .PHONY
-	du -h --max-depth=1 | tee du-h
+	du -h --max-depth=1 | tee du-h.temp
+	mv du-h.temp du-h
 
 install_mg5:
 	test -e mg5 || cp -r mg5.template mg5
