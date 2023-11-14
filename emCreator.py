@@ -12,6 +12,7 @@ import os, sys, colorama, subprocess, shutil, time, glob
 from datetime import datetime
 import bakeryHelpers
 from colorama import Fore
+from typing import List
 
 hasWarned = { "cutlangstats": False }
 
@@ -44,7 +45,7 @@ class emCreator:
     def error ( self, *msg ):
         print ( f"{Fore.RED}[emCreator] {' '.join(msg)}{Fore.RESET}" )
 
-    def getCutlangStatistics ( self, ana, SRs ):
+    def getCutlangStatistics ( self, ana, SRs ) -> List:
         """ obtain nobs, nb, etc from the ADL file
         :param ana: analysis id, e.g. atlas_susy_2016_07
         :param SRs: list of signal regions
@@ -557,6 +558,15 @@ def getAllCm2Topos():
                 ret.add(name)
     return ret
 
+def getMG5ListOfAnalyses():
+    files = glob.glob ( "T*_*jet.*/analysis" )
+    ret = set()
+    for f in files:
+        with open ( f, "rt" ) as h:
+            txt = h.read().strip()
+            ret.add ( txt)
+    return list(ret)
+
 def getCutlangListOfAnalyses():
     Dir = "cutlang_results/"
     dirs = glob.glob ( f"{Dir}*" )
@@ -565,11 +575,11 @@ def getCutlangListOfAnalyses():
         if not "CMS" in d and not "ATLAS" in d:
             continue
         tokens.add ( d.replace ( Dir, "" ) )
-    ret=",".join(tokens)
+    #ret=",".join(tokens)
     # ret = "cms_sus_19_005,cms_sus_19_006"
-    return ret
+    return list(tokens)
 
-def getMA5ListOfAnalyses():
+def getMA5ListOfAnalyses() -> List:
     """ compile list of MA5 analyses """
     ret = "cms_sus_16_048"
     files = glob.glob("ma5results/T*.dat" )
@@ -584,11 +594,11 @@ def getMA5ListOfAnalyses():
                 for t in tmp:
                     if "cms_" in t or "atlas_" in t:
                         tokens.add ( t )
-    ret = ",".join ( tokens )
+    # ret = ",".join ( tokens )
     # print ( f"[emCreator] getMA5ListOfAnalyses {ret}" )
-    return ret
+    return list(tokens)
 
-def getCm2ListOfAnalyses():
+def getCm2ListOfAnalyses() -> List:
     """ compile list of checkmate2 analyses """
     ret = "cms_sus_16_048"
     # cm2results/atlas_2010_14293_*/analysis
@@ -611,8 +621,8 @@ def getCm2ListOfAnalyses():
             embaked = embaked.replace("embaked/","")
             t = embaked.find(".")
             tokens.add ( embaked[:t] )
-    ret = ",".join ( tokens )
-    return ret
+    # ret = ",".join ( tokens )
+    return list(tokens)
 
 
 def embakedFile ( ana : str, topo : str, recaster: list ):
@@ -652,16 +662,18 @@ def run ( args ):
         ntotembaked+=nplus
         ntot+=nplus
 
+    analyses = getMG5ListOfAnalyses()
     for recast in recaster:
         if analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
             if recast == "adl":
-                analyses = getCutlangListOfAnalyses()
-                analyses = analyses.replace("_","-").upper()
+                tmp = getCutlangListOfAnalyses()
+                tmp = tmp.replace("_","-").upper()
             if recast == "MA5":
-                analyses = getMA5ListOfAnalyses()
+                tmp = getMA5ListOfAnalyses()
             if recast == "cm2":
-                analyses = getCm2ListOfAnalyses()
+                tmp = getCm2ListOfAnalyses()
+            analyses += tmp
 
         if args.topo == "all":
             topos = getAllTopos ( recaster )
@@ -672,8 +684,7 @@ def run ( args ):
     if type(topos) in [ str ]:
         topos = [ topos ]
     for topo in topos:
-        anas = set(analyses.split(","))
-        for ana in anas:
+        for ana in analyses:
             ntot += runForTopo ( topo, args.njets, args.masses, ana,
                 args.verbose, args.copy, args.keep, args.sqrts,
                 recaster, args.stats, args.cleanup )
