@@ -479,7 +479,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     for name,number in nrecasts.items():
         if number>0:
             line += f" and {number} running {name} jobs"
-    if printLine:
+    if printLine and nall>0:
         print ( line )
     if nall > 0:
         if printLine:
