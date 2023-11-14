@@ -260,7 +260,7 @@ class emCreator:
 
     def countRunningMG5 ( self ):
         """ count the number of ma5 directories """
-        files = glob.glob ( f"{self.topo}_*jet*" )
+        files = glob.glob ( f"{self.topo}_*jet.*" )
         return len(files)
 
     def countRunningCm2 ( self ):
@@ -461,7 +461,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     if seffs == "":
         seffs = "no analysis"
     seffs_smodels = seffs.upper().replace("_","-")
-    nrmg5 = creator.countRunningMG5 ()
+    nrmg5 = creator.countRunningMG5 ( )
     nmg5 = creator.countMG5 ( )
     ntot = 0
     nrecasts = {}
