@@ -16,12 +16,12 @@ import locker
 from typing import Dict, List
 
 class MG5Wrapper:
-    def __init__ ( self, args : Dict, recaster : List,
-           ver : str  = "3_5_2" ):
+    def __init__ ( self, args : Dict, recaster : List ):
         """
         :param args: the command line args, as a dictionary
         :param recaster: perform recasting (ma5 or cutlang)
         """
+        self.args = args
         self.nevents = args["nevents"]
         self.checkHost()
         self.basedir = bakeryHelpers.baseDir()
@@ -46,9 +46,9 @@ class MG5Wrapper:
         self.sqrts = args["sqrts"]
         self.recaster = recaster
         self.pyver = 3 ## python version
-        if "py3" in ver:
+        self.setMG5Version()
+        if "py3" in self.ver:
             self.pyver = 3
-        self.ver = ver
         if not os.path.isdir ( self.mg5install ):
             self.error ( "mg5 install is missing??" )
         self.executable = os.path.join(self.mg5install, "bin/mg5_aMC")
@@ -99,6 +99,17 @@ class MG5Wrapper:
         stats = rmOld.createStats()
         rmOld.rmOlderThan ( stats, 3, False )
         self.info ( f"initialised MG5 {self.ver}" )
+
+    def setMG5Version ( self ):
+        self.ver = "???"
+        versionfile = f"{self.mg5install}/VERSION"
+        if os.path.exists ( versionfile ):
+            with open ( versionfile, "rt" ) as f:
+                lines = f.readlines()
+                f.close()
+                for line in lines:
+                    if "version =" in line:
+                        self.ver = line.replace("version =","").strip()
 
     def checkHost ( self ):
         """ check which host and environment we are in. Warn against running
@@ -551,6 +562,11 @@ class MG5Wrapper:
             self.error ( f"{Dir}/Cards does not exist! Skipping! {o}" )
             self.exe ( cmd, masses )
             return False
+        with open ( f"{Dir}/analysis", "wt" ) as f:
+            # pen down the analysis name
+            ana = self.args["analyses"].upper().replace("_","-")
+            f.write ( ana+"\n" )
+            f.close()
         shutil.move(slhaFile, Dir+'/Cards/param_card.dat' )
         shutil.move(self.runcard, Dir+'/Cards/run_card.dat' )
         shutil.move(self.commandfile, Dir+"/mg5cmd" )

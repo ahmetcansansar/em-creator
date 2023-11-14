@@ -234,7 +234,6 @@ class emCreator:
             if not ananame in effs:
                 effs[ananame]={}
             effs[ananame][sr]=eff
-        print ( "extracting", effs )
         self.toDelete.append ( summaryfile )
         self.toDelete.append ( saffile )
         return effs,timestamp
