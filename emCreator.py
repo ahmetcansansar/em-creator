@@ -126,7 +126,7 @@ class emCreator:
             ret[Id]=signal
         return ret
 
-    def getNEvents ( self, masses ):
+    def getNEvents ( self, masses : List ) -> int:
         fname = bakeryHelpers.safFile ( self.resultsdir, self.topo, masses, self.sqrts )
         if not os.path.exists ( fname ):
             print ( "[emCreator.py] %s does not exist, cannot report correct number of events" % fname )
@@ -281,6 +281,7 @@ class emCreator:
         files = glob.glob ( "ma5_%s_%djet.*" % ( self.topo, self.njets ) )
         return len(files)
 
+
     def writeStatsFile ( self, statsfile : str, stats : dict ):
         """ write stats to statsfile """
         f = open ( statsfile, "w" )
@@ -423,7 +424,7 @@ def createEmbakedFile( effs, topo, recast : str, tstamps, creator, copy,
     return ntot
 
 def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, recaster,
-                 create_stats, cleanup ):
+                 create_stats, cleanup, printLine ):
     """
     :param analyses: analysis, e.g. cms_sus_19_006, singular. lowercase.
     :param keep: keep the cruft files
@@ -431,11 +432,11 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     :param create_stats: create also stats file
     :param cleanup: if true, remove a few more temporary files
     """
-    if masses == "all":
+    if masses in [ "all" ]:
         masses = bakeryHelpers.getListOfMasses(topo, True, sqrts, recaster, analyses)
     else:
         masses = bakeryHelpers.parseMasses ( masses )
-    # print ( f"[emCreator] masses={masses}" )
+    # print ( f"[emCreator.runForTopo] {analyses}:{topo} masses={masses}" )
     if masses == []:
         pass 
         # return 0
@@ -464,20 +465,23 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
     nrecasts = {}
     if "adl" in recaster:
         nrecasts["adl"] = creator.countRunningCutlang ( )
-    if "ma5" in recaster:
-        nrecasts["ma5"] = creator.countRunningMA5 ( )
+    if "MA5" in recaster:
+        nrecasts["MA5"] = creator.countRunningMA5 ( )
     if "cm2" in recaster:
         nrecasts["cm2"] = creator.countRunningCm2 ( )
     nre = sum ( nrecasts.values() )
     nall = nmg5 + nrmg5 + nre
-    line = f"for {topo} I see {nmg5} mg5 points, {nrmg5} running mg5 jobs"
-    if nre > 0:
-        line += f"\n           "
+    line = f"{topo}: {nmg5} mg5 points, {nrmg5} running mg5 jobs"
+    #if nre > 0:
+    #    line += f"\n           "
     for name,number in nrecasts.items():
         if number>0:
             line += f" and {number} running {name} jobs"
+    if printLine:
+        print ( line )
     if nall > 0:
-        ntot = createEmbakedFile( effs, topo, recaster[0], tstamps, creator, copy,
+        if printLine:
+            ntot = createEmbakedFile( effs, topo, recaster[0], tstamps, creator, copy,
                                   create_stats )
     if not keep and cleanup:
         for i in creator.toDelete:
@@ -579,6 +583,25 @@ def getCutlangListOfAnalyses():
     # ret = "cms_sus_19_005,cms_sus_19_006"
     return list(tokens)
 
+def getMA5ListOfRunningAnalyses( topo : str, njets : int ) -> List:
+    if topo == "all":
+        topo="*"
+    files = glob.glob ( f"ma5_{topo}_{njets}jet.*/recast" )
+    ret = set()
+    # print ( "files", files, f"ma5_{topo}_{njets}jet.*/recast" )
+    for f in files:
+        with open ( f, "rt" ) as h:
+            lines = h.readlines()
+            for line in lines:
+                if line.startswith("#"):
+                    continue
+                if "atlas" in line or "cms" in line:
+                    tokens = line.split(" ")
+                    anaid = tokens[0].upper().replace("_","-")
+                    ret.add ( anaid)
+    return list(ret)
+
+
 def getMA5ListOfAnalyses() -> List:
     """ compile list of MA5 analyses """
     ret = "cms_sus_16_048"
@@ -664,16 +687,17 @@ def run ( args ):
 
     analyses = getMG5ListOfAnalyses()
     for recast in recaster:
-        if analyses in [ "None", None, "none", "" ]:
+        if True: # analyses in [ "None", None, "none", "" ]:
             ## retrieve list of analyses
             if recast == "adl":
                 tmp = getCutlangListOfAnalyses()
-                tmp = tmp.replace("_","-").upper()
             if recast == "MA5":
                 tmp = getMA5ListOfAnalyses()
+                tmp += getMA5ListOfRunningAnalyses( args.topo, args.njets )
             if recast == "cm2":
                 tmp = getCm2ListOfAnalyses()
-            analyses += tmp
+            for t in tmp:
+                analyses.append ( t.upper().replace("_","-") )
 
         if args.topo == "all":
             topos = getAllTopos ( recaster )
@@ -683,11 +707,14 @@ def run ( args ):
             topos = args.topo
     if type(topos) in [ str ]:
         topos = [ topos ]
+    # print ( "topos", topos, "anas", analyses )
     for topo in topos:
+        printLine = True
         for ana in analyses:
             ntot += runForTopo ( topo, args.njets, args.masses, ana,
                 args.verbose, args.copy, args.keep, args.sqrts,
-                recaster, args.stats, args.cleanup )
+                recaster, args.stats, args.cleanup, printLine=printLine )
+            printLine = False
     print ( f"[emCreator] I found a total of {Fore.GREEN}{ntot} points{Fore.RESET} at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
         f=open(".last.summary","rt")
