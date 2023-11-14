@@ -58,11 +58,15 @@ def install( ver, plugins = True, pyver = 3 ):
             sys.exit()
     cmd = "tar xzvf %s" % tarball
     subprocess.getoutput ( cmd )
-    cmd = "mv MG5_aMC_v%s/* ."  % ver
+    foldername = f"MG5_aMC_v{ver}"
+    if ver >= "3.5.1":
+        foldername = f"mg5amcnlo-{verdot}"
+
+    cmd = f"mv {foldername}/* ."
     if pyver == 4:
-        cmd = "mv MG5_aMC_v%s_py3/* ." % ver
+        cmd = f"mv {foldername}_py3/* ."
     subprocess.getoutput ( cmd )
-    cmd = "rmdir MG5_aMC_v%s" % ver
+    cmd = f"rmdir {foldername}"
     if pyver == 4:
         cmd += "_py3"
         # cmd = "rmdir MG5_aMC_v%s_py3" % ver

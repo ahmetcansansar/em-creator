@@ -234,6 +234,7 @@ class emCreator:
             if not ananame in effs:
                 effs[ananame]={}
             effs[ananame][sr]=eff
+        print ( "extracting", effs )
         self.toDelete.append ( summaryfile )
         self.toDelete.append ( saffile )
         return effs,timestamp
@@ -257,7 +258,7 @@ class emCreator:
 
     def countRunningMG5 ( self ):
         """ count the number of ma5 directories """
-        files = glob.glob ( "%s_*jet*" % ( self.topo ) )
+        files = glob.glob ( f"{self.topo}_*jet*" )
         return len(files)
 
     def countRunningCm2 ( self ):
@@ -434,6 +435,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
         masses = bakeryHelpers.getListOfMasses(topo, True, sqrts, recaster, analyses)
     else:
         masses = bakeryHelpers.parseMasses ( masses )
+    # print ( f"[emCreator] masses={masses}" )
     if masses == []:
         pass 
         # return 0
@@ -499,6 +501,7 @@ def getAllCutlangTopos():
 
 def getAllTopos ( recaster ):
     ret = getAllMG5Topos()
+    ret += getAllRunningMG5Topos()
     if "adl" in recaster:
         ret += getAllCutlangTopos()
     if "MA5" in recaster:
@@ -517,6 +520,14 @@ def getAllMG5Topos():
         p = topo.find("_")
         topos.add ( topo[:p] )
     return list(topos)
+
+def getAllRunningMG5Topos():
+    dirs = glob.glob ( "T*_*jet.*" )
+    topos = []
+    for d in dirs:
+        p1 = d.find("_")
+        topos.append ( d[:p1] )
+    return topos
 
 def getAllMA5Topos():
     dirname="ma5results/"
@@ -575,6 +586,7 @@ def getMA5ListOfAnalyses():
                     if "cms_" in t or "atlas_" in t:
                         tokens.add ( t )
     ret = ",".join ( tokens )
+    # print ( f"[emCreator] getMA5ListOfAnalyses {ret}" )
     return ret
 
 def getCm2ListOfAnalyses():
