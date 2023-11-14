@@ -12,7 +12,7 @@ import os, sys, colorama, subprocess, shutil, time, glob
 from datetime import datetime
 import bakeryHelpers
 from colorama import Fore
-from typing import List
+from typing import List, Tuple
 
 hasWarned = { "cutlangstats": False }
 
@@ -146,7 +146,7 @@ class emCreator:
         # ma5/ANA_T6WW_1jet.400_375_350/Output/
         return -1
 
-    def extractCutlang ( self, masses ):
+    def extractCutlang ( self, masses ) -> Tuple:
         """ extract the efficiencies from cutlang """
         topo = self.topo
         #summaryfile = f"clsum_{self.topo}_{self.analyses}.dat"
@@ -155,6 +155,8 @@ class emCreator:
         effs = {}
         smass = "_".join(map(str,masses))
         fdir = f"cutlang_results/{self.analyses}/ANA_{self.topo}_{self.njets}jet/output/"
+        if not os.path.exists ( fdir ):
+            return {},""
         timestamp = os.stat ( fdir ).st_mtime
         toglob = f"{fdir}/*_{smass}.embaked"
         emglob = glob.glob ( toglob )
@@ -683,7 +685,7 @@ def run ( args ):
         if True: # args.verbose:
             print ( f"[emCreator] in {fname}: {nplus} points" )
         ntotembaked+=nplus
-        ntot+=nplus
+        # ntot+=nplus
 
     analyses = getMG5ListOfAnalyses()
     for recast in recaster:
@@ -711,9 +713,10 @@ def run ( args ):
     for topo in topos:
         printLine = True
         for ana in analyses:
-            ntot += runForTopo ( topo, args.njets, args.masses, ana,
+            ntmp = runForTopo ( topo, args.njets, args.masses, ana,
                 args.verbose, args.copy, args.keep, args.sqrts,
                 recaster, args.stats, args.cleanup, printLine=printLine )
+            ntot += ntmp
             printLine = False
     print ( f"[emCreator] I found a total of {Fore.GREEN}{ntot} points{Fore.RESET} at {time.asctime()}." )
     if os.path.exists ( ".last.summary" ):
