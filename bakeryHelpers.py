@@ -438,13 +438,14 @@ def getListOfMasses(topo, postMA5=False, sqrts=13, recaster=[], ana=None ):
     :param recaster: which recaster do we consider
     :param ana: analysis, if None, then all analyses
     """
+    ret = []
     if "adl" in recaster:
-        return getListOfCutlangMasses ( topo, sqrts, ana )
+        ret += getListOfCutlangMasses ( topo, sqrts, ana )
     if "MA5" in recaster:
-        return getListOfMA5Masses ( topo, sqrts, ana )
+        ret += getListOfMA5Masses ( topo, sqrts, ana )
     if "cm2" in recaster:
-        return getListOfCm2Masses ( topo, sqrts, ana )
-    return []
+        ret += getListOfCm2Masses ( topo, sqrts, ana )
+    return ret
 
 def createSlurmLink():
     """ simple convenience method to create a symlink to slurm.py """
@@ -525,8 +526,9 @@ def writeEmbaked ( effs : dict, effi_file : PathLike, masses, recaster : str ):
 def getListOfMA5Masses ( topo, sqrts, ana ):
     dirname = "ma5results/"
     extension = "dat"
-    fname="%s/%s_*.%s" % ( dirname, topo, extension )
+    fname=f"{dirname}/{topo}_*.{extension}"
     files = glob.glob( fname )
+    ana = ana.lower().replace("-","_")
     ret=[]
     for f in files:
         with open ( f ) as handle:
