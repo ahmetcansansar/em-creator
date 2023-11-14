@@ -27,7 +27,7 @@ def install_plugins( pyver=3 ):
 
 def install( ver, plugins = True, pyver = 3 ):
     """
-    :param ver: MG5 version (eg 3_5_1)
+    :param ver: MG5 version (eg 3_5_2)
     :param plugins: install also plugins
     :param pyver: python version, 2 or 3
     """
@@ -47,6 +47,9 @@ def install( ver, plugins = True, pyver = 3 ):
     tarball = "MG5_aMC_v%s.tar.gz" % verdot
     if pyver == 4:
         tarball = "MG5_aMC_v%s.py3.tar.gz" % verdot
+    if verdot >= "3.5.2":
+        tarball = "mg5amcnlo-%s.tar.gz" % ver.replace("_","")
+
     if not os.path.exists ( tarball ):
         cmd = "wget %s/%s" % ( url, tarball )
         a = subprocess.getoutput ( cmd )
@@ -126,8 +129,8 @@ if __name__ == "__main__":
                              action="store_true" )
     argparser.add_argument ( '-p', '--pyver', help='python version [3]',
                              type=int, default=3 )
-    argparser.add_argument ( '-V', '--version', help='MG5 version [3_5_1]',
-                             type=str, default="3_5_1" )
+    argparser.add_argument ( '-V', '--version', help='MG5 version [3_5_2]',
+                             type=str, default="3_5_2" )
     args = argparser.parse_args()
     args.version = args.version.replace(".","_")
     if args.trim:
