@@ -473,7 +473,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
         nrecasts["cm2"] = creator.countRunningCm2 ( )
     nre = sum ( nrecasts.values() )
     nall = nmg5 + nrmg5 + nre
-    line = f"{topo}: {nmg5} mg5 points, {nrmg5} running mg5 jobs"
+    line = f"[emCreator] {topo}: {nmg5} mg5 points, {nrmg5} running mg5 jobs"
     #if nre > 0:
     #    line += f"\n           "
     for name,number in nrecasts.items():
