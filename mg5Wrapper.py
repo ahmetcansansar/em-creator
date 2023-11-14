@@ -13,37 +13,38 @@ import multiprocessing, glob, io
 import bakeryHelpers
 from bakeryHelpers import rmLocksOlderThan
 import locker
+from typing import Dict, List
 
 class MG5Wrapper:
-    def __init__ ( self, nevents, topo, njets, keep, rerun, recast,
-                   ignore_locks, sqrts=13, recaster=["MA5"], ver="3_4_2",
-                   keephepmc = True, adl_file = None, event_condition = None ):
+    def __init__ ( self, args : Dict, recaster : List,
+           ver : str  = "3_5_2" ):
         """
-        :param ver: version of mg5
-        :param recast: perform recasting (ma5 or cutlang)
+        :param args: the command line args, as a dictionary
+        :param recaster: perform recasting (ma5 or cutlang)
         """
-        self.nevents = nevents
+        self.nevents = args["nevents"]
         self.checkHost()
         self.basedir = bakeryHelpers.baseDir()
         os.chdir ( self.basedir )
         self.tempdir = bakeryHelpers.tempDir()
         self.resultsdir = os.path.join(self.basedir, "mg5results")
-        self.recaster = recaster
-        self.adl_file = adl_file
-        self.event_condition = event_condition
+        self.recast = args["recast"]
+        self.adl_file = args["adl_file"]
+        self.event_condition = args["event_condition"]
         self.mkdir ( self.resultsdir )
-        self.locker = locker.Locker ( sqrts, topo, ignore_locks )
-        self.topo = topo
-        self.keep = keep
-        self.keephepmc = keephepmc
-        self.rerun = rerun
-        self.recast = recast
-        self.njets = njets
+        self.locker = locker.Locker ( args["sqrts"], args["topo"],
+                                      args["ignore_locks"] )
+        self.topo = args["topo"]
+        self.keep = args["keep"]
+        self.keephepmc = args["keephepmc"]
+        self.rerun = args["rerun"]
+        self.njets = args["njets"]
         self.mg5install = os.path.join(self.basedir, "mg5")
         self.logfile = None
         self.logfile2 = None
         self.tempf = None
-        self.sqrts = sqrts
+        self.sqrts = args["sqrts"]
+        self.recaster = recaster
         self.pyver = 3 ## python version
         if "py3" in ver:
             self.pyver = 3
@@ -81,7 +82,7 @@ class MG5Wrapper:
         ptlund = "2."
         ktdurham = "-1."
         self.mgParams = { 'EBEAM': ebeam, # Single Beam Energy expressed in GeV
-                          'NEVENTS': str(nevents), 'MAXJETFLAVOR': '5',
+                          'NEVENTS': str(self.nevents), 'MAXJETFLAVOR': '5',
             #              'PDFLABEL': "'lhapdf'", 'XQCUT': '20', 'QCUT': '10',
                           'PDFLABEL': "'nn23lo1'", 'XQCUT': 'M[0]/4',
                           'PTLUND': ptlund, 'KTDURHAM': ktdurham,
@@ -747,7 +748,7 @@ def main():
         if args.mingap2 != None or args.maxgap2 != None:
             line += f" gap(2,3) not in [{args.mingap2},{args.maxgap2 if args.maxgap2 is not None else '+inf'}];"
         print ( f"{line}" )
-        self.locker.unlock ( masses )
+        locker.Locker( args.sqrts, args.topo, args.ignore_locks ).unlock ( masses )
         sys.exit()
     if nReqM != len(masses[0]):
         print ( "[mg5Wrapper] you gave %d masses, but %d are required for %s." % \
@@ -764,10 +765,7 @@ def main():
         print ( "[mg5Wrapper] both checkmate and cutlang have been asked for. please choose!" )
         sys.exit()
 
-    mg5 = MG5Wrapper( args.nevents, args.topo, args.njets, args.keep, args.rerun,
-                      args.recast, args.ignore_locks, args.sqrts, recaster,
-                      keephepmc = args.keephepmc, adl_file = args.adl_file,
-                      event_condition = args.event_condition )
+    mg5 = MG5Wrapper( vars(args), recaster )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 
