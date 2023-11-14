@@ -48,7 +48,7 @@ def install( ver, plugins = True, pyver = 3 ):
     if pyver == 4:
         tarball = "MG5_aMC_v%s.py3.tar.gz" % verdot
     if verdot >= "3.5.2":
-        tarball = "mg5amcnlo-%s.tar.gz" % ver.replace("_","")
+        tarball = "mg5amcnlo-%s.tar.gz" % verdot
 
     if not os.path.exists ( tarball ):
         cmd = "wget %s/%s" % ( url, tarball )
