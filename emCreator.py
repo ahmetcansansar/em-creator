@@ -486,7 +486,7 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
         if printLine:
             nemb = createEmbakedFile( effs, topo, recaster[0], tstamps, creator, copy,
                                   create_stats )
-            print ( "add", nemb )
+            # print ( "add", nemb )
     if not keep and cleanup:
         for i in creator.toDelete:
             print ( f"[emCreator] deleting {i}" )
