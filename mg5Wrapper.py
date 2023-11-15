@@ -97,7 +97,7 @@ class MG5Wrapper:
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
         from utils import rmOld
         stats = rmOld.createStats()
-        rmOld.rmOlderThan ( stats, 3, False )
+        # rmOld.rmOlderThan ( stats, 8, False )
         self.info ( f"initialised MG5 {self.ver}" )
 
     def setMG5Version ( self ):

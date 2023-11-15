@@ -481,16 +481,18 @@ def runForTopo ( topo, njets, masses, analyses, verbose, copy, keep, sqrts, reca
             line += f" and {number} running {name} jobs"
     if printLine and nall>0:
         print ( line )
+    nemb = 0
     if nall > 0:
         if printLine:
-            ntot = createEmbakedFile( effs, topo, recaster[0], tstamps, creator, copy,
+            nemb = createEmbakedFile( effs, topo, recaster[0], tstamps, creator, copy,
                                   create_stats )
+            print ( "add", nemb )
     if not keep and cleanup:
         for i in creator.toDelete:
             print ( f"[emCreator] deleting {i}" )
             os.unlink ( i )
         creator.toDelete = []
-    return ntot
+    return nemb
 
 def getAllCutlangTopos():
     """ get all topos that we find in cutlang """
