@@ -28,7 +28,6 @@ def install():
     url = "https://github.com/CheckMATE2/checkmate2.git"
     cmd = f"git clone {url}"
     execute ( cmd )
-    sys.exit()
     #cmd = "cd checkmate2 ; mv aclocal.m4 aclocal.old ; aclocal && libtoolize --force && autoreconf"
     autoreconf = shutil.which ( "autoreconf" )
     if autoreconf == None:
