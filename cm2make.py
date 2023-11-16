@@ -3,7 +3,7 @@
 """ Simple script that handles the installation of checkmate2.
 """
 
-import subprocess, os, sys
+import subprocess, os, sys, shutil
 sys.path.insert(0,"../")
 from bakeryHelpers import execute, nCPUs
     
@@ -30,6 +30,10 @@ def install():
     execute ( cmd )
     sys.exit()
     #cmd = "cd checkmate2 ; mv aclocal.m4 aclocal.old ; aclocal && libtoolize --force && autoreconf"
+    autoreconf = shutil.which ( "autoreconf" )
+    if autoreconf == None:
+        print ( "error: autoreconf not found! maybe you need to install the autoconf package?" )
+        sys.exit()
     cmd = "autoreconf"
     execute ( cmd, cwd = "checkmate2" )
     cmd = "cp /bin/libtool ."
