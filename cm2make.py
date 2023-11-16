@@ -35,8 +35,12 @@ def install():
         sys.exit()
     cmd = "autoreconf"
     execute ( cmd, cwd = "checkmate2" )
-    cmd = "cp /bin/libtool ."
-    execute ( cmd, cwd = "checkmate2" )
+    libtool = shutil.which ( "libtool" )
+    if libtool == None:
+        print ( "error: libtool not found! let me try to continue though." )
+    else:
+        cmd = f"cp {libtool} ."
+        execute ( cmd, cwd = "checkmate2" )
     delphespath = os.path.abspath ( "../delphes/" )
     hepmcpath = os.path.abspath ( "../hepmc2/HepMC-2.06.11/" )
     madgrafpath = os.path.abspath ( "../mg5/" )
