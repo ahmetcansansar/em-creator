@@ -24,9 +24,11 @@ def install():
         ## so 'bin' exists, but not 'bin/cm2'. clean!
         clean()
     print ( "installing cm2 ..." )
-    url = "git@github.com:CheckMATE2/checkmate2.git"
+    # url = "git@github.com:CheckMATE2/checkmate2.git"
+    url = "https://github.com/CheckMATE2/checkmate2.git"
     cmd = f"git clone {url}"
     execute ( cmd )
+    sys.exit()
     #cmd = "cd checkmate2 ; mv aclocal.m4 aclocal.old ; aclocal && libtoolize --force && autoreconf"
     cmd = "autoreconf"
     execute ( cmd, cwd = "checkmate2" )
