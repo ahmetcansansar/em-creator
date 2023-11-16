@@ -568,12 +568,16 @@ def getAllCm2Topos():
     return ret
 
 def getMG5ListOfAnalyses():
-    files = glob.glob ( "T*_*jet.*/analysis" )
     ret = set()
+    files = glob.glob ( "T*_*jet.*/analysis" )
     for f in files:
-        with open ( f, "rt" ) as h:
-            txt = h.read().strip()
-            ret.add ( txt)
+        try:
+            with open ( f, "rt" ) as h:
+                txt = h.read().strip()
+                ret.add ( txt)
+        except FileNotFoundError as e:
+            # can happen in between that we delete
+            pass
     return list(ret)
 
 def getCutlangListOfAnalyses():
