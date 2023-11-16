@@ -595,19 +595,23 @@ def getCutlangListOfAnalyses():
 def getMA5ListOfRunningAnalyses( topo : str, njets : int ) -> List:
     if topo == "all":
         topo="*"
-    files = glob.glob ( f"ma5_{topo}_{njets}jet.*/recast" )
     ret = set()
+    files = glob.glob ( f"ma5_{topo}_{njets}jet.*/recast" )
     # print ( "files", files, f"ma5_{topo}_{njets}jet.*/recast" )
     for f in files:
-        with open ( f, "rt" ) as h:
-            lines = h.readlines()
-            for line in lines:
-                if line.startswith("#"):
-                    continue
-                if "atlas" in line or "cms" in line:
-                    tokens = line.split(" ")
-                    anaid = tokens[0].upper().replace("_","-")
-                    ret.add ( anaid)
+        try:
+            with open ( f, "rt" ) as h:
+                lines = h.readlines()
+                for line in lines:
+                    if line.startswith("#"):
+                        continue
+                    if "atlas" in line or "cms" in line:
+                        tokens = line.split(" ")
+                        anaid = tokens[0].upper().replace("_","-")
+                        ret.add ( anaid)
+        except FileNotFoundError as e:
+            # can happen in between that we delete
+            pass
     return list(ret)
 
 
