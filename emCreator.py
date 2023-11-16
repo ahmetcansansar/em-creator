@@ -675,6 +675,7 @@ def run ( args ):
         recaster = [ "cm2" ]
     ntot, ntotembaked = 0, 0
     files = glob.glob ( "embaked/*embaked" )
+    files.sort()
     for fname in files:
         f=open(fname,"rt")
         txt=f.read()
