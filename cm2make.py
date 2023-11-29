@@ -15,7 +15,16 @@ def installHepMC2():
         cmd = "cp -r ../hepmc2.template ../hepmc2"
         subprocess.getoutput ( cmd )
 
+def checkForCurl():
+    """ check if unix curl is available on the system """
+    exe = shutil.which ( "curl" )
+    if exe is None:
+        print ( "[make.py] not installing cm2: unix tool 'curl' is missing. install with e.g. apt|rpm install curl" )
+        sys.exit()
+    return True
+
 def install():
+    checkForCurl()
     installHepMC2()
     if os.path.exists ( "checkmate2/bin/CheckMATE" ):
         print ( "[make.py] not installing cm2: checkmate2/bin/CheckMATE exists" )
