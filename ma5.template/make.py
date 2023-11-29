@@ -7,7 +7,7 @@
 import subprocess, os, sys
     
 # ver="1.9.beta"
-ver="1.10.10"
+ver="1.10.12"
 
 def install_plugins():
     print ( "[make.py] installing plugins (tail -f /tmp/ma5.install to monitor) ... " )
