@@ -347,7 +347,6 @@ def createEmbakedFile( effs, topo, recast : str, tstamps, creator, copy,
         ts = {}
         if ana in tstamps:
             ts = tstamps[ana]
-        print ( f"{Fore.GREEN}[emCreator] baking {fname}: {len(values)} points.{Fore.RESET}" )
         ntot += len(values)
         SRs = set()
         for k,v in values.items():
@@ -358,8 +357,19 @@ def createEmbakedFile( effs, topo, recast : str, tstamps, creator, copy,
         for x in SRs:
             if not x.startswith ( "__" ):
                 nSRs += 1
+
+        for k,v in D.items():
+            if "__nevents__" in D[k]:
+                D[k].pop("__nevents__")
+            if "__t__" in D[k]:
+                D[k].pop("__t__")
+
+        hasChanged = not ( D == values )
+        if not hasChanged:
+            print ( f"[emCreator] {fname}: no changes" )
         
-        if True:
+        if hasChanged:
+            print ( f"{Fore.GREEN}[emCreator] baking {fname}: {len(values)} points.{Fore.RESET}" )
             f=open(fname,"w")
             f.write ( f"# EM-Baked {time.asctime()}. {len(values.keys())} points, {nSRs} signal regions, {recast}(emCreator)\n" )
             # f.write ( "%s\n" % values )
