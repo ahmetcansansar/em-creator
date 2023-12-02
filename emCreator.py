@@ -367,7 +367,8 @@ def createEmbakedFile( effs, topo, recast : str, tstamps, creator, copy,
 
         hasChanged = not ( D == values )
         if not hasChanged:
-            print ( f"[emCreator] {fname}: no changes" )
+            if False:
+                print ( f"[emCreator] {fname}: no changes" )
         
         if hasChanged:
             print ( f"{Fore.GREEN}[emCreator] baking {fname}: {len(values)} points.{Fore.RESET}" )
