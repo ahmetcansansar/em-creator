@@ -336,6 +336,7 @@ def createEmbakedFile( effs, topo, recast : str, tstamps, creator, copy,
         if len(values.keys()) == 0:
             continue
         fname = embakedFileName ( ana, topo, recast )
+        D={}
         ## read in the old stuff
         if os.path.exists ( fname ):
             f = open ( fname, "rt" )
