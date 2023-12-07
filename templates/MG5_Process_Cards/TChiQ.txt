@@ -1,4 +1,7 @@
-generate p p > n1 ul~
-generate p p > n1 dl~
-generate p p > n1 ul
-generate p p > n1 dl
+define EW = x1- x1+ n1
+generate  p p > su1 ew
+add process p p > su1 ew j
+add process p p > su1 ew j j
+add process p p > su1~ ew
+add process p p > su1~ ew j
+add process p p > su1~ ew j j
