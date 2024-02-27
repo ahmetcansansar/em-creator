@@ -8,7 +8,7 @@
 .. moduleauthor:: Wolfgang Waltenberger <wolfgang.waltenberger@gmail.com>
 """
 
-import os, sys, colorama, subprocess, shutil, tempfile, time, socket, random
+import os, sys, colorama, subprocess, shutil, tempfile, time, socket, random, ast
 import multiprocessing, glob, io
 import bakeryHelpers
 from bakeryHelpers import rmLocksOlderThan
@@ -16,7 +16,7 @@ import locker
 from typing import Dict, List
 
 class MG5Wrapper:
-    def __init__ ( self, args : Dict, recaster : List ):
+    def __init__ ( self, args : Dict, recaster : List, masses ='' ):
         """
         :param args: the command line args, as a dictionary
         :param recaster: perform recasting (ma5 or cutlang)
@@ -91,7 +91,18 @@ class MG5Wrapper:
         if "TChi" in self.topo or "THig" in self.topo:
             # for electroweakinos go lower in xqcut
             self.mgParams["XQCUT"]="M[0]/6"
-
+        
+        # Convert the string into a list using ast.literal_eval()
+        masses = ast.literal_eval(masses)
+        if "TDMspin1" in self.topo and float(masses[0]) >= 450. :
+            self.mgParams["XQCUT"]="M[0]/15"
+        if "TDMspin1" in self.topo and float(masses[0]) < 450. :
+            self.mgParams["XQCUT"]="30"
+        if "TDMspin0" in self.topo and float(masses[0]) >= 525. :
+            self.mgParams["XQCUT"]="M[0]/15"
+        if "TDMspin0" in self.topo and float(masses[0]) < 525. :
+            self.mgParams["XQCUT"]="35"
+        
         self.correctPythia8CfgFile()
         self.msg ( "remove potential old cruft" )
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
@@ -481,6 +492,14 @@ class MG5Wrapper:
                    sys.exit()
                 if " $" in line:
                     line = line.replace(" $"," j"*njets+" $" )
+                # Check if '/' exists in the line
+                if '/' in line:
+                    parts = line.split('/')
+                    if len(parts) == 2:
+                        line = parts[0] + " j"*njets + " /" + parts[1]
+                    else:
+                        self.error("Invalid line format, found multiple backslashes: %s" % line)
+                        sys.exit()
                 else:
                     line = line + " j"*njets
                 line = line + "\n"
@@ -784,7 +803,7 @@ def main():
         print ( "[mg5Wrapper] both checkmate and cutlang have been asked for. please choose!" )
         sys.exit()
 
-    mg5 = MG5Wrapper( vars(args), recaster )
+    mg5 = MG5Wrapper( vars(args), recaster, masses = args.masses )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 
