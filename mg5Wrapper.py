@@ -338,17 +338,15 @@ class MG5Wrapper:
             else:
                 self.info ( "hepmc file for %s exists, but rerun requested." % str(masses) )
 
-        if "TDMspin1" in self.topo and float(masses[0]) >= 450. :
+        if "TRV1" in self.topo and float(masses[0]) >= 450. :
             self.mgParams["XQCUT"]="M[0]/15"
-        if "TDMspin1" in self.topo and float(masses[0]) < 450. :
+        if "TRV1" in self.topo and float(masses[0]) < 450. :
             self.mgParams["XQCUT"]="30"
-        if "TDMspin0" in self.topo and float(masses[0]) >= 525. :
+        if "TRS1" in self.topo and float(masses[0]) >= 525. :
             self.mgParams["XQCUT"]="M[0]/15"
-        if "TDMspin0" in self.topo and float(masses[0]) < 525. :
+        if "TRS1" in self.topo and float(masses[0]) < 525. :
             self.mgParams["XQCUT"]="35"
        
-        print("ya rabbah, the mass is", masses[0], "the xqcut is : ", self.mgParams["XQCUT"])
-        
         self.announce ( "starting MG5 on %s[%s] at %s in job #%s" % (masses, self.topo, time.asctime(), pid ) )
         slhaTemplate = f"slha/{self.topo}_template.slha"
         self.pluginMasses( slhaTemplate, masses )
