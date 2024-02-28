@@ -16,7 +16,7 @@ import locker
 from typing import Dict, List
 
 class MG5Wrapper:
-    def __init__ ( self, args : Dict, recaster : List, masses ='' ):
+    def __init__ ( self, args : Dict, recaster : List ):
         """
         :param args: the command line args, as a dictionary
         :param recaster: perform recasting (ma5 or cutlang)
@@ -91,18 +91,7 @@ class MG5Wrapper:
         if "TChi" in self.topo or "THig" in self.topo:
             # for electroweakinos go lower in xqcut
             self.mgParams["XQCUT"]="M[0]/6"
-        
-        # Convert the string into a list using ast.literal_eval()
-        masses = ast.literal_eval(masses)
-        if "TDMspin1" in self.topo and float(masses[0]) >= 450. :
-            self.mgParams["XQCUT"]="M[0]/15"
-        if "TDMspin1" in self.topo and float(masses[0]) < 450. :
-            self.mgParams["XQCUT"]="30"
-        if "TDMspin0" in self.topo and float(masses[0]) >= 525. :
-            self.mgParams["XQCUT"]="M[0]/15"
-        if "TDMspin0" in self.topo and float(masses[0]) < 525. :
-            self.mgParams["XQCUT"]="35"
-        
+       
         self.correctPythia8CfgFile()
         self.msg ( "remove potential old cruft" )
         rmLocksOlderThan ( 3 ) ## remove locks older than 3 hours
@@ -348,6 +337,18 @@ class MG5Wrapper:
                 return
             else:
                 self.info ( "hepmc file for %s exists, but rerun requested." % str(masses) )
+
+        if "TDMspin1" in self.topo and float(masses[0]) >= 450. :
+            self.mgParams["XQCUT"]="M[0]/15"
+        if "TDMspin1" in self.topo and float(masses[0]) < 450. :
+            self.mgParams["XQCUT"]="30"
+        if "TDMspin0" in self.topo and float(masses[0]) >= 525. :
+            self.mgParams["XQCUT"]="M[0]/15"
+        if "TDMspin0" in self.topo and float(masses[0]) < 525. :
+            self.mgParams["XQCUT"]="35"
+       
+        print("ya rabbah, the mass is", masses[0], "the xqcut is : ", self.mgParams["XQCUT"])
+        
         self.announce ( "starting MG5 on %s[%s] at %s in job #%s" % (masses, self.topo, time.asctime(), pid ) )
         slhaTemplate = f"slha/{self.topo}_template.slha"
         self.pluginMasses( slhaTemplate, masses )
@@ -803,7 +804,7 @@ def main():
         print ( "[mg5Wrapper] both checkmate and cutlang have been asked for. please choose!" )
         sys.exit()
 
-    mg5 = MG5Wrapper( vars(args), recaster, masses = args.masses )
+    mg5 = MG5Wrapper( vars(args), recaster )
     # mg5.info( "%d points to produce, in %d processes" % (nm,nprocesses) )
     djobs = int(len(masses)/nprocesses)
 
