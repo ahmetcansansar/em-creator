@@ -1,2 +1,0 @@
-import model DMsimp_s_spin1
-generate p p > xd xd~  /  h w+ w- z a
