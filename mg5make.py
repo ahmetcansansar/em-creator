@@ -27,7 +27,7 @@ def install_plugins( pyver=3 ):
 
 def install( ver, plugins = True, pyver = 3 ):
     """
-    :param ver: MG5 version (eg 3_5_2)
+    :param ver: MG5 version (eg 3_5_3)
     :param plugins: install also plugins
     :param pyver: python version, 2 or 3
     """
@@ -133,8 +133,8 @@ if __name__ == "__main__":
                              action="store_true" )
     argparser.add_argument ( '-p', '--pyver', help='python version [3]',
                              type=int, default=3 )
-    argparser.add_argument ( '-V', '--version', help='MG5 version [3_5_2]',
-                             type=str, default="3_5_2" )
+    argparser.add_argument ( '-V', '--version', help='MG5 version [3_5_3]',
+                             type=str, default="3_5_3" )
     args = argparser.parse_args()
     args.version = args.version.replace(".","_")
     if args.trim:
