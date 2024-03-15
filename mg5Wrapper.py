@@ -588,6 +588,8 @@ class MG5Wrapper:
             ana = self.args["analyses"].upper().replace("_","-")
             f.write ( ana+"\n" )
             f.close()
+        if "bias" in self.topo:
+            shutil.copy("templates/pythia8_card_match.dat", Dir+'/Cards/pythia8_card.dat')
         shutil.move(slhaFile, Dir+'/Cards/param_card.dat' )
         shutil.move(self.runcard, Dir+'/Cards/run_card.dat' )
         shutil.move(self.commandfile, Dir+"/mg5cmd" )
