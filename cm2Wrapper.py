@@ -108,9 +108,9 @@ class CM2Wrapper:
         with open ( versionFile, "rt" ) as f:
             self.ver = f.read().strip()
             f.close()
-        atlas201822file = os.path.join ( self.cm2install, "checkmate2", "data", "atlas_2010_14293", "BDTxml", "ZeroLepton2018-SRBDT-GGd1_weight1.xml" )
-        if not os.path.exists ( atlas201822file ):
-            raise Exception ( f"data file {atlas201822file} not found" )
+        #atlas201822file = os.path.join ( self.cm2install, "checkmate2", "data", "atlas_2010_14293", "BDTxml", "ZeroLepton2018-SRBDT-GGd1_weight1.xml" )
+        #if not os.path.exists ( atlas201822file ):
+        #    raise Exception ( f"data file {atlas201822file} not found" )
         return True
 
     def msg ( self, *msg):
@@ -224,12 +224,16 @@ class CM2Wrapper:
         inSignalRegions = False
         effs = {}
         nevents = -1
+        SumOfWeights = -1
         with open ( self.outputfile() ) as f:
             lines = f.readlines()
             for line in lines:
                 if line.startswith("MCEvents:"):
                     line = line.replace("MCEvents:","").strip()
                     nevents = int ( line )
+                if line.startswith(" SumOfWeights:"):
+                    line = line.replace(" SumOfWeights:","").strip()
+                    SumOfWeights = float ( line )
                 if inSignalRegions:
                     tokens = line.split()
                     effs[tokens[0]] = float(tokens[3])
@@ -238,6 +242,7 @@ class CM2Wrapper:
                 inSignalRegions = True
 
             f.close()
+        effs["__SumOfWeights__"]= SumOfWeights
         effs["__nevents__"]= nevents
         return effs
 
