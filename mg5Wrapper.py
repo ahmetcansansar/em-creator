@@ -202,6 +202,12 @@ class MG5Wrapper:
                                          dir=self.tempdir )
         self.debug ( f"writing pythia run card {self.runcard}" )
         templatefile = f"{self.templateDir}/template_run_card.dat"
+        if "TRV1bias" in self.topo:
+            templatefile = f"{self.templateDir}/template_run_card_TRV1_bias.dat"
+        if "TRS1bias" in self.topo:
+            templatefile = f"{self.templateDir}/template_run_card_TRS1_bias.dat"
+        if self.topo == "TRV1" or self.topo == "TRS1":
+            templatefile = f"{self.templateDir}/template_run_card_TRV1_TRS1_no-bias.dat"
         if not os.path.exists ( templatefile ):
             self.error ( f"cannot find {templatefile}" )
             sys.exit()
