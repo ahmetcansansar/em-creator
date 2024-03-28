@@ -63,7 +63,7 @@ Delphes installation
 
 To successfully compile Delphes in the lxplus environment, it's necessary to change the CXXFLAGS std in the Makefile to c++17. As shown above, this was achieved using the sed command.
 
-If the compilation has been completed, the [DelphesHepMC2] and [DelphesHepMC3] files must necessarily exist.
+If the compilation has been completed, the [ DelphesHepMC2 ] and [ DelphesHepMC3 ] files must necessarily exist.
 
 
 CutLang installation
