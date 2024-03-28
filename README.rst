@@ -18,6 +18,10 @@ In el9 lxplus server::
    $ cmsenv
    $ git clone https://github.com/Junghyun-Lee-Physicist/em-creator.git
 
+For Python package (smodels, colorama, numpy, ROOT) for em-creator::
+
+   $ pip3 install --user -r requirements.txt
+
 Madgraph5 and Pythia8 installation
 ==================================
 * For Madgraph::
