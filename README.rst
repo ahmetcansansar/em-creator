@@ -11,7 +11,8 @@ The em-creator and its associated simulation tools do not depend on CMSSW. Howev
 
 .. code-block:: bash
 
-   # Please log in el9 lxplus server
+# Please log in el9 lxplus server::
+
    $ ssh <User user name>@lxplus.cern.ch
    $ cmsrel CMSSW_13_3_3
    $ cd CMSSW_13_3_3/src
