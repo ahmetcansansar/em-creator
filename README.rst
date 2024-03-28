@@ -93,4 +93,4 @@ Example usage:
 
 .. code-block::
 
-    ./bake.py -n 10000 -a -m "[(250,2201,50),(10,2001,25)]" --analyses "cms_sus_19_005,cms_sus_19_006" -t T2ttoff -p 5 -b --cutlang
+    ./bake.py -n 1000 -T GG_direct -m "[(2200.0,2201.0,2),(1200.0,1201.0,2)]" --analyses "ATLAS-SUSY-2018-22" --adl_file ATLAS-SUSY-2018-22_Cutlang.adl --cutlang
