@@ -22,6 +22,12 @@ For Python package (smodels, colorama, numpy, ROOT) for em-creator::
 
    $ pip3 install --user -r requirements.txt
 
+Packages installed with pip3 usually don't require you to set environment variables. However, if the package isn't recognized, you may need to add the typical installation path for pip to your system's PATH environment variable as follows::
+
+   $ export PATH=$PATH:~/.local/bin
+
+ROOT is unlikely to be installed via pip typically, but that's fine. ROOT will be recognized through cmsenv.
+
 Madgraph5 and Pythia8 installation
 ==================================
 * For Madgraph::
