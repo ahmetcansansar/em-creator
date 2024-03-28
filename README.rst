@@ -80,7 +80,7 @@ The most recent version of CutLang utilizes the ONNX library, which facilitates 
 
 * Replace Makefile::
 
-   cp CutLang_Makefile CutLang/CLA/.
+   cp ${CMSSW_BASE}/src/em-creator/CutLang_Makefile CutLang/CLA/.
 
 * Compile the CutLang::
 
