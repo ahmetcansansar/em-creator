@@ -20,6 +20,7 @@ In el9 lxplus server::
 
 For Python package (smodels, colorama, numpy, ROOT) for em-creator::
 
+   $ cd ${CMSSW_BASE}/src/em-creator
    $ pip3 install --user -r requirements.txt
 
 Packages installed with pip3 usually don't require you to set environment variables. However, if the package isn't recognized, you may need to add the typical installation path for pip to your system's PATH environment variable as follows::
@@ -46,6 +47,10 @@ While you may download other versions of MadGraph if you wish, the installation 
 
    $ cd ${CMSSW_BASE}/src/em-creator/mg5
    $ python3 bin/mg5_aMC install.script
+
+Delphes installation
+====================
+
 
 
 For cutlang wrapper:
