@@ -66,34 +66,25 @@ To successfully compile Delphes in the lxplus environment, it's necessary to cha
 If the compilation has been completed, the [DelphesHepMC2] and [DelphesHepMC3] files must necessarily exist.
 
 
-For cutlang wrapper:
+CutLang installation
 ====================
+CutLang's dependencies have already been installed or set up through pip3 and cmsenv. Now, CutLang will be installed directly via Git.
 
-* Installing prerequisities:
-
-  * On RHEL-like distributions run::
-
-      yum install bison flex root python3-root root-montecarlo-eg zlib-devel
-
-  * On Debian-like distributions run::
-
-      apt install bison flex zlib1g-dev
-    
-  and install ROOT from sources
-
-  * On Arch linux run::
-
-      pacman -S bison flex root zlib
+* Installation CutLang from git::
+   cd ${CMSSW_BASE}/src/em-creator
+   git clone https://github.com/unelg/CutLang.git
 
 
-* Installing  python prerequisities::
+The most recent version of CutLang utilizes the ONNX library, which facilitates interaction between DNN models. However, this is not easy to use in the Lxplus environment, so it must be excluded from compilation. Therefore, replace it with a Makefile that removes the ONNX relevant part.
 
-    pip3 -r requirements.txt
+* Replace Makefile::
+   cp CutLang_Makefile CutLang/CLA/.
 
+* Compile the CutLang::
+   cd ${CMSSW_BASE}/src/em-creator/CutLang/CLA
+   make
 
-
-* EOS storage is available at lxplus.cern.ch:/eos/project/s/smodels/www/ADL/
-
+   
 Example usage:
 ==============
 
