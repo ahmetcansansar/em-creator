@@ -6,9 +6,10 @@ The em-creator is a helpful tool that links various simulation tools in particle
 This document will focus on explaining the installation of simulation tools, particularly MadGraph5, Pythia8, and CutLang, and the em-creator operation.
 
 CMSSW environment set and em-creator installation
-============
+=================================================
 The em-creator and its associated simulation tools do not depend on CMSSW. However, each simulation program requires various programs and libraries, such as Python, the GCC & G++ compilers, parsers like Bison & Flex, and libraries like zlib. By setting up the distributed CMSSW environment, we can use the simulation tools in a consistent environment.
-:: 
+
+.. code-block:: bash
    # Please log in el9 lxplus server
    ssh <user-name>@lxplus.cern.ch
    cmsrel CMSSW_13_3_3
