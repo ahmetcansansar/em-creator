@@ -94,3 +94,9 @@ Example usage:
 .. code-block::
 
     ./bake.py -n 1000 -T GG_direct -m "[(2200.0,2201.0,2),(1200.0,1201.0,2)]" --analyses "ATLAS-SUSY-2018-22" --adl_file ATLAS-SUSY-2018-22_Cutlang.adl --cutlang
+
+* You apply the topology using the -T option. The applied model finds files with the corresponding name in [templates/MG5_Process_Cards] and [templates/slha] and applies them to MadGraph and Pythia.
+
+* For mass, the first element of each item in the list is assigned to the ..., M2, M1, and M0 variables in the slha. In the example given, two masses are applied, so 2200 GeV and 1200 GeV are assigned to M1 and M0, respectively, in the [ GG_direct_template.slha ]. 
+
+* The ADL file will be searched for in the directory received by the --analyses argument.
