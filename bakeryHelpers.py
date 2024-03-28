@@ -83,21 +83,21 @@ def isAssociateProduction ( topo ):
 
 def baseDir():
     """ our basedir """
-    conffile = "baking.conf"
-    if os.path.exists ( conffile ):
-        with open ( conffile, "rt" ) as f:
-            ret = f.read()
-        ret = ret.strip()
-        return ret
-    # ret = "/scratch-cbe/users/wolfgan.waltenberger/git/em-creator/"
-    subdir = "git/em-creator"
-    ret = "~/%s/" % subdir
-    ret = os.path.expanduser ( ret )
-    if ret.count ( subdir ) == 2:
-        ret = ret.replace(subdir,"",1)
-    while ret.find("//")>0:
-        ret = ret.replace("//","/")
-    return ret
+    ##conffile = "baking.conf"
+    ##if os.path.exists ( conffile ):
+    ##    with open ( conffile, "rt" ) as f:
+    ##        ret = f.read()
+    ##    ret = ret.strip()
+    ##    return ret
+    ### ret = "/scratch-cbe/users/wolfgan.waltenberger/git/em-creator/"
+    ##subdir = "git/em-creator"
+    ##ret = "~/%s/" % subdir
+    ##ret = os.path.expanduser ( ret )
+    ##if ret.count ( subdir ) == 2:
+    ##    ret = ret.replace(subdir,"",1)
+    ##while ret.find("//")>0:
+    ##    ret = ret.replace("//","/")
+    ret = os.path.dirname(os.path.realpath(__file__))
 
 def tempDir():
     """ our temp dir """
