@@ -9,11 +9,8 @@ CMSSW environment set and em-creator installation
 =================================================
 The em-creator and its associated simulation tools do not depend on CMSSW. However, each simulation program requires various programs and libraries, such as Python, the GCC & G++ compilers, parsers like Bison & Flex, and libraries like zlib. By setting up the distributed CMSSW environment, we can use the simulation tools in a consistent environment.
 
-.. code-block:: bash
+In el9 lxplus server::
 
-# Please log in el9 lxplus server::
-
-   $ ssh <User user name>@lxplus.cern.ch
    $ cmsrel CMSSW_13_3_3
    $ cd CMSSW_13_3_3/src
    $ cmsenv
