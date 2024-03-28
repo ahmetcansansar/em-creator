@@ -14,19 +14,19 @@ We can use the simulation tools consistently by setting up the distributed CMSSW
 
 In el9 lxplus server::
 
-   $ cmsrel CMSSW_13_3_3
-   $ cd CMSSW_13_3_3/src
-   $ cmsenv
-   $ git clone https://github.com/Junghyun-Lee-Physicist/em-creator.git
+   cmsrel CMSSW_13_3_3
+   cd CMSSW_13_3_3/src
+   cmsenv
+   git clone https://github.com/Junghyun-Lee-Physicist/em-creator.git
 
 For Python package (smodels, colorama, numpy, ROOT) for em-creator::
 
-   $ cd ${CMSSW_BASE}/src/em-creator
-   $ pip3 install --user -r requirements.txt
+   cd ${CMSSW_BASE}/src/em-creator
+   pip3 install --user -r requirements.txt
 
 Packages installed with pip3 usually don't require you to set environment variables. However, if the package isn't recognized, you may need to add the typical installation path for pip to your system's PATH environment variable as follows::
 
-   $ export PATH=$PATH:~/.local/bin
+   export PATH=$PATH:~/.local/bin
 
 ROOT is unlikely to be installed via pip typically, but that's fine. ROOT will be recognized through cmsenv.
 
@@ -35,11 +35,11 @@ Madgraph5 and Pythia8 installation
 ==================================
 * For Madgraph::
 
-   $ cd ${CMSSW_BASE}/src/em-creator
-   $ mv mg5.template mg5 && cd mg5
-   $ wget https://launchpad.net/mg5amcnlo/3.0/3.4.x/+download/MG5_aMC_v3.4.2.tar.gz
-   $ tar -zxvf MG5_aMC_v3.4.2.tar.gz
-   $ mv MG5_aMC_v3_4_2/* .
+   cd ${CMSSW_BASE}/src/em-creator
+   mv mg5.template mg5 && cd mg5
+   wget https://launchpad.net/mg5amcnlo/3.0/3.4.x/+download/MG5_aMC_v3.4.2.tar.gz
+   tar -zxvf MG5_aMC_v3.4.2.tar.gz
+   mv MG5_aMC_v3_4_2/* .
 
 You can now use MadGraph by executing the mg5_aMC file found in the bin directory within the mg5 directory. 
 
@@ -47,13 +47,23 @@ While you may download other versions of MadGraph if you wish, the installation 
 
 * For Pythia (and additional zlib, hepmc, boost package)::
 
-   $ cd ${CMSSW_BASE}/src/em-creator/mg5
-   $ python3 bin/mg5_aMC install.script
+   cd ${CMSSW_BASE}/src/em-creator/mg5
+   python3 bin/mg5_aMC install.script
 
 
 Delphes installation
 ====================
+Installation delphes from git::
+   
+   cd ${CMSSW_BASE}/src/em-creator
+   git clone https://github.com/delphes/delphes.git
+   cd delphes
+   sed -i 's/CXXFLAGS += -std=c++0x/CXXFLAGS += -std=c++17/' Makefile
+   make -j4
 
+To successfully compile Delphes in the lxplus environment, it's necessary to change the CXXFLAGS std in the Makefile to c++17. As shown above, this was achieved using the sed command.
+
+If the compilation has been completed, the [DelphesHepMC2] and [DelphesHepMC3] files must necessarily exist.
 
 
 For cutlang wrapper:
