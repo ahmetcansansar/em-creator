@@ -20,7 +20,7 @@ In el9 lxplus server::
 
 Madgraph5 and Pythia8 installation
 ==================================
-* For madgraph::
+* For Madgraph::
 
    $ cd ${CMSSW_BASE}/src/em-creator
    $ mv mg5.template mg5 && cd mg5
@@ -32,7 +32,10 @@ You can now use MadGraph by executing the mg5_aMC file found in the bin director
 
 While you may download other versions of MadGraph if you wish, the installation directory for MadGraph must be named [ mg5 ], and the tar file must remain in the mg5 directory. This is because the em-creator searches for MadGraph in the mg5 directory and checks for its presence and version using the name of tar file.
 
-* For pythia::
+* For Pythia (and additional zlib, hepmc, boost package)::
+
+   $ cd ${CMSSW_BASE}/src/em-creator/mg5
+   $ python3 bin/mg5_aMC install.script
 
 
 For cutlang wrapper:
