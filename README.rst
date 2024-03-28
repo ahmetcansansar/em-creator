@@ -53,7 +53,7 @@ While you may download other versions of MadGraph if you wish, the installation 
 
 Delphes installation
 ====================
-Installation delphes from git::
+* Installation delphes from git::
    
    cd ${CMSSW_BASE}/src/em-creator
    git clone https://github.com/delphes/delphes.git
