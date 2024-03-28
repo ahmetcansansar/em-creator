@@ -5,6 +5,7 @@ The efficiency map bakery, v2.
 The em-creator is a helpful tool that links various simulation tools in particle physics together, and can make the efficiency of several mass points. 
 This document will focus on explaining the installation of simulation tools, particularly MadGraph5, Pythia8, and CutLang, and the em-creator operation.
 
+
 CMSSW environment set and em-creator installation
 =================================================
 The em-creator and its associated simulation tools do not depend on CMSSW. However, each simulation program requires various programs and libraries, such as Python, the GCC & G++ compilers, parsers like Bison & Flex, and libraries like zlib.
@@ -29,6 +30,7 @@ Packages installed with pip3 usually don't require you to set environment variab
 
 ROOT is unlikely to be installed via pip typically, but that's fine. ROOT will be recognized through cmsenv.
 
+
 Madgraph5 and Pythia8 installation
 ==================================
 * For Madgraph::
@@ -47,6 +49,7 @@ While you may download other versions of MadGraph if you wish, the installation 
 
    $ cd ${CMSSW_BASE}/src/em-creator/mg5
    $ python3 bin/mg5_aMC install.script
+
 
 Delphes installation
 ====================
