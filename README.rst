@@ -30,7 +30,7 @@ Madgraph5 and Pythia8 installation
 
 You can now use MadGraph by executing the mg5_aMC file found in the bin directory within the mg5 directory. 
 
-While you may download other versions of MadGraph if you wish, the installation directory for MadGraph must be named [mg5], and the tar file must remain in the mg5 directory. This is because the em-creator searches for MadGraph in the mg5 directory and checks for its presence and version using the tar file.
+While you may download other versions of MadGraph if you wish, the installation directory for MadGraph must be named [ mg5 ], and the tar file must remain in the mg5 directory. This is because the em-creator searches for MadGraph in the mg5 directory and checks for its presence and version using the name of tar file.
 
 * For pythia::
 
