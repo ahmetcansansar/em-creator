@@ -25,9 +25,11 @@ class MG5Wrapper:
         self.nevents = args["nevents"]
         self.checkHost()
         self.basedir = bakeryHelpers.baseDir()
-        os.chdir ( self.basedir )
+        print("basedir: ",self.basedir)
+        #os.chdir ( self.basedir )
         self.tempdir = bakeryHelpers.tempDir()
-        self.resultsdir = os.path.join(self.basedir, "mg5results")
+        #self.resultsdir = os.path.join(self.basedir, "mg5results")
+        self.resultsdir = os.path.join(os.getcwd(), "mg5results")
         self.recast = args["recast"]
         self.adl_file = args["adl_file"]
         self.event_condition = args["event_condition"]
