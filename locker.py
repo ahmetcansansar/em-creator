@@ -36,7 +36,8 @@ class Locker:
         """
         self.basedir = bakeryHelpers.baseDir()
         self.ignore_locks = ignore_locks
-        os.chdir ( self.basedir )
+        #os.chdir ( self.basedir ) subprocessler scripti çalıştırdığım yerde olsun istiyorum
+        os.chdir(os.getcwd())
         self.sqrts = sqrts
         self.topo = topo
         self.prefix = prefix
