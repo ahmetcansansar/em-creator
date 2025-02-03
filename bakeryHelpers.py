@@ -98,10 +98,13 @@ def baseDir():
     ##while ret.find("//")>0:
     ##    ret = ret.replace("//","/")
     ret = os.path.dirname(os.path.realpath(__file__))
+    return ret
 
 def tempDir():
     """ our temp dir """
-    ret = baseDir()+"/temp/"
+    current_dir = os.getcwd()
+    ret = os.path.join(current_dir, "temp")
+    #ret = baseDir()+"/temp/"
     while ret.find("//")>0:
         ret = ret.replace("//","/")
     if not os.path.exists ( ret ):
@@ -551,9 +554,12 @@ def getListOfCm2Masses ( topo, sqrts, ana ):
     return ret
 
 def nRequiredMasses(topo):
+    base_directory = baseDir()
+    slha_template_path = os.path.join(base_directory, "templates", "slha", f"{topo}_template.slha")
     """ find out how many masses a topology requires """
     M=set()
-    with open( f"templates/slha/{topo}_template.slha", "r" ) as f:
+    #with open( f"templates/slha/{topo}_template.slha", "r" ) as f:
+    with open(slha_template_path, "r" ) as f:
         for line in f.readlines():
             if not "M" in line:
                 continue
