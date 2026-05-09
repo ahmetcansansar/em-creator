@@ -210,6 +210,8 @@ class MG5Wrapper:
             templatefile = f"{self.templateDir}/template_run_card_TRS1_bias.dat"
         if self.topo == "TRV1" or self.topo == "TRS1":
             templatefile = f"{self.templateDir}/template_run_card_TRV1_TRS1_no-bias.dat"
+        if self.topo == "T5qqqqWH_cms":
+            templatefile = f"{self.templateDir}/template_run_card_T5qqqqWH_cms.dat"
         if not os.path.exists ( templatefile ):
             self.error ( f"cannot find {templatefile}" )
             sys.exit()
