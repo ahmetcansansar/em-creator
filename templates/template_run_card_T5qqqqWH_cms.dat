@@ -19,7 +19,7 @@
 #*********************************************************************
 # Tag name for the run (one word)                                    *
 #*********************************************************************
-  glgl     = run_tag ! name of the run 
+  tag_1     = run_tag ! name of the run 
 #*********************************************************************
 # Run to generate the grid pack                                      *
 #*********************************************************************
@@ -48,9 +48,8 @@
 #*********************************************************************
 # PDF CHOICE: this automatically fixes also alpha_s and its evol.    *
 #*********************************************************************
- 'lhapdf'    = pdlabel     ! PDF set                                  
-$DEFAULT_PDF_SETS = lhaid
-$DEFAULT_PDF_MEMBERS = reweight_PDF     ! if pdlabel=lhapdf, this is the lhapdf number 
+     @@PDFLABEL@@   = pdlabel     ! PDF set
+     230000    = lhaid     ! if pdlabel=lhapdf, this is the lhapdf number
 #*********************************************************************
 # Renormalization and factorization scales                           *
 #*********************************************************************
